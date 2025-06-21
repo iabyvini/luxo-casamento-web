@@ -150,7 +150,7 @@ const Auth = () => {
             <div className="text-center mt-4">
               <button
                 type="button"
-                onClick={() => set isLogin(!isLogin)}
+                onClick={() => setIsLogin(!isLogin)}
                 className="text-primary hover:underline"
               >
                 {isLogin 
