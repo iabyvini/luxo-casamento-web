@@ -1,8 +1,15 @@
 
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Star, Heart, Sparkles } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Hero = () => {
+  const navigate = useNavigate();
+
+  const handleStartQuiz = () => {
+    navigate('/quiz');
+  };
+
   return (
     <section id="home" className="pt-20 pb-16 bg-gradient-to-br from-brown-50 to-gold-50 relative overflow-hidden">
       {/* Background decorative elements */}
@@ -42,6 +49,7 @@ const Hero = () => {
           <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4 mb-12">
             <Button 
               size="lg" 
+              onClick={handleStartQuiz}
               className="bg-gradient-luxury hover:opacity-90 text-white px-8 py-4 text-lg group w-full sm:w-auto"
             >
               Começar Gratuitamente
@@ -50,6 +58,7 @@ const Hero = () => {
             <Button 
               variant="outline" 
               size="lg" 
+              onClick={() => document.getElementById('templates')?.scrollIntoView({ behavior: 'smooth' })}
               className="border-brown-300 text-brown-700 hover:bg-brown-50 px-8 py-4 text-lg w-full sm:w-auto"
             >
               Ver Templates

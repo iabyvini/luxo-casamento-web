@@ -2,8 +2,11 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, Heart, Sparkles } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 const Templates = () => {
+  const navigate = useNavigate();
+
   const templates = [
     {
       id: 1,
@@ -56,6 +59,24 @@ const Templates = () => {
   ];
 
   const categories = ["Todos", "Clássico", "Moderno", "Romântico", "Minimalista", "Vintage", "Boho"];
+
+  const handleUseTemplate = (templateName: string) => {
+    // Criar modal ou página para coletar dados básicos
+    const coupleNames = prompt("Digite o nome do casal (ex: Ana & João):");
+    const weddingDate = prompt("Digite a data do casamento (YYYY-MM-DD):");
+    
+    if (coupleNames && weddingDate) {
+      navigate('/preview', { 
+        state: { 
+          selectedTemplate: templateName,
+          quizAnswers: {
+            nomes: coupleNames,
+            data_casamento: weddingDate
+          }
+        } 
+      });
+    }
+  };
 
   return (
     <section id="templates" className="py-20 bg-gradient-to-br from-gold-50 to-brown-50">
@@ -139,6 +160,7 @@ const Templates = () => {
                 </p>
                 <Button 
                   size="sm" 
+                  onClick={() => handleUseTemplate(template.name)}
                   className="w-full bg-gradient-luxury hover:opacity-90 text-white"
                 >
                   Usar Este Template
@@ -153,9 +175,10 @@ const Templates = () => {
           <Button 
             variant="outline" 
             size="lg"
+            onClick={() => navigate('/quiz')}
             className="border-brown-300 text-brown-700 hover:bg-brown-50 px-8 py-4"
           >
-            Ver Todos os Templates
+            Fazer Quiz Personalizado
           </Button>
         </div>
       </div>
