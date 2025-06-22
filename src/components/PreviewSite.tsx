@@ -4,10 +4,12 @@ import { PreviewData } from "@/types/quiz";
 import { useVisualTokens } from "@/contexts/VisualTokensContext";
 import WeddingSiteNavigation from "./wedding-site/WeddingSiteNavigation";
 import HeroSection from "./wedding-site/HeroSection";
-import OurStorySection from "./wedding-site/OurStorySection";
-import EventDetailsSection from "./wedding-site/EventDetailsSection";
-import GallerySection from "./wedding-site/GallerySection";
+import CountdownSection from "./wedding-site/CountdownSection";
+import CoupleSection from "./wedding-site/CoupleSection";
+import BridesmaidsSection from "./wedding-site/BridesmaidsSection";
+import GiftListSection from "./wedding-site/GiftListSection";
 import RSVPSection from "./wedding-site/RSVPSection";
+import MessagesSection from "./wedding-site/MessagesSection";
 import FooterSection from "./wedding-site/FooterSection";
 
 interface PreviewSiteProps {
@@ -35,33 +37,24 @@ const PreviewSite = ({ data }: PreviewSiteProps) => {
         quizAnswers={data.quizAnswers}
       />
       
-      <OurStorySection
-        coupleNames={data.coupleNames}
-        templateName={data.templateName}
-        quizAnswers={data.quizAnswers}
-      />
+      <CountdownSection weddingDate={data.weddingDate} />
       
-      <EventDetailsSection
+      <CoupleSection coupleNames={data.coupleNames} />
+      
+      <BridesmaidsSection />
+      
+      <GiftListSection />
+      
+      <RSVPSection 
         weddingDate={data.weddingDate}
         templateName={data.templateName}
-        quizAnswers={data.quizAnswers}
       />
       
-      <GallerySection 
-        templateName={data.templateName}
-        quizAnswers={data.quizAnswers}
-      />
-      
-      <RSVPSection
-        weddingDate={data.weddingDate}
-        templateName={data.templateName}
-        quizAnswers={data.quizAnswers}
-      />
+      <MessagesSection />
       
       <FooterSection
         coupleNames={data.coupleNames}
-        templateName={data.templateName}
-        quizAnswers={data.quizAnswers}
+        weddingDate={data.weddingDate}
       />
     </div>
   );
