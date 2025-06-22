@@ -20,6 +20,7 @@ interface SiteData {
   quiz_answers: any;
   is_published: boolean;
   slug: string;
+  views_count?: number;
 }
 
 const Editor = () => {

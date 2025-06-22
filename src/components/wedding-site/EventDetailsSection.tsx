@@ -1,4 +1,3 @@
-
 import { Calendar, Clock, MapPin, Users, Camera, Music, Utensils } from "lucide-react";
 import { QuizAnswers } from "@/types/quiz";
 import { format } from 'date-fns';
@@ -8,26 +7,44 @@ interface EventDetailsSectionProps {
   weddingDate: string;
   templateName: string;
   quizAnswers: QuizAnswers;
+  customContent?: {
+    enabled?: boolean;
+    title?: string;
+    ceremony_time?: string;
+    ceremony_location?: string;
+    reception_time?: string;
+    dress_code?: {
+      title?: string;
+      description?: string;
+      suggestions?: string[];
+    };
+    special_notes?: string[];
+  };
 }
 
-const EventDetailsSection = ({ weddingDate, templateName, quizAnswers }: EventDetailsSectionProps) => {
+const EventDetailsSection = ({ weddingDate, templateName, quizAnswers, customContent }: EventDetailsSectionProps) => {
+  // Se a seção está desabilitada, não renderizar
+  if (customContent?.enabled === false) {
+    return null;
+  }
+
   const formattedDate = format(new Date(weddingDate), 'EEEE, dd \'de\' MMMM \'de\' yyyy', { locale: ptBR });
   const formattedTime = format(new Date(weddingDate), 'HH:mm', { locale: ptBR });
 
   const getEventDetails = (template: string, quiz: QuizAnswers) => {
     const baseDetails = {
       ceremony: {
-        time: "16:00",
+        time: customContent?.ceremony_time || "16:00",
         duration: "45 minutos",
-        location: quiz.local || "Local a ser confirmado"
+        location: customContent?.ceremony_location || quiz.local || "Local a ser confirmado"
       },
       reception: {
-        time: "17:00", 
+        time: customContent?.reception_time || "17:00", 
         duration: "Até 01:00",
         location: "Mesmo local da cerimônia"
       },
-      dressCode: getDressCode(template, quiz),
-      specialNotes: getSpecialNotes(template, quiz)
+      dressCode: customContent?.dress_code || getDressCode(template, quiz),
+      specialNotes: customContent?.special_notes || getSpecialNotes(template, quiz)
     };
 
     return baseDetails;
@@ -78,6 +95,7 @@ const EventDetailsSection = ({ weddingDate, templateName, quizAnswers }: EventDe
   };
 
   const eventDetails = getEventDetails(templateName, quizAnswers);
+  const sectionTitle = customContent?.title || "Informações Importantes";
 
   return (
     <section id="details" className="py-20 bg-gradient-to-br from-brown-50 to-gold-50">
@@ -89,7 +107,7 @@ const EventDetailsSection = ({ weddingDate, templateName, quizAnswers }: EventDe
           </div>
           
           <h2 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">
-            Informações Importantes
+            {sectionTitle}
           </h2>
           
           <p className="text-lg text-brown-600 max-w-2xl mx-auto">
