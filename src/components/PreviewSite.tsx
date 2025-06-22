@@ -1,5 +1,7 @@
 
+import { useEffect } from "react";
 import { PreviewData } from "@/types/quiz";
+import { useVisualTokens } from "@/contexts/VisualTokensContext";
 import WeddingSiteNavigation from "./wedding-site/WeddingSiteNavigation";
 import HeroSection from "./wedding-site/HeroSection";
 import OurStorySection from "./wedding-site/OurStorySection";
@@ -13,12 +15,18 @@ interface PreviewSiteProps {
 }
 
 const PreviewSite = ({ data }: PreviewSiteProps) => {
+  const { applyTokens } = useVisualTokens();
+
+  useEffect(() => {
+    if (data.quizAnswers) {
+      applyTokens(data.quizAnswers);
+    }
+  }, [data.quizAnswers, applyTokens]);
+
   return (
     <div className="min-h-screen bg-white">
-      {/* Navegação */}
       <WeddingSiteNavigation coupleNames={data.coupleNames} />
       
-      {/* Hero Section com mensagem IA destacada e personalização dinâmica */}
       <HeroSection
         coupleNames={data.coupleNames}
         weddingDate={data.weddingDate}
@@ -27,34 +35,29 @@ const PreviewSite = ({ data }: PreviewSiteProps) => {
         quizAnswers={data.quizAnswers}
       />
       
-      {/* Nossa História */}
       <OurStorySection
         coupleNames={data.coupleNames}
         templateName={data.templateName}
         quizAnswers={data.quizAnswers}
       />
       
-      {/* Detalhes do Evento */}
       <EventDetailsSection
         weddingDate={data.weddingDate}
         templateName={data.templateName}
         quizAnswers={data.quizAnswers}
       />
       
-      {/* Galeria */}
       <GallerySection 
         templateName={data.templateName}
         quizAnswers={data.quizAnswers}
       />
       
-      {/* RSVP */}
       <RSVPSection
         weddingDate={data.weddingDate}
         templateName={data.templateName}
         quizAnswers={data.quizAnswers}
       />
       
-      {/* Footer */}
       <FooterSection
         coupleNames={data.coupleNames}
         templateName={data.templateName}

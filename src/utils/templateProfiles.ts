@@ -1,5 +1,5 @@
-
 import { QuizAnswers } from "@/types/quiz";
+import { generateVisualTokens, applyVisualTokensToCSS, VisualTokens } from "./visualTokens";
 
 export interface TemplateProfile {
   id: string;
@@ -439,3 +439,6 @@ export const getProfileVisualTokens = (profile: TemplateProfile) => {
     decorations: profile.decorations
   };
 };
+
+// Re-export functions from visualTokens for backward compatibility
+export { generateVisualTokens, applyVisualTokensToCSS, type VisualTokens };
