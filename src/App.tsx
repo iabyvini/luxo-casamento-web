@@ -16,6 +16,7 @@ import Dashboard from "./pages/Dashboard";
 import PublicSite from "./pages/PublicSite";
 import NotFound from "./pages/NotFound";
 import EmailConfirmed from "./pages/EmailConfirmed";
+import ResetPassword from "./pages/ResetPassword";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/email-confirmed" element={<EmailConfirmed />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/site/:slug" element={<PublicSite />} />
               <Route path="/dashboard" element={
                 <ProtectedRoute>

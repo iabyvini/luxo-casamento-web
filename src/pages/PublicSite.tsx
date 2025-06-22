@@ -1,439 +1,316 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { Loader2 } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Heart, Calendar, MapPin, Gift, MessageCircle, Users, ArrowLeft } from 'lucide-react';
+import { CalendarDays, Clock, MapPin, Users, Mail, Phone, MessageSquare, CheckCircle, XCircle } from "lucide-react";
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-
-interface SiteData {
-  id: string;
-  couple_names: string;
-  wedding_date: string;
-  template_name: string;
-  ai_welcome_message: string;
-  custom_content: any;
-  quiz_answers: any;
-}
-
-interface RSVPForm {
-  guest_name: string;
-  guest_email: string;
-  guest_phone: string;
-  will_attend: boolean;
-  companion_count: number;
-  dietary_restrictions: string;
-  message: string;
-}
-
-interface MessageForm {
-  sender_name: string;
-  sender_email: string;
-  message: string;
-}
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/hooks/use-toast";
+import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const PublicSite = () => {
-  const { slug } = useParams<{ slug: string }>();
+  const { slug } = useParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const [siteData, setSiteData] = useState<SiteData | null>(null);
+  const [siteData, setSiteData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [rsvpForm, setRSVPForm] = useState<RSVPForm>({
-    guest_name: '',
-    guest_email: '',
-    guest_phone: '',
-    will_attend: true,
-    companion_count: 0,
-    dietary_restrictions: '',
-    message: ''
-  });
-  const [messageForm, setMessageForm] = useState<MessageForm>({
-    sender_name: '',
-    sender_email: '',
-    message: ''
-  });
+  const [error, setError] = useState<string | null>(null);
+  const [guestName, setGuestName] = useState("");
+  const [guestEmail, setGuestEmail] = useState("");
+  const [isAttending, setIsAttending] = useState<boolean>(true);
+  const [message, setMessage] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    if (slug) {
-      fetchSiteData();
-      incrementViewCount();
+    if (!slug) {
+      setError("Site não encontrado");
+      setLoading(false);
+      return;
     }
-  }, [slug]);
 
-  const fetchSiteData = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('wedding_sites')
-        .select('*')
-        .eq('slug', slug)
-        .eq('is_published', true)
-        .single();
+    const fetchSiteData = async () => {
+      try {
+        setLoading(true);
+        
+        // Increment view count
+        const { error: incrementError } = await supabase.rpc('increment_site_views', { 
+          site_slug: slug as string 
+        });
+        
+        if (incrementError) {
+          console.error('Error incrementing views:', incrementError);
+        }
 
-      if (error) {
-        if (error.code === 'PGRST116') {
-          toast({
-            title: "Site não encontrado",
-            description: "Este site não existe ou não está publicado.",
-            variant: "destructive",
-          });
-          navigate('/');
+        // Fetch site data
+        const { data, error } = await supabase
+          .from('wedding_sites')
+          .select('*')
+          .eq('slug', slug)
+          .eq('is_published', true)
+          .single();
+
+        if (error) {
+          throw error;
+        }
+
+        if (!data) {
+          setError("Site não encontrado ou não publicado");
           return;
         }
-        throw error;
+
+        setSiteData(data);
+      } catch (error: any) {
+        console.error('Error fetching site:', error);
+        setError("Erro ao carregar o site");
+      } finally {
+        setLoading(false);
       }
+    };
 
-      setSiteData(data);
-    } catch (error: any) {
-      console.error('Erro ao carregar site:', error);
-      toast({
-        title: "Erro ao carregar site",
-        description: "Não foi possível carregar o site de casamento.",
-        variant: "destructive",
-      });
-      navigate('/');
-    } finally {
-      setLoading(false);
-    }
-  };
+    fetchSiteData();
+  }, [slug]);
 
-  const incrementViewCount = async () => {
-    if (!slug) return;
-    
-    try {
-      const { error } = await supabase.rpc('increment_view_count', { 
-        site_slug: slug as string
-      });
-      if (error) console.error('Erro ao incrementar visualizações:', error);
-    } catch (error) {
-      console.error('Erro ao incrementar visualizações:', error);
-    }
-  };
+  const { toast } = useToast();
 
   const handleRSVPSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!siteData || !rsvpForm.guest_name) {
+
+    if (!guestName || !guestEmail) {
       toast({
-        title: "Campos obrigatórios",
-        description: "Por favor, preencha seu nome.",
+        title: "Preencha os campos",
+        description: "Por favor, preencha seu nome e email.",
         variant: "destructive",
       });
       return;
     }
 
-    try {
-      const { error } = await supabase
-        .from('rsvp_responses')
-        .insert({
-          site_id: siteData.id,
-          ...rsvpForm
-        });
+    setSubmitting(true);
 
-      if (error) throw error;
+    try {
+      const { data, error } = await supabase
+        .from('guests')
+        .insert([
+          {
+            site_id: siteData.id,
+            name: guestName,
+            email: guestEmail,
+            is_attending: isAttending,
+            message: message,
+          },
+        ]);
+
+      if (error) {
+        throw error;
+      }
 
       toast({
         title: "Confirmação enviada!",
-        description: "Obrigado por confirmar sua presença.",
+        description: "Agradecemos por confirmar sua presença.",
       });
 
-      // Limpar formulário
-      setRSVPForm({
-        guest_name: '',
-        guest_email: '',
-        guest_phone: '',
-        will_attend: true,
-        companion_count: 0,
-        dietary_restrictions: '',
-        message: ''
-      });
+      // Clear form fields
+      setGuestName("");
+      setGuestEmail("");
+      setIsAttending(true);
+      setMessage("");
     } catch (error: any) {
+      console.error('Error submitting RSVP:', error);
       toast({
-        title: "Erro ao enviar confirmação",
-        description: error.message,
+        title: "Erro ao confirmar",
+        description: "Ocorreu um erro ao enviar sua confirmação. Tente novamente.",
         variant: "destructive",
       });
-    }
-  };
-
-  const handleMessageSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!siteData || !messageForm.sender_name || !messageForm.message) {
-      toast({
-        title: "Campos obrigatórios",
-        description: "Por favor, preencha seu nome e mensagem.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    try {
-      const { error } = await supabase
-        .from('messages')
-        .insert({
-          site_id: siteData.id,
-          ...messageForm
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: "Mensagem enviada!",
-        description: "Sua mensagem foi enviada para os noivos.",
-      });
-
-      // Limpar formulário
-      setMessageForm({
-        sender_name: '',
-        sender_email: '',
-        message: ''
-      });
-    } catch (error: any) {
-      toast({
-        title: "Erro ao enviar mensagem",
-        description: error.message,
-        variant: "destructive",
-      });
+    } finally {
+      setSubmitting(false);
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rose-50 to-pink-50">
-        <div className="animate-pulse text-center">
-          <Heart className="h-12 w-12 text-rose-500 mx-auto mb-4 animate-bounce" />
-          <p className="text-lg text-gray-600">Carregando site do casamento...</p>
+      <div className="container mx-auto p-4">
+        <Skeleton className="w-[280px] h-[32px] rounded-md mb-4" />
+        <Skeleton className="w-[200px] h-[24px] rounded-md mb-2" />
+        <Skeleton className="w-[350px] h-[20px] rounded-md mb-1" />
+        <Skeleton className="w-[300px] h-[20px] rounded-md mb-4" />
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Skeleton className="w-[150px] h-[24px] rounded-md mb-2" />
+            <Skeleton className="w-full h-[150px] rounded-md mb-4" />
+          </div>
+          <div>
+            <Skeleton className="w-[150px] h-[24px] rounded-md mb-2" />
+            <Skeleton className="w-full h-[150px] rounded-md mb-4" />
+          </div>
         </div>
+
+        <Skeleton className="w-[200px] h-[24px] rounded-md mb-2" />
+        <Skeleton className="w-full h-[100px] rounded-md mb-4" />
+
+        <Skeleton className="w-[200px] h-[24px] rounded-md mb-2" />
+        <Skeleton className="w-full h-[40px] rounded-md mb-4" />
       </div>
     );
   }
 
-  if (!siteData) return null;
+  if (error) {
+    return (
+      <div className="container mx-auto p-4 text-center">
+        <h1 className="text-2xl font-bold text-red-500">{error}</h1>
+        <Button onClick={() => navigate('/')} className="mt-4">Voltar ao Início</Button>
+      </div>
+    );
+  }
 
-  const weddingDate = new Date(siteData.wedding_date);
+  if (!siteData) {
+    return (
+      <div className="container mx-auto p-4 text-center">
+        <h1 className="text-2xl font-bold text-gray-500">Site não encontrado</h1>
+        <Button onClick={() => navigate('/')} className="mt-4">Voltar ao Início</Button>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-50 to-pink-50">
-      {/* Header do Site */}
-      <header className="bg-white/80 backdrop-blur-sm shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/')}
-            className="text-rose-600 hover:text-rose-700"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar
-          </Button>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gradient-to-br from-rose-50 to-pink-50 py-12">
+      <div className="container mx-auto px-4">
+        {/* Header Section */}
+        <header className="text-center mb-8">
+          <h1 className="text-4xl font-bold text-rose-700 mb-2">{siteData.title}</h1>
+          <p className="text-gray-600">{siteData.description}</p>
+        </header>
 
-      <main className="container mx-auto px-4 py-8 space-y-12">
-        {/* Hero Section */}
-        <section className="text-center py-20">
-          <div className="max-w-4xl mx-auto">
-            <h1 className="text-5xl md:text-7xl font-bold text-gray-900 mb-6">
-              {siteData.couple_names}
-            </h1>
-            <div className="flex items-center justify-center gap-4 text-xl text-gray-600 mb-8">
-              <Calendar className="h-6 w-6 text-rose-500" />
-              <span>{format(weddingDate, "dd 'de' MMMM 'de' yyyy", { locale: ptBR })}</span>
+        {/* Event Details Section */}
+        <section className="bg-white/80 backdrop-blur-sm border border-rose-200 rounded-2xl p-6 shadow-lg mb-8">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Detalhes do Evento</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <div className="flex items-center text-gray-700 mb-2">
+                <CalendarDays className="h-5 w-5 mr-2 text-rose-500" />
+                <span>
+                  {format(new Date(siteData.event_date), 'EEEE, dd \'de\' MMMM \'de\' yyyy', { locale: ptBR })}
+                </span>
+              </div>
+              <div className="flex items-center text-gray-700 mb-2">
+                <Clock className="h-5 w-5 mr-2 text-rose-500" />
+                <span>{siteData.event_time}</span>
+              </div>
             </div>
-            <p className="text-xl text-gray-700 max-w-2xl mx-auto leading-relaxed">
-              {siteData.ai_welcome_message || "Venham celebrar conosco este momento especial!"}
-            </p>
+            <div>
+              <div className="flex items-center text-gray-700 mb-2">
+                <MapPin className="h-5 w-5 mr-2 text-rose-500" />
+                <span>{siteData.location}</span>
+              </div>
+              <div className="flex items-center text-gray-700 mb-2">
+                <Users className="h-5 w-5 mr-2 text-rose-500" />
+                <span>{siteData.dress_code}</span>
+              </div>
+            </div>
           </div>
         </section>
 
-        {/* Confirmação de Presença */}
-        <section id="rsvp" className="max-w-2xl mx-auto">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-2xl">
-                <Users className="h-6 w-6 text-rose-500" />
-                Confirmação de Presença
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleRSVPSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Nome Completo *</label>
-                    <Input
-                      value={rsvpForm.guest_name}
-                      onChange={(e) => setRSVPForm(prev => ({ ...prev, guest_name: e.target.value }))}
-                      placeholder="Seu nome completo"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">E-mail</label>
-                    <Input
-                      type="email"
-                      value={rsvpForm.guest_email}
-                      onChange={(e) => setRSVPForm(prev => ({ ...prev, guest_email: e.target.value }))}
-                      placeholder="seu@email.com"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Telefone</label>
-                    <Input
-                      value={rsvpForm.guest_phone}
-                      onChange={(e) => setRSVPForm(prev => ({ ...prev, guest_phone: e.target.value }))}
-                      placeholder="(11) 99999-9999"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Acompanhantes</label>
-                    <Input
-                      type="number"
-                      min="0"
-                      value={rsvpForm.companion_count}
-                      onChange={(e) => setRSVPForm(prev => ({ ...prev, companion_count: parseInt(e.target.value) || 0 }))}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">Você irá comparecer?</label>
-                  <div className="flex gap-4">
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        checked={rsvpForm.will_attend}
-                        onChange={() => setRSVPForm(prev => ({ ...prev, will_attend: true }))}
-                        className="mr-2"
-                      />
-                      Sim, estarei presente
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        checked={!rsvpForm.will_attend}
-                        onChange={() => setRSVPForm(prev => ({ ...prev, will_attend: false }))}
-                        className="mr-2"
-                      />
-                      Não poderei comparecer
-                    </label>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Restrições Alimentares</label>
-                  <Input
-                    value={rsvpForm.dietary_restrictions}
-                    onChange={(e) => setRSVPForm(prev => ({ ...prev, dietary_restrictions: e.target.value }))}
-                    placeholder="Vegetariano, alergia a frutos do mar, etc."
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Mensagem (opcional)</label>
-                  <Textarea
-                    value={rsvpForm.message}
-                    onChange={(e) => setRSVPForm(prev => ({ ...prev, message: e.target.value }))}
-                    placeholder="Deixe uma mensagem especial para os noivos..."
-                    rows={3}
-                  />
-                </div>
-
-                <Button type="submit" className="w-full bg-rose-500 hover:bg-rose-600">
-                  Confirmar Presença
+        {/* RSVP Section */}
+        <section className="bg-white/80 backdrop-blur-sm border border-rose-200 rounded-2xl p-6 shadow-lg mb-8">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Confirme sua Presença</h2>
+          <form onSubmit={handleRSVPSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="guestName" className="text-gray-800">Nome Completo</Label>
+              <Input
+                id="guestName"
+                type="text"
+                placeholder="Seu nome"
+                value={guestName}
+                onChange={(e) => setGuestName(e.target.value)}
+                className="border-rose-300 focus:border-rose-500"
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="guestEmail" className="text-gray-800">Email</Label>
+              <Input
+                id="guestEmail"
+                type="email"
+                placeholder="seu@email.com"
+                value={guestEmail}
+                onChange={(e) => setGuestEmail(e.target.value)}
+                className="border-rose-300 focus:border-rose-500"
+                required
+              />
+            </div>
+            <div>
+              <Label className="text-gray-800">Confirmação</Label>
+              <div className="flex items-center space-x-4">
+                <Button
+                  type="button"
+                  variant={isAttending ? "default" : "outline"}
+                  className={` ${isAttending
+                    ? "bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white"
+                    : "border-rose-300 text-rose-600 hover:bg-rose-50"
+                    }`}
+                  onClick={() => setIsAttending(true)}
+                >
+                  <CheckCircle className="h-4 w-4 mr-2" />
+                  Sim, estarei presente
                 </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* Recados para os Noivos */}
-        <section className="max-w-2xl mx-auto">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-2xl">
-                <MessageCircle className="h-6 w-6 text-rose-500" />
-                Recados para os Noivos
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleMessageSubmit} className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Seu Nome *</label>
-                    <Input
-                      value={messageForm.sender_name}
-                      onChange={(e) => setMessageForm(prev => ({ ...prev, sender_name: e.target.value }))}
-                      placeholder="Seu nome"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">E-mail</label>
-                    <Input
-                      type="email"
-                      value={messageForm.sender_email}
-                      onChange={(e) => setMessageForm(prev => ({ ...prev, sender_email: e.target.value }))}
-                      placeholder="seu@email.com"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1">Sua Mensagem *</label>
-                  <Textarea
-                    value={messageForm.message}
-                    onChange={(e) => setMessageForm(prev => ({ ...prev, message: e.target.value }))}
-                    placeholder="Deixe seus parabéns e desejos de felicidade..."
-                    rows={4}
-                    required
-                  />
-                </div>
-
-                <Button type="submit" className="w-full bg-rose-500 hover:bg-rose-600">
-                  Enviar Mensagem
+                <Button
+                  type="button"
+                  variant={!isAttending ? "default" : "outline"}
+                  className={`${!isAttending
+                    ? "bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white"
+                    : "border-rose-300 text-rose-600 hover:bg-rose-50"
+                    }`}
+                  onClick={() => setIsAttending(false)}
+                >
+                  <XCircle className="h-4 w-4 mr-2" />
+                  Não poderei comparecer
                 </Button>
-              </form>
-            </CardContent>
-          </Card>
-        </section>
-
-        {/* Lista de Presentes Placeholder */}
-        <section className="max-w-4xl mx-auto">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-2xl">
-                <Gift className="h-6 w-6 text-rose-500" />
-                Lista de Presentes
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8">
-                <Gift className="h-16 w-16 text-rose-300 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-800 mb-2">
-                  Lista de Presentes em Breve
-                </h3>
-                <p className="text-gray-600">
-                  Os noivos estão preparando uma lista especial de presentes. Em breve você poderá escolher um presente especial para eles!
-                </p>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+            <div>
+              <Label htmlFor="message" className="text-gray-800">Mensagem (Opcional)</Label>
+              <Textarea
+                id="message"
+                placeholder="Deixe uma mensagem para os noivos"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                className="border-rose-300 focus:border-rose-500 resize-none"
+              />
+            </div>
+            <Button
+              type="submit"
+              disabled={submitting}
+              className="w-full bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white"
+            >
+              {submitting ? 'Enviando...' : 'Confirmar Presença'}
+            </Button>
+          </form>
         </section>
 
-        {/* Footer */}
-        <footer className="text-center py-8 border-t border-rose-200">
-          <p className="text-gray-600">
-            Site criado com ❤️ por Casamento Luxo
-          </p>
-        </footer>
-      </main>
+        {/* Contact Section */}
+        <section className="bg-white/80 backdrop-blur-sm border border-rose-200 rounded-2xl p-6 shadow-lg">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Entre em Contato</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <div className="flex items-center text-gray-700 mb-2">
+                <Mail className="h-5 w-5 mr-2 text-rose-500" />
+                <a href={`mailto:${siteData.contact_email}`} className="hover:text-rose-600">
+                  {siteData.contact_email}
+                </a>
+              </div>
+            </div>
+            <div>
+              <div className="flex items-center text-gray-700 mb-2">
+                <Phone className="h-5 w-5 mr-2 text-rose-500" />
+                <span>{siteData.contact_phone}</span>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
     </div>
   );
 };

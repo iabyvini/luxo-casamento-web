@@ -6,13 +6,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Heart, ArrowLeft, Loader2 } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Auth = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { signIn, signUp } = useAuth();
+  const { toast } = useToast();
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
+  const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -47,6 +51,49 @@ const Auth = () => {
       console.error('Erro na autenticação:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!formData.email) {
+      toast({
+        title: "Email necessário",
+        description: "Por favor, digite seu email para recuperar a senha.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsResettingPassword(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(formData.email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) {
+        toast({
+          title: "Erro ao enviar email",
+          description: error.message,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Email enviado!",
+        description: "Verifique sua caixa de entrada para redefinir sua senha.",
+      });
+
+    } catch (error: any) {
+      console.error('Erro ao resetar senha:', error);
+      toast({
+        title: "Erro inesperado",
+        description: "Não foi possível enviar o email. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsResettingPassword(false);
     }
   };
 
@@ -172,6 +219,26 @@ const Auth = () => {
                 isLogin ? 'Entrar' : 'Criar Conta Gratuita'
               )}
             </Button>
+
+            {isLogin && (
+              <div className="text-center mt-4">
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  disabled={isResettingPassword}
+                  className="text-rose-600 hover:text-rose-700 hover:underline text-sm"
+                >
+                  {isResettingPassword ? (
+                    <>
+                      <Loader2 className="h-3 w-3 mr-1 animate-spin inline" />
+                      Enviando...
+                    </>
+                  ) : (
+                    'Esqueci minha senha'
+                  )}
+                </button>
+              </div>
+            )}
 
             <div className="text-center mt-4">
               <button
