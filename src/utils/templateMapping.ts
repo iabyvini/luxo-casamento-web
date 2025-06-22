@@ -1,4 +1,3 @@
-
 export interface TemplateStyle {
   name: string;
   colors: string[];
@@ -115,3 +114,5 @@ export const getTemplateColors = (template: string): string[] => {
   
   return colorMap[template] || colorMap['Elegance'];
 };
+
+export { findBestTemplateProfile, generateVisualTokens, applyVisualTokensToCSS } from './templateProfiles';

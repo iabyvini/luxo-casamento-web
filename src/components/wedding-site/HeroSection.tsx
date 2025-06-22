@@ -1,7 +1,8 @@
 
-import { Heart, Calendar, MapPin, Sparkles, Leaf, Waves, Church, Home } from "lucide-react";
-import { getDynamicTemplate } from "@/utils/templateMapping";
+import { Heart, Calendar, MapPin, Sparkles, Leaf, Waves, Church, Crown } from "lucide-react";
+import { findBestTemplateProfile, generateVisualTokens, applyVisualTokensToCSS } from "@/utils/templateProfiles";
 import { QuizAnswers } from "@/types/quiz";
+import { useEffect } from "react";
 
 interface HeroSectionProps {
   coupleNames: string;
@@ -12,14 +13,25 @@ interface HeroSectionProps {
 }
 
 const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, quizAnswers }: HeroSectionProps) => {
-  // Use o sistema dinâmico se tivermos as respostas do quiz
-  const dynamicTemplate = quizAnswers ? 
-    getDynamicTemplate(quizAnswers.estilo, quizAnswers.local, quizAnswers.cores) : 
-    null;
+  // Usar o novo sistema de template profiles se tivermos as respostas do quiz
+  const templateProfile = quizAnswers ? findBestTemplateProfile(quizAnswers) : null;
+  const visualTokens = templateProfile ? generateVisualTokens(templateProfile) : null;
 
-  const colors = dynamicTemplate ? dynamicTemplate.colors : ['#a67c52', '#d4af37', '#f5f5f5'];
-  const useShadows = dynamicTemplate ? dynamicTemplate.shadows : true;
-  const spacing = dynamicTemplate ? dynamicTemplate.spacing : 'normal';
+  // Aplicar os tokens visuais como CSS customizado
+  useEffect(() => {
+    if (visualTokens) {
+      const styleId = 'dynamic-visual-tokens';
+      let styleElement = document.getElementById(styleId) as HTMLStyleElement;
+      
+      if (!styleElement) {
+        styleElement = document.createElement('style');
+        styleElement.id = styleId;
+        document.head.appendChild(styleElement);
+      }
+      
+      styleElement.textContent = applyVisualTokensToCSS(visualTokens);
+    }
+  }, [visualTokens]);
 
   const formattedDate = new Date(weddingDate).toLocaleDateString('pt-BR', {
     day: 'numeric',
@@ -36,89 +48,118 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
     }
   };
 
-  const getStyleDecorations = (estilo?: string, local?: string) => {
-    if (estilo === 'Minimalista') {
-      return (
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-32 left-1/4 w-32 h-0.5 bg-white"></div>
-          <div className="absolute bottom-32 right-1/4 w-24 h-0.5 bg-white"></div>
-        </div>
-      );
-    }
+  const renderDynamicDecorations = () => {
+    if (!templateProfile?.decorations) return null;
 
-    if (estilo === 'Boho') {
-      return (
-        <div className="absolute inset-0 opacity-15">
-          <Leaf className="absolute top-20 left-16 h-12 w-12 text-white floating-animation" style={{ animationDelay: '0s' }} />
-          <Sparkles className="absolute top-40 right-20 h-8 w-8 text-white floating-animation" style={{ animationDelay: '2s' }} />
-          <Leaf className="absolute bottom-32 left-24 h-10 w-10 text-white floating-animation" style={{ animationDelay: '4s' }} />
-        </div>
-      );
-    }
-
-    if (estilo === 'Romântico') {
-      return (
-        <div className="absolute inset-0 opacity-20">
-          <Heart className="absolute top-20 left-16 h-10 w-10 text-pink-200 floating-animation" fill="currentColor" />
-          <Heart className="absolute top-40 right-20 h-6 w-6 text-pink-100 floating-animation" style={{ animationDelay: '2s' }} fill="currentColor" />
-          <Heart className="absolute bottom-32 left-24 h-8 w-8 text-pink-200 floating-animation" style={{ animationDelay: '4s' }} fill="currentColor" />
-        </div>
-      );
-    }
-
-    // Default decorations
     return (
-      <div className="absolute inset-0 opacity-15">
-        <Heart className="absolute top-20 left-16 h-8 w-8 text-white floating-animation" fill="currentColor" />
-        <Sparkles className="absolute top-40 right-20 h-6 w-6 text-white floating-animation" style={{ animationDelay: '2s' }} />
-        <Heart className="absolute bottom-32 left-24 h-7 w-7 text-white floating-animation" style={{ animationDelay: '4s' }} fill="currentColor" />
+      <div className="absolute inset-0 opacity-15 overflow-hidden">
+        {templateProfile.decorations.heroElements.map((element, index) => {
+          const IconComponent = getDecorationIcon(element);
+          if (!IconComponent) return null;
+
+          return (
+            <IconComponent
+              key={index}
+              className={`absolute h-8 w-8 text-white floating-animation`}
+              style={{
+                left: `${20 + (index * 30) % 60}%`,
+                top: `${20 + (index * 25) % 50}%`,
+                animationDelay: `${index * 2}s`
+              }}
+              fill={element.includes('heart') || element.includes('star') ? "currentColor" : "none"}
+            />
+          );
+        })}
       </div>
     );
   };
 
-  const getSpacingClass = () => {
-    switch (spacing) {
-      case 'tight': return 'py-16';
-      case 'loose': return 'py-32';
-      default: return 'py-20';
-    }
+  const getDecorationIcon = (element: string) => {
+    const iconMap: Record<string, any> = {
+      'hearts': Heart,
+      'roses': Heart,
+      'butterflies': Sparkles,
+      'leaves': Leaf,
+      'feathers': Leaf,
+      'waves': Waves,
+      'stars': Sparkles,
+      'crowns': Crown,
+      'ornate-borders': Crown,
+      'geometric-lines': Sparkles
+    };
+
+    return iconMap[element] || Heart;
   };
 
-  const getMessageStyling = (estilo?: string) => {
-    if (estilo === 'Minimalista') {
-      return "bg-white/10 backdrop-blur-sm rounded-lg p-6 border border-white/20";
+  const getBackgroundStyle = () => {
+    if (visualTokens) {
+      return {
+        background: visualTokens.colors.background,
+        backgroundImage: visualTokens.colors.textureOverlay
+      };
     }
-    if (estilo === 'Boho') {
-      return "bg-white/20 backdrop-blur-sm rounded-3xl p-8 border-2 border-white/30 relative overflow-hidden";
+    
+    // Fallback para sistema antigo
+    const colors = ['#a67c52', '#d4af37', '#f5f5f5'];
+    return {
+      background: `linear-gradient(135deg, ${colors[0]} 0%, ${colors[1]} 50%, ${colors[2]} 100%)`
+    };
+  };
+
+  const getTypographyStyle = () => {
+    if (visualTokens) {
+      return {
+        fontFamily: visualTokens.typography.fontFamilies.heading,
+        fontWeight: visualTokens.typography.weights.heading
+      };
     }
-    if (estilo === 'Romântico') {
-      return "bg-white/25 backdrop-blur-sm rounded-2xl p-8 border border-pink-200/30 shadow-2xl";
+    return {};
+  };
+
+  const getSpacingClass = () => {
+    if (templateProfile?.layout.spacing === 'tight') return 'py-16';
+    if (templateProfile?.layout.spacing === 'loose') return 'py-32';
+    return 'py-20';
+  };
+
+  const getMessageStyling = () => {
+    const baseClass = "backdrop-blur-sm p-8 border";
+    
+    if (templateProfile?.layout.borderRadius === 'organic') {
+      return `${baseClass} bg-white/25 rounded-3xl border-white/30 shadow-2xl`;
     }
-    return "bg-white/20 backdrop-blur-sm rounded-2xl p-8 border border-white/30";
+    if (templateProfile?.layout.borderRadius === 'sharp') {
+      return `${baseClass} bg-white/10 border-white/20`;
+    }
+    return `${baseClass} bg-white/20 rounded-2xl border-white/30`;
   };
 
   return (
-    <section id="home" className={`relative min-h-screen flex items-center justify-center ${getSpacingClass()} overflow-hidden`}>
-      {/* Background with dynamic colors */}
+    <section 
+      id="home" 
+      className={`relative min-h-screen flex items-center justify-center ${getSpacingClass()} overflow-hidden`}
+    >
+      {/* Background dinâmico com tokens visuais */}
       <div 
         className="absolute inset-0"
-        style={{ 
-          background: `linear-gradient(135deg, ${colors[0]} 0%, ${colors[1]} 50%, ${colors[2]} 100%)` 
-        }}
+        style={getBackgroundStyle()}
       />
       
-      {/* Dynamic decorations based on style */}
-      {getStyleDecorations(quizAnswers?.estilo, quizAnswers?.local)}
+      {/* Decorações dinâmicas baseadas no template profile */}
+      {renderDynamicDecorations()}
       
       {/* Content */}
       <div className="relative z-10 text-center text-white max-w-4xl mx-auto px-4">
-        {/* Couple Names */}
-        <div className={spacing === 'loose' ? 'mb-12' : 'mb-8'}>
+        {/* Couple Names com tipografia dinâmica */}
+        <div className={templateProfile?.layout.spacing === 'loose' ? 'mb-12' : 'mb-8'}>
           <div className="inline-flex items-center space-x-4 mb-4">
             <Heart className="h-12 w-12 animate-pulse" fill="currentColor" />
-            <h1 className={`font-bold tracking-tight ${
-              spacing === 'loose' ? 'text-4xl md:text-6xl' : 'text-5xl md:text-7xl'
-            }`}>
+            <h1 
+              className={`font-bold tracking-tight ${
+                templateProfile?.layout.spacing === 'loose' ? 'text-4xl md:text-6xl' : 'text-5xl md:text-7xl'
+              }`}
+              style={getTypographyStyle()}
+            >
               {coupleNames}
             </h1>
             <Heart className="h-12 w-12 animate-pulse" fill="currentColor" />
@@ -127,7 +168,7 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
           <div className="flex items-center justify-center space-x-3 mb-8">
             <Calendar className="h-6 w-6" />
             <span className={`font-light ${
-              spacing === 'loose' ? 'text-xl md:text-2xl' : 'text-2xl md:text-3xl'
+              templateProfile?.layout.spacing === 'loose' ? 'text-xl md:text-2xl' : 'text-2xl md:text-3xl'
             }`}>
               {formattedDate}
             </span>
@@ -135,22 +176,31 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
         </div>
 
         {/* AI Generated Welcome Message - Estilizada dinamicamente */}
-        <div className={`${getMessageStyling(quizAnswers?.estilo)} ${spacing === 'loose' ? 'mb-16' : 'mb-12'}`}>
+        <div className={`${getMessageStyling()} ${templateProfile?.layout.spacing === 'loose' ? 'mb-16' : 'mb-12'}`}>
           <div className="flex items-center justify-center mb-4">
             <Sparkles className="h-6 w-6 text-white/80 mr-2" fill="currentColor" />
             <span className="text-sm font-medium text-white/80 uppercase tracking-wider">
-              {quizAnswers?.estilo === 'Minimalista' ? 'Nossa Mensagem' : 'Mensagem Especial'}
+              {templateProfile?.emotions.toneAdjectives[0] ? 
+                `Mensagem ${templateProfile.emotions.toneAdjectives[0]}` : 
+                'Mensagem Especial'
+              }
             </span>
             <Sparkles className="h-6 w-6 text-white/80 ml-2" fill="currentColor" />
           </div>
           
-          <p className={`font-light leading-relaxed text-white animate-fade-in ${
-            quizAnswers?.estilo === 'Minimalista' ? 'text-lg md:text-xl' : 'text-xl md:text-2xl'
-          }`}>
+          <p 
+            className={`font-light leading-relaxed text-white animate-fade-in ${
+              templateProfile?.layout.spacing === 'loose' ? 'text-lg md:text-xl' : 'text-xl md:text-2xl'
+            }`}
+            style={{ 
+              fontFamily: visualTokens?.typography.fontFamilies.body || 'Inter',
+              fontWeight: visualTokens?.typography.weights.body || 400
+            }}
+          >
             {welcomeMessage}
           </p>
           
-          {quizAnswers?.estilo !== 'Minimalista' && (
+          {templateProfile?.mood.romantic >= 7 && (
             <div className="flex items-center justify-center mt-4 space-x-2">
               <Heart className="h-4 w-4 text-pink-200" fill="currentColor" />
               <Heart className="h-5 w-5 text-pink-100" fill="currentColor" />
@@ -159,7 +209,7 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
           )}
         </div>
 
-        {/* Location hint with dynamic icon */}
+        {/* Location hint com ícone dinâmico */}
         <div className="flex items-center justify-center space-x-2 text-white/90">
           {getLocationIcon(quizAnswers?.local)}
           <span className="text-lg">
@@ -171,8 +221,8 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
         </div>
       </div>
 
-      {/* Scroll indicator - conditional based on style */}
-      {quizAnswers?.estilo !== 'Minimalista' && (
+      {/* Scroll indicator - condicional baseado no estilo */}
+      {templateProfile?.mood.modern < 8 && (
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white/70 animate-bounce">
           <div className="flex flex-col items-center">
             <span className="text-sm mb-2">Role para ver mais</span>
