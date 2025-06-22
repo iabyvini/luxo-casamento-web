@@ -14,7 +14,7 @@ interface HeroSectionProps {
 }
 
 const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, quizAnswers }: HeroSectionProps) => {
-  const { visualTokens } = useVisualTokens();
+  const { visualTokens, isCustomThemeActive } = useVisualTokens();
   const [couplePhoto, setCouplePhoto] = useState<string | null>(null);
 
   const formattedDate = new Date(weddingDate).toLocaleDateString('pt-BR', {
@@ -45,27 +45,24 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
     }
   };
 
-  const renderDynamicDecorations = () => {
+  // Sistema de limite absoluto: apenas 1 elemento decorativo por seção
+  const renderSingleDecorative = () => {
     if (!visualTokens?.decorations) return null;
 
-    return (
-      <div className="absolute inset-0 opacity-10 overflow-hidden">
-        {visualTokens.decorations.heroElements.slice(0, 2).map((element, index) => {
-          const IconComponent = getDecorationIcon(element);
-          if (!IconComponent) return null;
+    // Escolher apenas 1 elemento baseado no template
+    const element = visualTokens.decorations.heroElements[0];
+    if (!element) return null;
 
-          return (
-            <IconComponent
-              key={index}
-              className="absolute h-8 w-8 text-white"
-              style={{
-                left: `${20 + (index * 60)}%`,
-                top: `${30 + (index * 40)}%`,
-              }}
-              fill={element.includes('heart') || element.includes('star') ? "currentColor" : "none"}
-            />
-          );
-        })}
+    const IconComponent = getDecorationIcon(element);
+    if (!IconComponent) return null;
+
+    return (
+      <div className="absolute top-32 right-24 opacity-[0.08]">
+        <IconComponent
+          className="h-8 w-8"
+          style={{ color: visualTokens.colors.primary }}
+          fill={element.includes('heart') || element.includes('star') ? "currentColor" : "none"}
+        />
       </div>
     );
   };
@@ -88,15 +85,16 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
   };
 
   const getBackgroundStyle = () => {
-    if (visualTokens) {
+    if (visualTokens && isCustomThemeActive) {
       return {
         background: visualTokens.colors.background,
         backgroundImage: visualTokens.colors.textureOverlay
       };
     }
     
+    // Fallback para quando não há tokens ativos
     return {
-      background: 'linear-gradient(135deg, #a67c52 0%, #d4af37 50%, #f5f5f5 100%)'
+      background: 'linear-gradient(135deg, #f8f6f3 0%, #f1ede7 50%, #e8ddd4 100%)'
     };
   };
 
@@ -110,59 +108,93 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
     return {};
   };
 
+  // Determinar se usar cores personalizadas ou padrão
+  const getTextColor = (type: 'primary' | 'secondary') => {
+    if (isCustomThemeActive && visualTokens) {
+      return type === 'primary' ? visualTokens.colors.primary : visualTokens.colors.secondary;
+    }
+    return type === 'primary' ? '#3C2B20' : '#5D4037';
+  };
+
   return (
     <section id="home" className="relative min-h-screen flex items-center justify-center py-20 overflow-hidden">
-      {/* Background dinâmico */}
+      {/* Background dinâmico ou padrão */}
       <div 
-        className="absolute inset-0"
+        className={`absolute inset-0 ${isCustomThemeActive ? 'section-bg-dynamic' : ''}`}
         style={getBackgroundStyle()}
       />
       
-      {/* Decorações sutis */}
-      {renderDynamicDecorations()}
+      {/* Sistema de limite absoluto: apenas 1 decoração por seção */}
+      {renderSingleDecorative()}
       
       {/* Content */}
-      <div className="relative z-10 text-center text-white max-w-6xl mx-auto px-4">
+      <div className="relative z-10 text-center max-w-6xl mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           
           {/* Left Column - Text Content */}
           <div className="lg:text-left">
-            {/* Couple Names */}
+            {/* Couple Names - tipografia com contraste fixo */}
             <div className="mb-8">
               <div className="inline-flex items-center space-x-4 mb-4">
-                <Heart className="h-12 w-12" fill="currentColor" />
+                <Heart 
+                  className="h-12 w-12" 
+                  fill="currentColor" 
+                  style={{ color: getTextColor('primary') }}
+                />
                 <h1 
                   className="text-5xl md:text-6xl font-bold tracking-tight"
-                  style={getTypographyStyle()}
+                  style={{
+                    ...getTypographyStyle(),
+                    color: getTextColor('primary')
+                  }}
                 >
                   {coupleNames}
                 </h1>
-                <Heart className="h-12 w-12" fill="currentColor" />
+                <Heart 
+                  className="h-12 w-12" 
+                  fill="currentColor" 
+                  style={{ color: getTextColor('primary') }}
+                />
               </div>
               
               <div className="flex items-center justify-center lg:justify-start space-x-3 mb-8">
-                <Calendar className="h-6 w-6" />
-                <span className="text-2xl md:text-3xl font-light">
+                <Calendar className="h-6 w-6" style={{ color: getTextColor('secondary') }} />
+                <span 
+                  className="text-2xl md:text-3xl font-light"
+                  style={{ color: getTextColor('secondary') }}
+                >
                   {formattedDate}
                 </span>
               </div>
             </div>
 
             {/* AI Generated Welcome Message */}
-            <div className="bg-white/20 backdrop-blur-sm p-8 rounded-2xl border border-white/30 mb-12">
+            <div className="bg-white/90 backdrop-blur-md p-8 rounded-2xl border border-white/50 mb-12 luxury-shadow">
               <div className="flex items-center justify-center mb-4">
-                <Sparkles className="h-6 w-6 text-white/80 mr-2" fill="currentColor" />
-                <span className="text-sm font-medium text-white/80 uppercase tracking-wider">
+                <Sparkles 
+                  className="h-6 w-6 mr-2" 
+                  fill="currentColor" 
+                  style={{ color: getTextColor('secondary') }}
+                />
+                <span 
+                  className="text-sm font-medium uppercase tracking-wider"
+                  style={{ color: getTextColor('secondary') }}
+                >
                   Mensagem Especial
                 </span>
-                <Sparkles className="h-6 w-6 text-white/80 ml-2" fill="currentColor" />
+                <Sparkles 
+                  className="h-6 w-6 ml-2" 
+                  fill="currentColor" 
+                  style={{ color: getTextColor('secondary') }}
+                />
               </div>
               
               <p 
-                className="text-xl md:text-2xl font-light leading-relaxed text-white"
+                className="text-xl md:text-2xl font-light leading-relaxed"
                 style={{ 
                   fontFamily: visualTokens?.typography.fontFamilies.body || 'Inter',
-                  fontWeight: visualTokens?.typography.weights.body || 400
+                  fontWeight: visualTokens?.typography.weights.body || 400,
+                  color: getTextColor('primary')
                 }}
               >
                 {welcomeMessage}
@@ -170,9 +202,16 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
             </div>
 
             {/* Location hint */}
-            <div className="flex items-center justify-center lg:justify-start space-x-2 text-white/90">
-              {getLocationIcon(quizAnswers?.local)}
-              <span className="text-lg">
+            <div className="flex items-center justify-center lg:justify-start space-x-2">
+              <div style={{ color: getTextColor('secondary') }}>
+                {getLocationIcon(quizAnsw
+
+  .local)}
+              </div>
+              <span 
+                className="text-lg"
+                style={{ color: getTextColor('secondary') }}
+              >
                 {quizAnswers?.local === 'Praia' ? 'Celebre conosco à beira-mar' :
                  quizAnswers?.local === 'Fazenda' ? 'Celebre conosco em meio à natureza' :
                  quizAnswers?.local === 'Igreja' ? 'Celebre conosco esta união sagrada' :
@@ -193,11 +232,22 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
       </div>
 
       {/* Scroll indicator */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 text-white/70 animate-bounce">
+      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
         <div className="flex flex-col items-center">
-          <span className="text-sm mb-2">Role para ver mais</span>
-          <div className="w-6 h-10 border-2 border-white/50 rounded-full flex justify-center">
-            <div className="w-1 h-3 bg-white/70 rounded-full mt-2 animate-pulse"></div>
+          <span 
+            className="text-sm mb-2"
+            style={{ color: getTextColor('secondary') }}
+          >
+            Role para ver mais
+          </span>
+          <div 
+            className="w-6 h-10 border-2 rounded-full flex justify-center"
+            style={{ borderColor: getTextColor('secondary') }}
+          >
+            <div 
+              className="w-1 h-3 rounded-full mt-2 animate-pulse"
+              style={{ backgroundColor: getTextColor('secondary') }}
+            ></div>
           </div>
         </div>
       </div>

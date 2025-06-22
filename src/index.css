@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Dancing+Script:wght@400;500;600;700&family=Cormorant+Garamond:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 @tailwind base;
@@ -97,7 +98,7 @@
   }
 }
 
-/* Enhanced luxury styles with premium typography */
+/* Enhanced luxury styles with premium typography - ONLY for institutional pages */
 .gradient-text {
   background: linear-gradient(135deg, #a67c52 0%, #d4af37 50%, #f4e4bc 100%);
   -webkit-background-clip: text;
@@ -114,50 +115,18 @@
 }
 
 .luxury-card {
-  @apply bg-white/90 backdrop-blur-md border border-brown-100/50 luxury-shadow rounded-2xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.02];
+  @apply bg-white/95 backdrop-blur-md border border-brown-100/50 luxury-shadow rounded-2xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.02];
 }
 
-.floating-animation {
-  animation: float 6s ease-in-out infinite;
-}
+/* REMOVED: All floating animations from institutional pages */
+/* floating-animation, romantic-float, boho-float classes removed */
 
 .premium-glow {
   box-shadow: 0 0 30px rgba(212, 175, 55, 0.3), 0 0 60px rgba(212, 175, 55, 0.1);
 }
 
-.romantic-float {
-  animation: romanticFloat 8s ease-in-out infinite;
-}
-
 .elegant-entrance {
   animation: elegantEntrance 1.2s ease-out;
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px) rotate(0deg);
-  }
-  33% {
-    transform: translateY(-8px) rotate(2deg);
-  }
-  66% {
-    transform: translateY(-4px) rotate(-1deg);
-  }
-}
-
-@keyframes romanticFloat {
-  0%, 100% {
-    transform: translateY(0px) scale(1) rotate(0deg);
-  }
-  25% {
-    transform: translateY(-6px) scale(1.05) rotate(1deg);
-  }
-  50% {
-    transform: translateY(-10px) scale(1.1) rotate(-1deg);
-  }
-  75% {
-    transform: translateY(-4px) scale(1.02) rotate(0.5deg);
-  }
 }
 
 @keyframes elegantEntrance {
@@ -216,7 +185,7 @@ html {
   font-family: 'Inter', sans-serif;
 }
 
-/* Template-specific animations */
+/* Minimal template-specific animations - only fade-in allowed */
 .fade-in-minimal {
   animation: fadeInMinimal 1s ease-out;
 }
@@ -232,23 +201,7 @@ html {
   }
 }
 
-.boho-float {
-  animation: bohoFloat 8s ease-in-out infinite;
-}
-
-@keyframes bohoFloat {
-  0%, 100% {
-    transform: translateY(0px) rotate(0deg);
-  }
-  33% {
-    transform: translateY(-8px) rotate(2deg);
-  }
-  66% {
-    transform: translateY(-4px) rotate(-1deg);
-  }
-}
-
-/* Premium button enhancements */
+/* Premium button enhancements - ONLY for institutional pages */
 .btn-premium {
   @apply relative overflow-hidden bg-gradient-luxury text-white font-semibold px-8 py-4 rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-2xl;
 }
@@ -285,28 +238,8 @@ html {
   transition: opacity 0.3s ease;
 }
 
-/* Decorative elements */
-.decorative-heart {
-  @apply text-pink-300 animate-pulse;
-  filter: drop-shadow(0 0 8px rgba(219, 39, 119, 0.3));
-}
-
-.decorative-sparkle {
-  @apply text-yellow-300;
-  filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.4));
-  animation: sparkle 2s ease-in-out infinite;
-}
-
-@keyframes sparkle {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.7;
-    transform: scale(1.1);
-  }
-}
+/* REMOVED: All decorative heart and sparkle animations */
+/* decorative-heart, decorative-sparkle, sparkle animation removed */
 
 /* Responsive utilities */
 @media (max-width: 768px) {
@@ -317,4 +250,51 @@ html {
   .btn-premium {
     @apply px-6 py-3 text-base;
   }
+}
+
+/* SISTEMA DE LIMITE ABSOLUTO - máximo 1 elemento decorativo por seção */
+.section-decoration-limit {
+  position: relative;
+}
+
+.section-decoration-limit::before {
+  content: '';
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  width: 2rem;
+  height: 2rem;
+  opacity: 0.08;
+  pointer-events: none;
+}
+
+/* Sistema condicional para desativar dourado quando tema customizado está ativo */
+.custom-theme-active .bg-gradient-luxury {
+  background: var(--primary-color) !important;
+}
+
+.custom-theme-active .gradient-text {
+  background: var(--primary-color) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+}
+
+.custom-theme-active .luxury-shadow {
+  box-shadow: 0 25px 50px -12px var(--primary-color)15, 0 10px 20px -5px var(--primary-color)08 !important;
+}
+
+/* Background layer tokens para templates personalizados */
+.section-bg-dynamic {
+  background: var(--background-gradient);
+  position: relative;
+}
+
+.section-bg-dynamic::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: var(--texture-overlay);
+  opacity: 0.05;
+  pointer-events: none;
 }

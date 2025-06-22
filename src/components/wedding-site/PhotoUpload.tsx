@@ -2,6 +2,7 @@
 import React, { useState, useRef } from 'react';
 import { Camera, Upload, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useVisualTokens } from '@/contexts/VisualTokensContext';
 
 interface PhotoUploadProps {
   onPhotoChange: (photoUrl: string | null) => void;
@@ -17,6 +18,7 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { visualTokens, isCustomThemeActive } = useVisualTokens();
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -42,37 +44,75 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
   };
 
   const getFrameClasses = () => {
+    // Use visual tokens when available for truly contextual frames
+    const primaryColor = visualTokens?.colors.primary || '#a67c52';
+    const secondaryColor = visualTokens?.colors.secondary || '#d4af37';
+    
     switch (frameStyle) {
       case 'floral':
-        return 'rounded-3xl border-4 border-pink-200 shadow-lg bg-gradient-to-br from-pink-50 to-rose-100';
+        return {
+          container: 'rounded-3xl shadow-2xl bg-gradient-to-br from-white to-pink-50',
+          border: `border-8 border-opacity-30`,
+          borderColor: isCustomThemeActive ? primaryColor : '#f8bbd9',
+          shadow: `shadow-[0_20px_40px_-12px_${primaryColor}30]`
+        };
       case 'vintage':
-        return 'rounded-lg border-8 border-amber-600 shadow-2xl bg-gradient-to-br from-amber-50 to-yellow-100';
+        return {
+          container: 'rounded-lg shadow-2xl bg-gradient-to-br from-amber-50 to-yellow-100',
+          border: 'border-8 border-opacity-50',
+          borderColor: isCustomThemeActive ? primaryColor : '#d97706',
+          shadow: `shadow-[0_25px_50px_-12px_${primaryColor}25]`
+        };
       case 'modern':
-        return 'rounded-none border-2 border-gray-900 shadow-xl bg-white';
+        return {
+          container: 'rounded-none shadow-xl bg-white',
+          border: 'border-4 border-opacity-90',
+          borderColor: isCustomThemeActive ? primaryColor : '#374151',
+          shadow: `shadow-[0_20px_25px_-5px_${primaryColor}20]`
+        };
       case 'geometric':
-        return 'clip-path-hexagon border-4 border-blue-500 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-100';
+        return {
+          container: 'rounded-lg shadow-xl bg-gradient-to-br from-blue-50 to-indigo-100',
+          border: 'border-6 border-opacity-60',
+          borderColor: isCustomThemeActive ? primaryColor : '#3b82f6',
+          shadow: `shadow-[0_20px_40px_-10px_${primaryColor}30]`
+        };
       case 'organic':
-        return 'rounded-full border-6 border-green-400 shadow-lg bg-gradient-to-br from-green-50 to-emerald-100';
+        return {
+          container: 'rounded-full shadow-xl bg-gradient-to-br from-green-50 to-emerald-100',
+          border: 'border-8 border-opacity-40',
+          borderColor: isCustomThemeActive ? primaryColor : '#10b981',
+          shadow: `shadow-[0_25px_45px_-10px_${primaryColor}25]`
+        };
       default:
-        return 'rounded-2xl border-4 border-brown-300 shadow-lg bg-gradient-to-br from-brown-50 to-amber-100';
+        return {
+          container: 'rounded-2xl shadow-lg bg-gradient-to-br from-brown-50 to-amber-100',
+          border: 'border-4 border-opacity-50',
+          borderColor: isCustomThemeActive ? primaryColor : '#a67c52',
+          shadow: `shadow-[0_15px_35px_-8px_${primaryColor}20]`
+        };
     }
   };
 
   const getFallbackContent = () => {
+    const frameConfig = getFrameClasses();
+    
     if (fallbackIllustration) {
       return (
-        <div className="w-full h-full bg-gradient-to-br from-pink-100 to-amber-100 flex items-center justify-center text-brown-600">
+        <div className="w-full h-full flex items-center justify-center text-current">
           <div className="text-center">
             <div className="text-6xl mb-4 opacity-30">💕</div>
-            <p className="text-sm font-light">Sua foto aqui</p>
+            <p className="text-sm font-light" style={{ color: frameConfig.borderColor }}>
+              Sua foto aqui
+            </p>
           </div>
         </div>
       );
     }
     
     return (
-      <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-gray-500">
-        <div className="text-center">
+      <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+        <div className="text-center" style={{ color: frameConfig.borderColor }}>
           <Camera className="h-12 w-12 mx-auto mb-4 opacity-50" />
           <p className="text-sm">Clique para adicionar sua foto</p>
         </div>
@@ -80,9 +120,17 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
     );
   };
 
+  const frameConfig = getFrameClasses();
+
   return (
     <div className="relative">
-      <div className={`w-48 h-48 md:w-64 md:h-64 overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 ${getFrameClasses()}`}>
+      <div 
+        className={`w-48 h-48 md:w-64 md:h-64 overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 ${frameConfig.container} ${frameConfig.border}`}
+        style={{ 
+          borderColor: frameConfig.borderColor,
+          boxShadow: frameConfig.shadow
+        }}
+      >
         {photoUrl ? (
           <div className="relative w-full h-full">
             <img 
@@ -120,7 +168,11 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
       {!photoUrl && (
         <Button
           onClick={() => fileInputRef.current?.click()}
-          className="mt-4 w-full bg-gradient-luxury hover:opacity-90"
+          className="mt-4 w-full transition-all duration-300 hover:scale-105"
+          style={{ 
+            background: isCustomThemeActive ? visualTokens?.colors.primary : undefined,
+            color: 'white'
+          }}
           disabled={isUploading}
         >
           <Upload className="h-4 w-4 mr-2" />
