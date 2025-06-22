@@ -18,7 +18,10 @@ const mockData: Record<string, PreviewData> = {
       personalidade: "elegante",
       local: "Igreja",
       convidados: "50-100",
-      tema: "tradicional"
+      tema: "tradicional",
+      tom: "Elegante e formal",
+      data_casamento: "2024-12-25",
+      nomes: "Ana & João"
     }
   },
   moderno: {
@@ -32,7 +35,10 @@ const mockData: Record<string, PreviewData> = {
       personalidade: "minimalista",
       local: "Espaço de Eventos",
       convidados: "100-200",
-      tema: "contemporâneo"
+      tema: "contemporâneo",
+      tom: "Moderno e sofisticado",
+      data_casamento: "2024-11-30",
+      nomes: "Camila & Daniel"
     }
   },
   boho: {
@@ -46,7 +52,10 @@ const mockData: Record<string, PreviewData> = {
       personalidade: "livre",
       local: "Ao Ar Livre",
       convidados: "30-80",
-      tema: "natural"
+      tema: "natural",
+      tom: "Descontraído e natural",
+      data_casamento: "2024-10-15",
+      nomes: "Flora & Vinícius"
     }
   },
   vintage: {
@@ -60,7 +69,10 @@ const mockData: Record<string, PreviewData> = {
       personalidade: "romântico",
       local: "Salão Clássico",
       convidados: "80-150",
-      tema: "retrô"
+      tema: "retrô",
+      tom: "Romântico e nostálgico",
+      data_casamento: "2024-09-20",
+      nomes: "Isabella & Ricardo"
     }
   }
 };
