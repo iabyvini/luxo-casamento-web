@@ -9,107 +9,7 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      daily_reports: {
-        Row: {
-          contatos_falados: number
-          created_at: string
-          data_registro: string
-          id: string
-          ligacoes_realizadas: number
-          reunioes_agendadas: number
-          reunioes_realizadas: number
-          updated_at: string
-          vendedor: string
-        }
-        Insert: {
-          contatos_falados?: number
-          created_at?: string
-          data_registro: string
-          id?: string
-          ligacoes_realizadas?: number
-          reunioes_agendadas?: number
-          reunioes_realizadas?: number
-          updated_at?: string
-          vendedor: string
-        }
-        Update: {
-          contatos_falados?: number
-          created_at?: string
-          data_registro?: string
-          id?: string
-          ligacoes_realizadas?: number
-          reunioes_agendadas?: number
-          reunioes_realizadas?: number
-          updated_at?: string
-          vendedor?: string
-        }
-        Relationships: []
-      }
-      meeting_details: {
-        Row: {
-          created_at: string
-          data_agendamento: string
-          horario_agendamento: string
-          id: string
-          nome_lead: string
-          report_id: string | null
-          status: string
-          vendedor_responsavel: string | null
-        }
-        Insert: {
-          created_at?: string
-          data_agendamento: string
-          horario_agendamento: string
-          id?: string
-          nome_lead: string
-          report_id?: string | null
-          status: string
-          vendedor_responsavel?: string | null
-        }
-        Update: {
-          created_at?: string
-          data_agendamento?: string
-          horario_agendamento?: string
-          id?: string
-          nome_lead?: string
-          report_id?: string | null
-          status?: string
-          vendedor_responsavel?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "meeting_details_report_id_fkey"
-            columns: ["report_id"]
-            isOneToOne: false
-            referencedRelation: "daily_reports"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      profiles: {
-        Row: {
-          access_level: Database["public"]["Enums"]["access_level"]
-          created_at: string | null
-          email: string | null
-          id: string
-          is_admin: boolean | null
-        }
-        Insert: {
-          access_level?: Database["public"]["Enums"]["access_level"]
-          created_at?: string | null
-          email?: string | null
-          id: string
-          is_admin?: boolean | null
-        }
-        Update: {
-          access_level?: Database["public"]["Enums"]["access_level"]
-          created_at?: string | null
-          email?: string | null
-          id?: string
-          is_admin?: boolean | null
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Views: {
       [_ in never]: never
@@ -118,7 +18,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      access_level: "user" | "admin" | "ai"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -233,8 +133,6 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {
-      access_level: ["user", "admin", "ai"],
-    },
+    Enums: {},
   },
 } as const
