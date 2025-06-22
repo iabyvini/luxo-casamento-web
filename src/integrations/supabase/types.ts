@@ -9,6 +9,97 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      gallery_photos: {
+        Row: {
+          caption: string | null
+          category: string | null
+          created_at: string
+          display_order: number | null
+          id: string
+          photo_url: string
+          site_id: string
+        }
+        Insert: {
+          caption?: string | null
+          category?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          photo_url: string
+          site_id: string
+        }
+        Update: {
+          caption?: string | null
+          category?: string | null
+          created_at?: string
+          display_order?: number | null
+          id?: string
+          photo_url?: string
+          site_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gallery_photos_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "wedding_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      gift_items: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_purchased: boolean | null
+          name: string
+          price: number
+          purchased_at: string | null
+          purchased_by: string | null
+          site_id: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_purchased?: boolean | null
+          name: string
+          price: number
+          purchased_at?: string | null
+          purchased_by?: string | null
+          site_id: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_purchased?: boolean | null
+          name?: string
+          price?: number
+          purchased_at?: string | null
+          purchased_by?: string | null
+          site_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gift_items_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "wedding_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       gift_lists: {
         Row: {
           commission_rate: number | null

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +10,8 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, Upload, Eye, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import GiftItemManager from "./GiftItemManager";
+import GalleryPhotoManager from "./GalleryPhotoManager";
 
 interface SiteEditorProps {
   siteData: any;
@@ -40,11 +41,6 @@ interface CustomContent {
   gallery?: {
     enabled?: boolean;
     title?: string;
-    photos?: Array<{
-      url: string;
-      caption: string;
-      category: string;
-    }>;
   };
   event_details?: {
     enabled?: boolean;
@@ -65,13 +61,6 @@ interface CustomContent {
     enabled?: boolean;
     title?: string;
     message?: string;
-    pix_key?: string;
-    pix_name?: string;
-    stores?: Array<{
-      name: string;
-      url: string;
-      description: string;
-    }>;
   };
   rsvp?: {
     enabled?: boolean;
@@ -150,28 +139,6 @@ const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorPro
       i === index ? { ...item, [field]: value } : item
     );
     updateSection('our_story', { timeline: updatedTimeline });
-  };
-
-  const addStore = () => {
-    const currentStores = customContent.gift_list?.stores || [];
-    updateSection('gift_list', {
-      stores: [...currentStores, { name: '', url: '', description: '' }]
-    });
-  };
-
-  const removeStore = (index: number) => {
-    const currentStores = customContent.gift_list?.stores || [];
-    updateSection('gift_list', {
-      stores: currentStores.filter((_, i) => i !== index)
-    });
-  };
-
-  const updateStore = (index: number, field: string, value: string) => {
-    const currentStores = customContent.gift_list?.stores || [];
-    const updatedStores = currentStores.map((item, i) => 
-      i === index ? { ...item, [field]: value } : item
-    );
-    updateSection('gift_list', { stores: updatedStores });
   };
 
   return (
@@ -370,16 +337,9 @@ const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorPro
                 />
               </div>
               
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                <Upload className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-                <p className="text-gray-600 mb-4">Upload de fotos do casal</p>
-                <Button variant="outline">
-                  Adicionar Fotos
-                </Button>
-                <p className="text-sm text-gray-500 mt-2">
-                  JPG, PNG até 5MB cada. Máximo 20 fotos.
-                </p>
-              </div>
+              <Separator />
+              
+              <GalleryPhotoManager siteId={siteData?.id} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -534,80 +494,7 @@ const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorPro
 
               <Separator />
 
-              <div>
-                <Label className="text-base font-semibold">PIX para Lua de Mel</Label>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                  <div>
-                    <Label>Chave PIX</Label>
-                    <Input
-                      value={customContent.gift_list?.pix_key || ''}
-                      onChange={(e) => updateSection('gift_list', { pix_key: e.target.value })}
-                      placeholder="pix@exemplo.com"
-                    />
-                  </div>
-                  <div>
-                    <Label>Nome do Beneficiário</Label>
-                    <Input
-                      value={customContent.gift_list?.pix_name || ''}
-                      onChange={(e) => updateSection('gift_list', { pix_name: e.target.value })}
-                      placeholder="Ana & João Silva"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <Separator />
-
-              <div>
-                <div className="flex items-center justify-between mb-4">
-                  <Label className="text-base font-semibold">Lojas Parceiras</Label>
-                  <Button size="sm" onClick={addStore} className="flex items-center gap-2">
-                    <Plus className="h-4 w-4" />
-                    Adicionar Loja
-                  </Button>
-                </div>
-                
-                {(customContent.gift_list?.stores || []).map((store, index) => (
-                  <Card key={index} className="p-4 mb-4">
-                    <div className="flex items-start justify-between mb-2">
-                      <Badge variant="outline">Loja {index + 1}</Badge>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        onClick={() => removeStore(index)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <Label>Nome da Loja</Label>
-                        <Input
-                          value={store.name}
-                          onChange={(e) => updateStore(index, 'name', e.target.value)}
-                          placeholder="Magazine Luiza"
-                        />
-                      </div>
-                      <div>
-                        <Label>URL da Lista</Label>
-                        <Input
-                          value={store.url}
-                          onChange={(e) => updateStore(index, 'url', e.target.value)}
-                          placeholder="https://..."
-                        />
-                      </div>
-                      <div>
-                        <Label>Descrição</Label>
-                        <Input
-                          value={store.description}
-                          onChange={(e) => updateStore(index, 'description', e.target.value)}
-                          placeholder="Itens para casa"
-                        />
-                      </div>
-                    </div>
-                  </Card>
-                ))}
-              </div>
+              <GiftItemManager siteId={siteData?.id} />
             </CardContent>
           </Card>
         </TabsContent>
