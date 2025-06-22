@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import { ArrowLeft, Save, Eye, Settings } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { ModernVisualTokensProvider } from "@/contexts/ModernVisualTokensContext";
 import SiteEditor from "@/components/SiteEditor";
 import SlugEditor from "@/components/SlugEditor";
 
@@ -136,126 +136,128 @@ const Editor = () => {
   if (!siteData) return null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto px-4 py-6">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/dashboard')}
-            className="text-gray-600 hover:text-gray-800"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar para Dashboard
-          </Button>
-          
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900">
-              Editor Visual
-            </h1>
-            <p className="text-gray-600">
-              {siteData.couple_names}
-            </p>
-          </div>
-          
-          <div className="flex space-x-2">
+    <ModernVisualTokensProvider>
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-6">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-8">
             <Button
-              variant="outline"
-              onClick={handlePreview}
-              className="flex items-center gap-2"
+              variant="ghost"
+              onClick={() => navigate('/dashboard')}
+              className="text-gray-600 hover:text-gray-800"
             >
-              <Eye className="h-4 w-4" />
-              Preview
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Voltar para Dashboard
             </Button>
-            <Button
-              onClick={handlePublishToggle}
-              variant={siteData.is_published ? "destructive" : "default"}
-            >
-              {siteData.is_published ? "Despublicar" : "Publicar"}
-            </Button>
+            
+            <div className="text-center">
+              <h1 className="text-2xl font-bold text-gray-900">
+                Editor Visual
+              </h1>
+              <p className="text-gray-600">
+                {siteData.couple_names}
+              </p>
+            </div>
+            
+            <div className="flex space-x-2">
+              <Button
+                variant="outline"
+                onClick={handlePreview}
+                className="flex items-center gap-2"
+              >
+                <Eye className="h-4 w-4" />
+                Preview
+              </Button>
+              <Button
+                onClick={handlePublishToggle}
+                variant={siteData.is_published ? "destructive" : "default"}
+              >
+                {siteData.is_published ? "Despublicar" : "Publicar"}
+              </Button>
+            </div>
           </div>
-        </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Editor Panel */}
-          <div className="lg:col-span-2">
-            <SiteEditor
-              siteData={siteData}
-              onUpdateSite={handleUpdateSite}
-              onPreview={handlePreview}
-              saving={saving}
-            />
-          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Editor Panel */}
+            <div className="lg:col-span-2">
+              <SiteEditor
+                siteData={siteData}
+                onUpdateSite={handleUpdateSite}
+                onPreview={handlePreview}
+                saving={saving}
+              />
+            </div>
 
-          {/* Settings Sidebar */}
-          <div className="space-y-6">
-            {/* URL Settings */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Configurações da URL</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <SlugEditor
-                  coupleNames={siteData.couple_names}
-                  weddingDate={siteData.wedding_date}
-                  currentSlug={siteData.slug}
-                  onSlugChange={handleSlugChange}
-                  disabled={saving}
-                />
-              </CardContent>
-            </Card>
+            {/* Settings Sidebar */}
+            <div className="space-y-6">
+              {/* URL Settings */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Configurações da URL</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <SlugEditor
+                    coupleNames={siteData.couple_names}
+                    weddingDate={siteData.wedding_date}
+                    currentSlug={siteData.slug}
+                    onSlugChange={handleSlugChange}
+                    disabled={saving}
+                  />
+                </CardContent>
+              </Card>
 
-            {/* Site Status */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Status do Site</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Status</span>
-                  <span className={`text-sm px-2 py-1 rounded-full ${
-                    siteData.is_published 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {siteData.is_published ? 'Publicado' : 'Rascunho'}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Visualizações</span>
-                  <span className="text-sm text-gray-600">
-                    {siteData.views_count || 0}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Template</span>
-                  <span className="text-sm text-gray-600">
-                    {siteData.template_name}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
+              {/* Site Status */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Status do Site</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Status</span>
+                    <span className={`text-sm px-2 py-1 rounded-full ${
+                      siteData.is_published 
+                        ? 'bg-green-100 text-green-800' 
+                        : 'bg-yellow-100 text-yellow-800'
+                    }`}>
+                      {siteData.is_published ? 'Publicado' : 'Rascunho'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Visualizações</span>
+                    <span className="text-sm text-gray-600">
+                      {siteData.views_count || 0}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Template</span>
+                    <span className="text-sm text-gray-600">
+                      {siteData.template_name}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
 
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Ações Rápidas</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button variant="outline" className="w-full" onClick={handlePreview}>
-                  <Eye className="h-4 w-4 mr-2" />
-                  Visualizar Site
-                </Button>
-                <Button variant="outline" className="w-full">
-                  <Save className="h-4 w-4 mr-2" />
-                  Exportar Configurações
-                </Button>
-              </CardContent>
-            </Card>
+              {/* Quick Actions */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Ações Rápidas</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-2">
+                  <Button variant="outline" className="w-full" onClick={handlePreview}>
+                    <Eye className="h-4 w-4 mr-2" />
+                    Visualizar Site
+                  </Button>
+                  <Button variant="outline" className="w-full">
+                    <Save className="h-4 w-4 mr-2" />
+                    Exportar Configurações
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+    </ModernVisualTokensProvider>
   );
 };
 
