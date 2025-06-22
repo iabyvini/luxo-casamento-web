@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,7 +40,7 @@ const PublicSite = () => {
         setLoading(true);
         
         // Increment view count
-        const { error: incrementError } = await supabase.rpc('increment_site_views', { 
+        const { error: incrementError } = await supabase.rpc('increment_view_count', { 
           site_slug: slug 
         });
         
