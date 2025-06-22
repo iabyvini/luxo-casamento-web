@@ -2,14 +2,14 @@
 import React, { useState, useRef } from 'react';
 import { Camera, Upload, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useVisualTokens } from '@/contexts/VisualTokensContext';
+import { useModernVisualTokens } from '@/contexts/ModernVisualTokensContext';
 import ImageCropper from '../ImageCropper';
 import { uploadImage, validateImageFile } from '@/utils/supabaseStorage';
 import { useToast } from '@/hooks/use-toast';
 
 interface PhotoUploadProps {
   onPhotoChange?: (photoUrl: string | null) => void;
-  frameStyle: 'floral' | 'vintage' | 'modern' | 'geometric' | 'organic';
+  frameStyle?: 'floral' | 'vintage' | 'modern' | 'geometric' | 'organic';
   fallbackIllustration?: string;
   compact?: boolean;
   siteId?: string;
@@ -17,7 +17,7 @@ interface PhotoUploadProps {
 
 const PhotoUpload: React.FC<PhotoUploadProps> = ({ 
   onPhotoChange, 
-  frameStyle, 
+  frameStyle = 'modern',
   fallbackIllustration,
   compact = false,
   siteId
@@ -26,7 +26,7 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
   const [showCropper, setShowCropper] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { visualTokens, isCustomThemeActive, couplePhotoUrl, setCouplePhotoUrl } = useVisualTokens();
+  const { modernTokens, isModernThemeActive, couplePhotoUrl, setCouplePhotoUrl } = useModernVisualTokens();
   const { toast } = useToast();
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -97,49 +97,49 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
   };
 
   const getFrameClasses = () => {
-    const primaryColor = visualTokens?.colors.primary || '#a67c52';
+    const primaryColor = modernTokens?.colors.primary || '#a67c52';
     
     switch (frameStyle) {
       case 'floral':
         return {
           container: 'rounded-3xl shadow-2xl bg-gradient-to-br from-white to-pink-50',
           border: `border-4`,
-          borderColor: isCustomThemeActive ? primaryColor : '#f8bbd9',
+          borderColor: isModernThemeActive ? primaryColor : '#f8bbd9',
           shadow: 'shadow-pink-200/50'
         };
       case 'vintage':
         return {
           container: 'rounded-2xl shadow-2xl bg-gradient-to-br from-amber-50 to-yellow-100',
           border: 'border-4',
-          borderColor: isCustomThemeActive ? primaryColor : '#d97706',
+          borderColor: isModernThemeActive ? primaryColor : '#d97706',
           shadow: 'shadow-amber-200/50'
         };
       case 'modern':
         return {
           container: 'rounded-lg shadow-xl bg-white',
           border: 'border-2',
-          borderColor: isCustomThemeActive ? primaryColor : '#374151',
+          borderColor: isModernThemeActive ? primaryColor : '#374151',
           shadow: 'shadow-gray-300/30'
         };
       case 'geometric':
         return {
           container: 'rounded-xl shadow-xl bg-gradient-to-br from-blue-50 to-indigo-100',
           border: 'border-3',
-          borderColor: isCustomThemeActive ? primaryColor : '#3b82f6',
+          borderColor: isModernThemeActive ? primaryColor : '#3b82f6',
           shadow: 'shadow-blue-200/50'
         };
       case 'organic':
         return {
           container: 'rounded-full shadow-xl bg-gradient-to-br from-green-50 to-emerald-100',
           border: 'border-4',
-          borderColor: isCustomThemeActive ? primaryColor : '#10b981',
+          borderColor: isModernThemeActive ? primaryColor : '#10b981',
           shadow: 'shadow-emerald-200/50'
         };
       default:
         return {
           container: 'rounded-2xl shadow-lg bg-gradient-to-br from-neutral-50 to-amber-100',
           border: 'border-3',
-          borderColor: isCustomThemeActive ? primaryColor : '#a67c52',
+          borderColor: isModernThemeActive ? primaryColor : '#a67c52',
           shadow: 'shadow-neutral-200/40'
         };
     }
@@ -211,7 +211,7 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
             onClick={() => fileInputRef.current?.click()}
             className="mt-3 w-full transition-all duration-300 hover:scale-105 text-sm"
             style={{ 
-              background: isCustomThemeActive ? visualTokens?.colors.primary : '#3C2B20',
+              background: isModernThemeActive ? modernTokens?.colors.primary : '#3C2B20',
               color: 'white'
             }}
             disabled={isUploading}

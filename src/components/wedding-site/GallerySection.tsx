@@ -149,16 +149,15 @@ const GallerySection = ({ siteId, templateName, quizAnswers, customContent }: Ga
           </p>
         </div>
 
-        {/* Gallery Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {displayPhotos.map((photo, index) => (
+        {/* Gallery Grid - Padrão uniforme sem destaque especial */}
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6 mb-12">
+          {displayPhotos.map((photo) => (
             <div 
               key={photo.id} 
-              className={`group relative overflow-hidden rounded-xl luxury-shadow hover:scale-105 transition-all duration-300 ${
-                index === 0 ? 'md:col-span-2 md:row-span-2' : ''
-              }`}
+              className="group relative overflow-hidden rounded-xl luxury-shadow hover:scale-105 transition-all duration-300"
             >
-              <div className={`aspect-square ${index === 0 ? 'md:aspect-[2/2]' : ''} overflow-hidden`}>
+              {/* Aspect ratio fixo para manter uniformidade */}
+              <div className="aspect-square overflow-hidden">
                 <img
                   src={photo.photo_url}
                   alt={photo.caption || 'Foto da galeria'}

@@ -195,11 +195,14 @@ const GiftListSection = ({ siteId, customContent }: GiftListSectionProps) => {
                 <div key={item.id} className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all duration-300 hover:scale-105">
                   {item.image_url && (
                     <div className="mb-4">
-                      <img 
-                        src={item.image_url} 
-                        alt={item.name}
-                        className="w-full h-48 object-cover rounded-lg"
-                      />
+                      {/* Aspect ratio fixo para evitar corte das imagens */}
+                      <div className="aspect-square overflow-hidden rounded-lg bg-gray-50">
+                        <img 
+                          src={item.image_url} 
+                          alt={item.name}
+                          className="w-full h-full object-contain"
+                        />
+                      </div>
                     </div>
                   )}
                   
@@ -316,11 +319,13 @@ const GiftListSection = ({ siteId, customContent }: GiftListSectionProps) => {
                 <div key={item.id} className="bg-gray-50 rounded-2xl p-6 shadow-lg border border-gray-200 opacity-75">
                   {item.image_url && (
                     <div className="mb-4">
-                      <img 
-                        src={item.image_url} 
-                        alt={item.name}
-                        className="w-full h-48 object-cover rounded-lg grayscale"
-                      />
+                      <div className="aspect-square overflow-hidden rounded-lg bg-gray-100">
+                        <img 
+                          src={item.image_url} 
+                          alt={item.name}
+                          className="w-full h-full object-contain grayscale"
+                        />
+                      </div>
                     </div>
                   )}
                   

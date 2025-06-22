@@ -84,7 +84,7 @@ const ModernHeroSection = ({
               </div>
 
               {/* Location Hint */}
-              <div className="flex items-center justify-center space-x-2 text-white/80 mb-12">
+              <div className="flex items-center justify-center space-x-2 text-white/80 mb-8">
                 <MapPin className="h-4 w-4" />
                 <span className="text-sm font-light tracking-wide">
                   Detalhes em breve
@@ -92,7 +92,7 @@ const ModernHeroSection = ({
               </div>
 
               {/* Welcome Message */}
-              <div className="max-w-2xl mx-auto">
+              <div className="max-w-2xl mx-auto mb-16">
                 <p className="text-lg md:text-xl text-white/90 font-light leading-relaxed">
                   {welcomeMessage}
                 </p>
@@ -101,7 +101,7 @@ const ModernHeroSection = ({
           </div>
         </div>
 
-        {/* Scroll Indicator */}
+        {/* Scroll Indicator - Posicionado para não sobrepor texto */}
         <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
           <button 
             onClick={handleScrollToNext}
