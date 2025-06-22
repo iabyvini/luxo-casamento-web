@@ -5,6 +5,8 @@ import { QuizAnswers } from "@/types/quiz";
 import { useVisualTokens } from "@/contexts/VisualTokensContext";
 import { renderContextualShape } from "@/utils/shapeTokens";
 import PhotoUpload from "./PhotoUpload";
+import { findBestTemplateProfile } from "@/utils/templateProfiles";
+import { getFallbackImage, getFrameStyle } from "@/utils/coupleFallbacks";
 
 interface HeroSectionProps {
   coupleNames: string;
@@ -15,8 +17,7 @@ interface HeroSectionProps {
 }
 
 const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, quizAnswers }: HeroSectionProps) => {
-  const { visualTokens, isCustomThemeActive } = useVisualTokens();
-  const [couplePhoto, setCouplePhoto] = useState<string | null>(null);
+  const { visualTokens, isCustomThemeActive, couplePhotoUrl } = useVisualTokens();
 
   const formattedDate = new Date(weddingDate).toLocaleDateString('pt-BR', {
     day: 'numeric',
@@ -33,7 +34,7 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
     }
   };
 
-  const getFrameStyle = (): 'floral' | 'vintage' | 'modern' | 'geometric' | 'organic' => {
+  const getPhotoFrameStyle = (): 'floral' | 'vintage' | 'modern' | 'geometric' | 'organic' => {
     if (!quizAnswers) return 'modern';
     
     switch (quizAnswers.estilo) {
@@ -44,6 +45,12 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
       case 'Boho': return 'organic';
       default: return 'modern';
     }
+  };
+
+  // Get template profile for fallback
+  const getTemplateProfile = () => {
+    if (!quizAnswers) return null;
+    return findBestTemplateProfile(quizAnswers);
   };
 
   // Get template ID for contextual shapes
@@ -97,7 +104,7 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
     return {};
   };
 
-  // Always use high contrast colors
+  // Always use high contrast colors - FIXED TYPOGRAPHY
   const getTextColor = (type: 'primary' | 'secondary') => {
     if (isCustomThemeActive && visualTokens) {
       return type === 'primary' ? visualTokens.colors.primary : visualTokens.colors.secondary;
@@ -105,23 +112,39 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
     return type === 'primary' ? '#3C2B20' : '#5D4037';
   };
 
+  // Get photo to display (user photo or fallback)
+  const getDisplayPhoto = () => {
+    if (couplePhotoUrl) return couplePhotoUrl;
+    
+    const templateProfile = getTemplateProfile();
+    if (templateProfile) {
+      return getFallbackImage(templateProfile);
+    }
+    
+    return null;
+  };
+
+  const displayPhoto = getDisplayPhoto();
+  const templateProfile = getTemplateProfile();
+  const frameStyle = templateProfile ? getFrameStyle(templateProfile) : null;
+
   return (
     <section id="home" className={`relative min-h-screen flex items-center justify-center py-20 overflow-hidden ${getBackgroundStyle()}`}>
       {/* Template-specific background */}
       {!isCustomThemeActive && (
-        <div className="absolute inset-0 bg-gradient-to-br from-amber-50 via-rose-50 to-orange-50" />
+        <div className="absolute inset-0 bg-gradient-to-br from-neutral-base via-neutral-soft to-neutral-100" />
       )}
       
       {/* Single contextual decorative element */}
       {renderContextualDecorative()}
       
       {/* Content */}
-      <div className="relative z-10 text-center max-w-6xl mx-auto px-4">
+      <div className="relative z-10 text-center max-w-7xl mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           
           {/* Left Column - Text Content */}
-          <div className="lg:text-left">
-            {/* Couple Names */}
+          <div className="lg:text-left space-y-8">
+            {/* Couple Names - FIXED TYPOGRAPHY */}
             <div className="mb-8">
               <div className="inline-flex items-center space-x-4 mb-4">
                 <Heart 
@@ -148,7 +171,7 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
               <div className="flex items-center justify-center lg:justify-start space-x-3 mb-8">
                 <Calendar className="h-6 w-6" style={{ color: getTextColor('secondary') }} />
                 <span 
-                  className="text-2xl md:text-3xl font-light"
+                  className="text-2xl md:text-3xl font-medium"
                   style={{ color: getTextColor('secondary') }}
                 >
                   {formattedDate}
@@ -156,8 +179,8 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
               </div>
             </div>
 
-            {/* AI Generated Welcome Message */}
-            <div className="bg-white/90 backdrop-blur-md p-8 rounded-2xl border border-white/50 mb-12 luxury-shadow">
+            {/* AI Generated Welcome Message - FIXED TYPOGRAPHY */}
+            <div className="bg-white/95 backdrop-blur-md p-8 rounded-2xl border border-white/50 mb-12 luxury-shadow">
               <div className="flex items-center justify-center mb-4">
                 <Sparkles 
                   className="h-6 w-6 mr-2" 
@@ -165,7 +188,7 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
                   style={{ color: getTextColor('secondary') }}
                 />
                 <span 
-                  className="text-sm font-medium uppercase tracking-wider"
+                  className="text-sm font-semibold uppercase tracking-wider"
                   style={{ color: getTextColor('secondary') }}
                 >
                   Mensagem Especial
@@ -178,7 +201,7 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
               </div>
               
               <p 
-                className="text-xl md:text-2xl font-light leading-relaxed"
+                className="text-xl md:text-2xl font-normal leading-relaxed"
                 style={{ 
                   fontFamily: visualTokens?.typography.fontFamilies.body || 'Inter',
                   fontWeight: visualTokens?.typography.weights.body || 400,
@@ -189,13 +212,13 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
               </p>
             </div>
 
-            {/* Location hint */}
+            {/* Location hint - FIXED TYPOGRAPHY */}
             <div className="flex items-center justify-center lg:justify-start space-x-2">
               <div style={{ color: getTextColor('secondary') }}>
                 {getLocationIcon(quizAnswers?.local)}
               </div>
               <span 
-                className="text-lg"
+                className="text-lg font-medium"
                 style={{ color: getTextColor('secondary') }}
               >
                 {quizAnswers?.local === 'Praia' ? 'Celebre conosco à beira-mar' :
@@ -206,13 +229,44 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
             </div>
           </div>
 
-          {/* Right Column - Photo Upload with contextual frame */}
+          {/* Right Column - Couple Photo */}
           <div className="flex justify-center lg:justify-end">
-            <PhotoUpload
-              onPhotoChange={setCouplePhoto}
-              frameStyle={getFrameStyle()}
-              fallbackIllustration="couple-silhouette"
-            />
+            {displayPhoto ? (
+              <div className="relative">
+                <div 
+                  className={`w-64 h-64 md:w-80 md:h-80 overflow-hidden transition-all duration-300 hover:scale-105 ${frameStyle?.container || 'rounded-2xl'} ${frameStyle?.border || 'border-4'} ${frameStyle?.shadow || 'shadow-2xl'}`}
+                  style={{
+                    borderColor: isCustomThemeActive ? visualTokens?.colors.primary : frameStyle?.border || '#a67c52'
+                  }}
+                >
+                  <img 
+                    src={displayPhoto} 
+                    alt="Foto do casal" 
+                    className="w-full h-full object-cover"
+                  />
+                  
+                  {/* Overlay for fallback images */}
+                  {!couplePhotoUrl && (
+                    <div className={`absolute inset-0 ${frameStyle?.overlay || 'bg-white/10'}`} />
+                  )}
+                </div>
+                
+                {/* Fallback indicator */}
+                {!couplePhotoUrl && (
+                  <div className="absolute -bottom-8 left-1/2 transform -translate-x-1/2">
+                    <span className="text-xs font-medium px-3 py-1 rounded-full bg-white/80 backdrop-blur-sm" 
+                          style={{ color: getTextColor('secondary') }}>
+                      Imagem ilustrativa
+                    </span>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <PhotoUpload
+                frameStyle={getPhotoFrameStyle()}
+                fallbackIllustration="couple-silhouette"
+              />
+            )}
           </div>
         </div>
       </div>
@@ -221,7 +275,7 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 animate-bounce">
         <div className="flex flex-col items-center">
           <span 
-            className="text-sm mb-2"
+            className="text-sm mb-2 font-medium"
             style={{ color: getTextColor('secondary') }}
           >
             Role para ver mais

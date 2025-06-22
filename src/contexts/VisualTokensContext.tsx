@@ -8,8 +8,10 @@ import { getBackgroundToken, generateBackgroundCSS } from '@/utils/backgroundTok
 interface VisualTokensContextType {
   visualTokens: VisualTokens | null;
   isCustomThemeActive: boolean;
+  couplePhotoUrl: string | null;
   applyTokens: (quizAnswers: QuizAnswers) => void;
   resetTokens: () => void;
+  setCouplePhotoUrl: (url: string | null) => void;
 }
 
 const VisualTokensContext = createContext<VisualTokensContextType | undefined>(undefined);
@@ -17,6 +19,25 @@ const VisualTokensContext = createContext<VisualTokensContextType | undefined>(u
 export const VisualTokensProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [visualTokens, setVisualTokens] = useState<VisualTokens | null>(null);
   const [isCustomThemeActive, setIsCustomThemeActive] = useState(false);
+  const [couplePhotoUrl, setCouplePhotoUrlState] = useState<string | null>(null);
+
+  // Persist photo URL to localStorage
+  const setCouplePhotoUrl = (url: string | null) => {
+    setCouplePhotoUrlState(url);
+    if (url) {
+      localStorage.setItem('couplePhotoUrl', url);
+    } else {
+      localStorage.removeItem('couplePhotoUrl');
+    }
+  };
+
+  // Load photo URL from localStorage on mount
+  useEffect(() => {
+    const savedPhotoUrl = localStorage.getItem('couplePhotoUrl');
+    if (savedPhotoUrl) {
+      setCouplePhotoUrlState(savedPhotoUrl);
+    }
+  }, []);
 
   const applyTokens = (quizAnswers: QuizAnswers) => {
     const templateProfile = findBestTemplateProfile(quizAnswers);
@@ -109,9 +130,11 @@ export const VisualTokensProvider: React.FC<{ children: React.ReactNode }> = ({ 
   return (
     <VisualTokensContext.Provider value={{ 
       visualTokens, 
-      isCustomThemeActive, 
+      isCustomThemeActive,
+      couplePhotoUrl,
       applyTokens, 
-      resetTokens 
+      resetTokens,
+      setCouplePhotoUrl
     }}>
       {children}
     </VisualTokensContext.Provider>

@@ -1,24 +1,25 @@
 
 import React, { useState, useRef } from 'react';
-import { Camera, Upload, X } from 'lucide-react';
+import { Camera, Upload, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useVisualTokens } from '@/contexts/VisualTokensContext';
 
 interface PhotoUploadProps {
-  onPhotoChange: (photoUrl: string | null) => void;
+  onPhotoChange?: (photoUrl: string | null) => void;
   frameStyle: 'floral' | 'vintage' | 'modern' | 'geometric' | 'organic';
   fallbackIllustration?: string;
+  compact?: boolean;
 }
 
 const PhotoUpload: React.FC<PhotoUploadProps> = ({ 
   onPhotoChange, 
   frameStyle, 
-  fallbackIllustration 
+  fallbackIllustration,
+  compact = false
 }) => {
-  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { visualTokens, isCustomThemeActive } = useVisualTokens();
+  const { visualTokens, isCustomThemeActive, couplePhotoUrl, setCouplePhotoUrl } = useVisualTokens();
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -27,8 +28,8 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
       const reader = new FileReader();
       reader.onload = (e) => {
         const url = e.target?.result as string;
-        setPhotoUrl(url);
-        onPhotoChange(url);
+        setCouplePhotoUrl(url);
+        onPhotoChange?.(url);
         setIsUploading(false);
       };
       reader.readAsDataURL(file);
@@ -36,60 +37,58 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
   };
 
   const handleRemovePhoto = () => {
-    setPhotoUrl(null);
-    onPhotoChange(null);
+    setCouplePhotoUrl(null);
+    onPhotoChange?.(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
   const getFrameClasses = () => {
-    // Use visual tokens when available for truly contextual frames
     const primaryColor = visualTokens?.colors.primary || '#a67c52';
-    const secondaryColor = visualTokens?.colors.secondary || '#d4af37';
     
     switch (frameStyle) {
       case 'floral':
         return {
           container: 'rounded-3xl shadow-2xl bg-gradient-to-br from-white to-pink-50',
-          border: `border-8 border-opacity-30`,
+          border: `border-4`,
           borderColor: isCustomThemeActive ? primaryColor : '#f8bbd9',
-          shadow: `shadow-[0_20px_40px_-12px_${primaryColor}30]`
+          shadow: 'shadow-pink-200/50'
         };
       case 'vintage':
         return {
-          container: 'rounded-lg shadow-2xl bg-gradient-to-br from-amber-50 to-yellow-100',
-          border: 'border-8 border-opacity-50',
+          container: 'rounded-2xl shadow-2xl bg-gradient-to-br from-amber-50 to-yellow-100',
+          border: 'border-4',
           borderColor: isCustomThemeActive ? primaryColor : '#d97706',
-          shadow: `shadow-[0_25px_50px_-12px_${primaryColor}25]`
+          shadow: 'shadow-amber-200/50'
         };
       case 'modern':
         return {
-          container: 'rounded-none shadow-xl bg-white',
-          border: 'border-4 border-opacity-90',
+          container: 'rounded-lg shadow-xl bg-white',
+          border: 'border-2',
           borderColor: isCustomThemeActive ? primaryColor : '#374151',
-          shadow: `shadow-[0_20px_25px_-5px_${primaryColor}20]`
+          shadow: 'shadow-gray-300/30'
         };
       case 'geometric':
         return {
-          container: 'rounded-lg shadow-xl bg-gradient-to-br from-blue-50 to-indigo-100',
-          border: 'border-6 border-opacity-60',
+          container: 'rounded-xl shadow-xl bg-gradient-to-br from-blue-50 to-indigo-100',
+          border: 'border-3',
           borderColor: isCustomThemeActive ? primaryColor : '#3b82f6',
-          shadow: `shadow-[0_20px_40px_-10px_${primaryColor}30]`
+          shadow: 'shadow-blue-200/50'
         };
       case 'organic':
         return {
           container: 'rounded-full shadow-xl bg-gradient-to-br from-green-50 to-emerald-100',
-          border: 'border-8 border-opacity-40',
+          border: 'border-4',
           borderColor: isCustomThemeActive ? primaryColor : '#10b981',
-          shadow: `shadow-[0_25px_45px_-10px_${primaryColor}25]`
+          shadow: 'shadow-emerald-200/50'
         };
       default:
         return {
-          container: 'rounded-2xl shadow-lg bg-gradient-to-br from-brown-50 to-amber-100',
-          border: 'border-4 border-opacity-50',
+          container: 'rounded-2xl shadow-lg bg-gradient-to-br from-neutral-50 to-amber-100',
+          border: 'border-3',
           borderColor: isCustomThemeActive ? primaryColor : '#a67c52',
-          shadow: `shadow-[0_15px_35px_-8px_${primaryColor}20]`
+          shadow: 'shadow-neutral-200/40'
         };
     }
   };
@@ -97,44 +96,33 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
   const getFallbackContent = () => {
     const frameConfig = getFrameClasses();
     
-    if (fallbackIllustration) {
-      return (
-        <div className="w-full h-full flex items-center justify-center text-current">
-          <div className="text-center">
-            <div className="text-6xl mb-4 opacity-30">💕</div>
-            <p className="text-sm font-light" style={{ color: frameConfig.borderColor }}>
-              Sua foto aqui
-            </p>
-          </div>
-        </div>
-      );
-    }
-    
     return (
-      <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-        <div className="text-center" style={{ color: frameConfig.borderColor }}>
-          <Camera className="h-12 w-12 mx-auto mb-4 opacity-50" />
-          <p className="text-sm">Clique para adicionar sua foto</p>
+      <div className="w-full h-full flex items-center justify-center text-current">
+        <div className="text-center">
+          <div className="text-4xl mb-3 opacity-40">💕</div>
+          <p className="text-xs font-medium" style={{ color: frameConfig.borderColor }}>
+            Sua foto aqui
+          </p>
         </div>
       </div>
     );
   };
 
   const frameConfig = getFrameClasses();
+  const size = compact ? 'w-32 h-32 md:w-40 md:h-40' : 'w-48 h-48 md:w-64 md:h-64';
 
   return (
     <div className="relative">
       <div 
-        className={`w-48 h-48 md:w-64 md:h-64 overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 ${frameConfig.container} ${frameConfig.border}`}
+        className={`${size} overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 ${frameConfig.container} ${frameConfig.border} ${frameConfig.shadow}`}
         style={{ 
-          borderColor: frameConfig.borderColor,
-          boxShadow: frameConfig.shadow
+          borderColor: frameConfig.borderColor
         }}
       >
-        {photoUrl ? (
+        {couplePhotoUrl ? (
           <div className="relative w-full h-full">
             <img 
-              src={photoUrl} 
+              src={couplePhotoUrl} 
               alt="Foto do casal" 
               className="w-full h-full object-cover"
             />
@@ -142,9 +130,9 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
               onClick={handleRemovePhoto}
               size="sm"
               variant="destructive"
-              className="absolute top-2 right-2 h-8 w-8 p-0 rounded-full"
+              className="absolute top-2 right-2 h-6 w-6 p-0 rounded-full opacity-80 hover:opacity-100"
             >
-              <X className="h-4 w-4" />
+              <X className="h-3 w-3" />
             </Button>
           </div>
         ) : (
@@ -165,12 +153,12 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
         className="hidden"
       />
 
-      {!photoUrl && (
+      {!couplePhotoUrl && !compact && (
         <Button
           onClick={() => fileInputRef.current?.click()}
-          className="mt-4 w-full transition-all duration-300 hover:scale-105"
+          className="mt-3 w-full transition-all duration-300 hover:scale-105 text-sm"
           style={{ 
-            background: isCustomThemeActive ? visualTokens?.colors.primary : undefined,
+            background: isCustomThemeActive ? visualTokens?.colors.primary : '#3C2B20',
             color: 'white'
           }}
           disabled={isUploading}
@@ -178,6 +166,13 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
           <Upload className="h-4 w-4 mr-2" />
           {isUploading ? 'Carregando...' : 'Adicionar Foto'}
         </Button>
+      )}
+
+      {couplePhotoUrl && !compact && (
+        <div className="flex items-center justify-center mt-2">
+          <Check className="h-4 w-4 text-green-600 mr-1" />
+          <span className="text-xs text-green-600 font-medium">Foto adicionada</span>
+        </div>
       )}
     </div>
   );
