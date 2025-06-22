@@ -33,6 +33,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
   const [imageSrc, setImageSrc] = useState<string>('');
   const [processing, setProcessing] = useState(false);
+  const [containerDimensions, setContainerDimensions] = useState({ width: 600, height: 500 });
   const imgRef = useRef<HTMLImageElement>(null);
 
   React.useEffect(() => {
@@ -48,6 +49,29 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
   const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
     const image = e.currentTarget;
     const { naturalWidth, naturalHeight } = image;
+    
+    // Calcular dimensões do container baseadas na proporção da imagem
+    const maxWidth = 600;
+    const maxHeight = 600;
+    const imageRatio = naturalWidth / naturalHeight;
+    
+    let containerWidth, containerHeight;
+    
+    if (imageRatio > 1) {
+      // Imagem horizontal
+      containerWidth = maxWidth;
+      containerHeight = maxWidth / imageRatio;
+    } else {
+      // Imagem vertical ou quadrada
+      containerHeight = maxHeight;
+      containerWidth = maxHeight * imageRatio;
+    }
+    
+    // Garantir dimensões mínimas
+    containerWidth = Math.max(containerWidth, 300);
+    containerHeight = Math.max(containerHeight, 300);
+    
+    setContainerDimensions({ width: containerWidth, height: containerHeight });
     
     // Calcular crop inicial baseado na menor dimensão para garantir que seja quadrado
     const minDimension = Math.min(naturalWidth, naturalHeight);
@@ -163,7 +187,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[90vh]">
+      <DialogContent className="max-w-4xl max-h-[95vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
@@ -175,7 +199,14 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
           
           {imageSrc && (
             <div className="flex justify-center">
-              <div className="crop-container relative w-full max-w-2xl bg-gray-100 rounded-lg overflow-hidden" style={{ height: '500px' }}>
+              <div 
+                className="crop-container relative bg-gray-100 rounded-lg overflow-hidden" 
+                style={{ 
+                  width: containerDimensions.width, 
+                  height: containerDimensions.height,
+                  maxWidth: '100%'
+                }}
+              >
                 <ReactCrop
                   crop={crop}
                   onChange={(c) => setCrop(c)}
