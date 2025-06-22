@@ -4,7 +4,7 @@ import { Camera, Upload, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useVisualTokens } from '@/contexts/VisualTokensContext';
 import ImageCropper from '../ImageCropper';
-import { uploadImage, validateImageFile, createFileFromBlob } from '@/utils/supabaseStorage';
+import { uploadImage, validateImageFile } from '@/utils/supabaseStorage';
 import { useToast } from '@/hooks/use-toast';
 
 interface PhotoUploadProps {
@@ -48,29 +48,33 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
   };
 
   const handleCropComplete = async (croppedBlob: Blob) => {
-    if (!siteId) {
-      // Para preview, usar URL local
-      const url = URL.createObjectURL(croppedBlob);
-      setCouplePhotoUrl(url);
-      onPhotoChange?.(url);
-      return;
-    }
-
     setIsUploading(true);
     try {
-      const imageUrl = await uploadImage(croppedBlob, 'couple-photos', siteId);
-      
-      if (!imageUrl) {
-        throw new Error('Falha no upload da imagem');
-      }
+      if (siteId) {
+        const imageUrl = await uploadImage(croppedBlob, 'couple-photos', siteId);
+        
+        if (!imageUrl) {
+          throw new Error('Falha no upload da imagem');
+        }
 
-      setCouplePhotoUrl(imageUrl);
-      onPhotoChange?.(imageUrl);
-      
-      toast({
-        title: "Foto carregada!",
-        description: "A foto do casal foi adicionada com sucesso.",
-      });
+        setCouplePhotoUrl(imageUrl);
+        onPhotoChange?.(imageUrl);
+        
+        toast({
+          title: "Foto carregada!",
+          description: "A foto do casal foi adicionada com sucesso.",
+        });
+      } else {
+        // Para preview, usar URL local
+        const url = URL.createObjectURL(croppedBlob);
+        setCouplePhotoUrl(url);
+        onPhotoChange?.(url);
+        
+        toast({
+          title: "Foto adicionada!",
+          description: "A foto do casal foi adicionada ao preview.",
+        });
+      }
     } catch (error: any) {
       toast({
         title: "Erro no upload",
@@ -79,6 +83,8 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
       });
     } finally {
       setIsUploading(false);
+      setShowCropper(false);
+      setSelectedFile(null);
     }
   };
 
@@ -226,10 +232,14 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
       {selectedFile && (
         <ImageCropper
           isOpen={showCropper}
-          onClose={() => setShowCropper(false)}
+          onClose={() => {
+            setShowCropper(false);
+            setSelectedFile(null);
+          }}
           onCropComplete={handleCropComplete}
           imageFile={selectedFile}
           title="Recortar Foto do Casal"
+          aspectRatio={1}
         />
       )}
     </>

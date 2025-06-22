@@ -1,254 +1,217 @@
 
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Eye, Heart, Sparkles, Crown, Camera, Palette } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Eye, Palette, Heart, Star } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { InlineLoader } from "./LoadingStates";
 
 const Templates = () => {
   const navigate = useNavigate();
-  const [loadingTemplate, setLoadingTemplate] = useState<string | null>(null);
 
   const templates = [
     {
-      id: 1,
-      name: "Elegance Royal",
-      category: "Clássico",
-      colors: ["#a67c52", "#d4af37", "#f5f5f5"],
-      description: "Elegância clássica com toques dourados",
-      icon: Crown,
-      style: "classical",
-      preview: {
-        couple: "Marina & Eduardo",
-        date: "12.05.2024",
-        bg: "bg-gradient-to-br from-amber-50 to-yellow-100"
+      id: "classico",
+      name: "Clássico Elegante",
+      description: "Perfeito para casamentos tradicionais com toque sofisticado",
+      image: "/lovable-uploads/classic-template.jpg",
+      colors: ["#D4AF37", "#FFFFFF", "#3C2B20"],
+      features: ["Layout tradicional", "Tipografia elegante", "Cores douradas"],
+      style: "Tradicional",
+      couples: "Ana & João",
+      mockData: {
+        coupleNames: "Ana & João",
+        weddingDate: "2024-12-25",
+        location: "Igreja São José, SP"
       }
     },
     {
-      id: 2,
-      name: "Modern Love",
-      category: "Moderno",
-      colors: ["#2c3e50", "#e74c3c", "#ffffff"],
-      description: "Minimalismo contemporâneo e sofisticado",
-      icon: Palette,
-      style: "modern",
-      preview: {
-        couple: "Ana & Rafael",
-        date: "18.09.2024",
-        bg: "bg-gradient-to-br from-slate-50 to-gray-100"
+      id: "moderno",
+      name: "Moderno Minimalista",
+      description: "Design clean e contemporâneo para casais modernos",
+      image: "/lovable-uploads/modern-template.jpg", 
+      colors: ["#2D2D2D", "#FFFFFF", "#E5E5E5"],
+      features: ["Design minimalista", "Layout responsivo", "Tipografia moderna"],
+      style: "Contemporâneo",
+      couples: "Camila & Daniel",
+      mockData: {
+        coupleNames: "Camila & Daniel", 
+        weddingDate: "2024-11-30",
+        location: "Espaço Villa Moderna, SP"
       }
     },
     {
-      id: 3,
-      name: "Garden Romance",
-      category: "Romântico",
-      colors: ["#8fbc8f", "#dda0dd", "#f0f8ff"],
-      description: "Romance delicado com elementos florais",
-      icon: Heart,
-      style: "romantic",
-      preview: {
-        couple: "Isabella & João",
-        date: "25.11.2024",
-        bg: "bg-gradient-to-br from-pink-50 to-rose-100"
+      id: "boho",
+      name: "Boho Chic",
+      description: "Estilo livre e natural para casamentos ao ar livre",
+      image: "/lovable-uploads/boho-template.jpg",
+      colors: ["#D2691E", "#8FBC8F", "#F5F5DC"],
+      features: ["Elementos naturais", "Cores terrosas", "Estilo descontraído"],
+      style: "Natural",
+      couples: "Flora & Vinícius", 
+      mockData: {
+        coupleNames: "Flora & Vinícius",
+        weddingDate: "2024-10-15", 
+        location: "Fazenda Vista Verde, Ibiúna"
       }
     },
     {
-      id: 4,
-      name: "Pure Minimalist",
-      category: "Minimalista",
-      colors: ["#000000", "#ffffff", "#f5f5f5"],
-      description: "Simplicidade e elegância em cada detalhe",
-      icon: Palette,
-      style: "minimal",
-      preview: {
-        couple: "Camila & Lucas",
-        date: "07.04.2024",
-        bg: "bg-gradient-to-br from-gray-50 to-white"
-      }
-    },
-    {
-      id: 5,
-      name: "Vintage Charm",
-      category: "Vintage",
-      colors: ["#8b4513", "#daa520", "#f5deb3"],
-      description: "Charme nostálgico de épocas douradas",
-      icon: Camera,
-      style: "vintage",
-      preview: {
-        couple: "Letícia & Pedro",
-        date: "14.08.2024",
-        bg: "bg-gradient-to-br from-amber-50 to-orange-100"
-      }
-    },
-    {
-      id: 6,
-      name: "Bohemian Dream",
-      category: "Boho",
-      colors: ["#d2691e", "#dda0dd", "#f0e68c"],
-      description: "Espírito livre com alma artística",
-      icon: Sparkles,
-      style: "boho",
-      preview: {
-        couple: "Fernanda & Gabriel",
-        date: "30.06.2024",
-        bg: "bg-gradient-to-br from-green-50 to-emerald-100"
+      id: "vintage",
+      name: "Vintage Romance",
+      description: "Inspirado no romantismo dos anos dourados",
+      image: "/lovable-uploads/vintage-template.jpg",
+      colors: ["#8B0000", "#FFD700", "#F5F5F5"],
+      features: ["Ornamentos clássicos", "Paleta vintage", "Romantismo retrô"],
+      style: "Retrô",
+      couples: "Isabella & Ricardo",
+      mockData: {
+        coupleNames: "Isabella & Ricardo",
+        weddingDate: "2024-09-20",
+        location: "Palacete dos Cedros, SP"
       }
     }
   ];
 
-  const handleUseTemplate = async (templateName: string) => {
-    setLoadingTemplate(templateName);
-    
-    const coupleNames = prompt("Digite o nome do casal (ex: Ana & João):");
-    const weddingDate = prompt("Digite a data do casamento (YYYY-MM-DD):");
-    
-    if (coupleNames && weddingDate) {
-      // Simulate processing time for better UX
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      navigate('/preview', { 
-        state: { 
-          selectedTemplate: templateName,
-          quizAnswers: {
-            nomes: coupleNames,
-            data_casamento: weddingDate
-          }
-        } 
-      });
-    }
-    
-    setLoadingTemplate(null);
+  const handlePreview = (templateId: string) => {
+    navigate(`/template-preview/${templateId}`);
   };
 
-  const handleStartQuiz = () => {
-    navigate('/quiz');
+  const handleUseTemplate = (templateId: string) => {
+    navigate('/quiz', { state: { selectedTemplate: templateId } });
   };
 
   return (
-    <section id="templates" className="py-24 bg-gradient-to-br from-white via-rose-50/30 to-amber-50/30">
+    <section id="templates" className="py-24 bg-gradient-to-br from-neutral-50 to-white">
       <div className="container mx-auto px-4">
-        {/* Header Section */}
         <div className="text-center mb-16">
           <div className="inline-flex items-center space-x-2 bg-rose-100 text-rose-800 px-4 py-2 rounded-full text-sm font-medium mb-6">
-            <Crown className="h-4 w-4" />
-            <span>Templates Profissionais</span>
+            <Palette className="h-4 w-4" />
+            <span>Templates Exclusivos</span>
           </div>
           
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">
-            Escolha o <span className="text-rose-500">Template Perfeito</span>
+          <h2 className="text-4xl md:text-5xl font-playfair font-bold text-neutral-primary mb-6">
+            Escolha Seu Template Perfeito
           </h2>
           
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
-            Designs profissionais criados especialmente para casamentos brasileiros. 
-            Cada template é único e conta sua história de forma especial.
+          <p className="text-xl text-neutral-body max-w-3xl mx-auto leading-relaxed">
+            Cada template foi cuidadosamente criado para diferentes estilos de casamento. 
+            Personalize cores, textos e imagens para criar um site único.
           </p>
         </div>
 
-        {/* Templates Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
           {templates.map((template) => (
-            <Card key={template.id} className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2">
-              <div className={`${template.preview.bg} p-8 text-center`}>
-                {/* Template Preview */}
-                <div className="space-y-4">
-                  <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-white/90 shadow-md">
-                    <template.icon className="h-6 w-6 text-gray-700" />
+            <Card key={template.id} className="template-card group overflow-hidden">
+              <div className="relative">
+                {/* Template Preview Image */}
+                <div className="aspect-[4/3] bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-white via-gray-50 to-gray-100 flex items-center justify-center">
+                    <div className="text-center p-8">
+                      <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-rose-100 to-rose-200 flex items-center justify-center">
+                        <Heart className="h-8 w-8 text-rose-600" fill="currentColor" />
+                      </div>
+                      <h3 className="text-2xl font-serif font-bold text-gray-800 mb-2">
+                        {template.couples}
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-3">
+                        {template.mockData.weddingDate.split('-').reverse().join('/')}
+                      </p>
+                      <div className="text-xs text-gray-500">
+                        {template.mockData.location}
+                      </div>
+                    </div>
                   </div>
                   
-                  <div className="space-y-2">
-                    <h3 className="text-2xl font-serif text-gray-800">
-                      {template.preview.couple}
-                    </h3>
-                    <div className="w-16 h-px bg-gray-400 mx-auto"></div>
-                    <p className="text-sm text-gray-600 font-medium">
-                      {template.preview.date}
-                    </p>
+                  {/* Style Badge */}
+                  <div className="absolute top-4 left-4">
+                    <Badge variant="secondary" className="bg-white/90 text-gray-700">
+                      {template.style}
+                    </Badge>
                   </div>
-                  
+                </div>
+
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between mb-4">
+                    <div>
+                      <h3 className="text-xl font-bold text-neutral-primary mb-2">
+                        {template.name}
+                      </h3>
+                      <p className="text-neutral-body text-sm mb-3">
+                        {template.description}
+                      </p>
+                    </div>
+                  </div>
+
                   {/* Color Palette */}
-                  <div className="flex justify-center space-x-2 pt-4">
-                    {template.colors.map((color, colorIndex) => (
-                      <div
-                        key={colorIndex}
-                        className="w-4 h-4 rounded-full border-2 border-white shadow-sm"
-                        style={{ backgroundColor: color }}
-                      />
-                    ))}
+                  <div className="mb-4">
+                    <div className="flex items-center space-x-2 mb-2">
+                      <Palette className="h-4 w-4 text-gray-500" />
+                      <span className="text-sm text-gray-600 font-medium">Paleta de Cores</span>
+                    </div>
+                    <div className="flex space-x-2">
+                      {template.colors.map((color, idx) => (
+                        <div
+                          key={idx}
+                          className="w-6 h-6 rounded-full border-2 border-white shadow-sm"
+                          style={{ backgroundColor: color }}
+                          title={color}
+                        />
+                      ))}
+                    </div>
                   </div>
-                </div>
-                
-                {/* Category Badge */}
-                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1">
-                  <span className="text-xs font-medium text-gray-700">{template.category}</span>
-                </div>
-              </div>
-              
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="text-xl font-semibold text-gray-900 mb-2">
-                      {template.name}
-                    </h4>
-                    <p className="text-gray-600 text-sm leading-relaxed">
-                      {template.description}
-                    </p>
+
+                  {/* Features */}
+                  <div className="mb-6">
+                    <h4 className="text-sm font-semibold text-gray-700 mb-2">Características:</h4>
+                    <div className="flex flex-wrap gap-1">
+                      {template.features.map((feature, idx) => (
+                        <Badge key={idx} variant="outline" className="text-xs">
+                          {feature}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
-                  
+
+                  {/* Action Buttons */}
                   <div className="flex space-x-2">
-                    <Button 
+                    <Button
                       variant="outline"
-                      size="sm"
-                      className="flex-1 border-gray-300 hover:bg-gray-50"
+                      onClick={() => handlePreview(template.id)}
+                      className="flex-1 text-sm"
                     >
                       <Eye className="h-4 w-4 mr-2" />
                       Visualizar
                     </Button>
-                    <Button 
-                      size="sm" 
-                      onClick={() => handleUseTemplate(template.name)}
-                      disabled={loadingTemplate === template.name}
-                      className="flex-1 bg-rose-500 hover:bg-rose-600 text-white"
+                    <Button
+                      onClick={() => handleUseTemplate(template.id)}
+                      className="flex-1 bg-gradient-luxury hover:opacity-90 text-white text-sm"
                     >
-                      {loadingTemplate === template.name ? (
-                        <InlineLoader size="sm" />
-                      ) : (
-                        <>
-                          <Heart className="h-4 w-4 mr-2" />
-                          Usar Este
-                        </>
-                      )}
+                      <Star className="h-4 w-4 mr-2" />
+                      Usar Template
                     </Button>
                   </div>
-                </div>
-              </CardContent>
+                </CardContent>
+              </div>
             </Card>
           ))}
         </div>
 
-        {/* CTA Section */}
-        <div className="text-center">
-          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 max-w-2xl mx-auto">
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                  Não sabe qual escolher?
-                </h3>
-                <p className="text-gray-600">
-                  Nossa IA inteligente criará o template perfeito baseado no seu estilo, 
-                  localização e preferências pessoais.
-                </p>
-              </div>
-              
-              <Button 
-                size="lg"
-                onClick={handleStartQuiz}
-                className="bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white px-8 py-3 rounded-xl font-medium"
-              >
-                <Sparkles className="h-5 w-5 mr-2" />
-                Fazer Quiz Personalizado
-              </Button>
-            </div>
+        {/* Call to Action */}
+        <div className="text-center mt-16">
+          <div className="bg-gradient-to-r from-rose-50 to-pink-50 rounded-2xl p-8 max-w-4xl mx-auto">
+            <h3 className="text-2xl font-bold text-neutral-primary mb-4">
+              Não encontrou o template ideal?
+            </h3>
+            <p className="text-neutral-body mb-6">
+              Todos os templates são totalmente personalizáveis. Você pode ajustar cores, 
+              fontes, layouts e muito mais durante a criação do seu site.
+            </p>
+            <Button 
+              onClick={() => navigate('/quiz')}
+              size="lg"
+              className="bg-gradient-luxury hover:opacity-90 text-white"
+            >
+              Começar Personalização
+            </Button>
           </div>
         </div>
       </div>

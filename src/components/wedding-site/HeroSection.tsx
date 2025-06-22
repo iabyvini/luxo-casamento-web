@@ -1,10 +1,9 @@
 
-import { Heart, Calendar, MapPin, Download } from "lucide-react";
+import { Heart, Calendar, MapPin } from "lucide-react";
 import { QuizAnswers } from "@/types/quiz";
 import { useVisualTokens } from "@/contexts/VisualTokensContext";
-import PhotoUpload from "./PhotoUpload";
 import { findBestTemplateProfile } from "@/utils/templateProfiles";
-import { getFallbackImage, getFrameStyle } from "@/utils/coupleFallbacks";
+import { getFallbackImage } from "@/utils/coupleFallbacks";
 
 interface HeroSectionProps {
   coupleNames: string;
@@ -34,9 +33,14 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
     return null;
   };
 
+  const handleConfirmPresence = () => {
+    const rsvpSection = document.getElementById('rsvp');
+    if (rsvpSection) {
+      rsvpSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   const displayPhoto = getDisplayPhoto();
-  const templateProfile = quizAnswers ? findBestTemplateProfile(quizAnswers) : null;
-  const frameStyle = templateProfile ? getFrameStyle(templateProfile) : null;
 
   return (
     <section id="home" className="relative min-h-screen bg-gradient-to-br from-green-50 to-white">
@@ -73,10 +77,14 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
                 )}
               </div>
             ) : (
-              <PhotoUpload
-                frameStyle="modern"
-                fallbackIllustration="couple-silhouette"
-              />
+              <div className="w-80 h-96 md:w-96 md:h-[480px] bg-gradient-to-br from-green-100 to-green-200 rounded-2xl shadow-2xl flex items-center justify-center">
+                <div className="text-center">
+                  <div className="text-6xl mb-4 opacity-40">💕</div>
+                  <p className="text-green-700 font-medium">
+                    Foto do casal
+                  </p>
+                </div>
+              </div>
             )}
           </div>
 
@@ -117,12 +125,10 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <button className="bg-green-600 text-white px-6 py-3 rounded-full font-medium hover:bg-green-700 transition-colors shadow-lg">
-                <Download className="h-4 w-4 mr-2 inline" />
-                Salvar Contato
-              </button>
-              
-              <button className="border-2 border-green-600 text-green-600 px-6 py-3 rounded-full font-medium hover:bg-green-50 transition-colors">
+              <button 
+                onClick={handleConfirmPresence}
+                className="bg-green-600 text-white px-6 py-3 rounded-full font-medium hover:bg-green-700 transition-colors shadow-lg"
+              >
                 Confirmar Presença
               </button>
             </div>

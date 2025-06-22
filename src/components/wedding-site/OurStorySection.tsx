@@ -1,6 +1,7 @@
 
 import { Heart, Clock } from "lucide-react";
 import { QuizAnswers } from "@/types/quiz";
+import { useEffect } from "react";
 
 interface OurStorySectionProps {
   coupleNames: string;
@@ -26,8 +27,28 @@ const OurStorySection = ({ coupleNames, templateName, quizAnswers, customContent
 
   const [firstName, secondName] = coupleNames.split(' & ').map(name => name.trim());
   const sectionTitle = customContent?.title || "Nossa História";
-  const storyContent = customContent?.content || `${firstName} e ${secondName} se conheceram de uma forma muito especial. O que começou como uma amizade floresceu em um amor verdadeiro e profundo. Hoje, estão prontos para dar o próximo passo em suas vidas juntos.`;
-  const timeline = customContent?.timeline || [];
+  
+  // Conteúdo mais emocional e personalizado
+  const storyContent = customContent?.content || 
+    `Nossa história começou de uma forma especial e única. O que era apenas amizade se transformou em algo muito maior - um amor verdadeiro e profundo que cresceu a cada dia. Juntos, construímos memórias inesquecíveis e agora estamos prontos para dar o próximo passo em nossas vidas. Este é o início de uma nova jornada, e queremos compartilhar este momento mágico com todas as pessoas que amamos.`;
+  
+  const timeline = customContent?.timeline || [
+    {
+      year: "2020",
+      title: "Primeiro Encontro",
+      description: "Foi quando nossos caminhos se cruzaram pela primeira vez e soubemos que algo especial estava começando."
+    },
+    {
+      year: "2022", 
+      title: "Pedido de Casamento",
+      description: "O momento mais emocionante de nossas vidas, quando decidimos construir nosso futuro juntos."
+    },
+    {
+      year: "2024",
+      title: "O Grande Dia",
+      description: "Chegou a hora de celebrar nosso amor com todos que são especiais para nós."
+    }
+  ];
 
   return (
     <section id="our-story" className="py-20 bg-gradient-to-br from-green-50 to-white">
@@ -103,9 +124,9 @@ const OurStorySection = ({ coupleNames, templateName, quizAnswers, customContent
           </div>
         )}
 
-        {/* Casal Info */}
+        {/* Cards dos noivos separados */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto mt-16">
-          {/* Primeiro */}
+          {/* Primeiro noivo */}
           <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 text-center">
             <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center">
               <span className="text-4xl font-serif text-green-700">
@@ -115,13 +136,15 @@ const OurStorySection = ({ coupleNames, templateName, quizAnswers, customContent
             <h3 className="text-2xl font-serif text-gray-800 mb-2">
               {firstName}
             </h3>
-            <p className="text-green-600 font-medium mb-4">O Noivo</p>
+            <p className="text-green-600 font-medium mb-4">
+              {firstName?.toLowerCase().includes('ana') || firstName?.toLowerCase().includes('maria') || firstName?.toLowerCase().includes('camila') || firstName?.toLowerCase().includes('flora') || firstName?.toLowerCase().includes('isabella') ? 'A Noiva' : 'O Noivo'}
+            </p>
             <p className="text-gray-600">
-              Apaixonado pela vida e por construir momentos especiais ao lado de quem ama.
+              Com um coração cheio de sonhos e amor pela vida, trouxe luz e alegria para esta história de amor.
             </p>
           </div>
 
-          {/* Segunda */}
+          {/* Segundo noivo */}
           <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 text-center">
             <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center">
               <span className="text-4xl font-serif text-green-700">
@@ -131,9 +154,11 @@ const OurStorySection = ({ coupleNames, templateName, quizAnswers, customContent
             <h3 className="text-2xl font-serif text-gray-800 mb-2">
               {secondName}
             </h3>
-            <p className="text-green-600 font-medium mb-4">A Noiva</p>
+            <p className="text-green-600 font-medium mb-4">
+              {secondName?.toLowerCase().includes('ana') || secondName?.toLowerCase().includes('maria') || secondName?.toLowerCase().includes('camila') || secondName?.toLowerCase().includes('flora') || secondName?.toLowerCase().includes('isabella') ? 'A Noiva' : 'O Noivo'}
+            </p>
             <p className="text-gray-600">
-              Criativa e cheia de sonhos, sempre em busca de construir uma família feliz.
+              Apaixonado pela vida e dedicado em construir momentos especiais ao lado de quem ama.
             </p>
           </div>
         </div>

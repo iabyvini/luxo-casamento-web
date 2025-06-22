@@ -2,9 +2,29 @@
 import { Button } from "@/components/ui/button";
 import { Heart, Menu, X } from "lucide-react";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleLogin = () => {
+    if (user) {
+      navigate('/dashboard');
+    } else {
+      navigate('/auth');
+    }
+  };
+
+  const handleCreateSite = () => {
+    if (user) {
+      navigate('/quiz');
+    } else {
+      navigate('/auth?step=signup');
+    }
+  };
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-brown-100">
@@ -39,11 +59,18 @@ const Header = () => {
 
           {/* Desktop CTA */}
           <div className="hidden md:flex items-center space-x-4">
-            <Button variant="ghost" className="text-brown-600 hover:text-primary">
-              Entrar
+            <Button 
+              variant="ghost" 
+              className="text-brown-600 hover:text-primary"
+              onClick={handleLogin}
+            >
+              {user ? 'Meu Painel' : 'Entrar'}
             </Button>
-            <Button className="bg-gradient-luxury hover:opacity-90 text-white">
-              Criar Site Grátis
+            <Button 
+              className="bg-gradient-luxury hover:opacity-90 text-white"
+              onClick={handleCreateSite}
+            >
+              {user ? 'Criar Novo Site' : 'Criar Site Grátis'}
             </Button>
           </div>
 
@@ -77,11 +104,18 @@ const Header = () => {
                 Preços
               </a>
               <div className="flex flex-col space-y-2 pt-4 border-t border-brown-100">
-                <Button variant="ghost" className="text-brown-600 hover:text-primary justify-start">
-                  Entrar
+                <Button 
+                  variant="ghost" 
+                  className="text-brown-600 hover:text-primary justify-start"
+                  onClick={handleLogin}
+                >
+                  {user ? 'Meu Painel' : 'Entrar'}
                 </Button>
-                <Button className="bg-gradient-luxury hover:opacity-90 text-white">
-                  Criar Site Grátis
+                <Button 
+                  className="bg-gradient-luxury hover:opacity-90 text-white"
+                  onClick={handleCreateSite}
+                >
+                  {user ? 'Criar Novo Site' : 'Criar Site Grátis'}
                 </Button>
               </div>
             </nav>
