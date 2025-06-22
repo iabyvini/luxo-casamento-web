@@ -1,14 +1,15 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, Edit2, Save, X } from "lucide-react";
+import { Plus, Trash2, Edit2, Save, X, Upload, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { uploadImage, deleteImage, extractPathFromUrl, validateImageFile } from "@/utils/supabaseStorage";
 
 interface GiftItem {
   id: string;
@@ -27,16 +28,19 @@ interface GiftItemManagerProps {
 
 const GiftItemManager = ({ siteId }: GiftItemManagerProps) => {
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [items, setItems] = useState<GiftItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
   const [editingItem, setEditingItem] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
     description: '',
     price: '',
     category: 'Geral',
-    image_url: ''
   });
 
   useEffect(() => {
@@ -64,6 +68,30 @@ const GiftItemManager = ({ siteId }: GiftItemManagerProps) => {
     }
   };
 
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
+      toast({
+        title: "Arquivo inválido",
+        description: validation.error,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSelectedFile(file);
+    
+    // Criar preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setPreviewUrl(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleSaveItem = async () => {
     if (!formData.name || !formData.price) {
       toast({
@@ -74,20 +102,42 @@ const GiftItemManager = ({ siteId }: GiftItemManagerProps) => {
       return;
     }
 
+    setUploading(true);
     try {
+      let imageUrl = null;
+
+      // Upload da imagem se houver arquivo selecionado
+      if (selectedFile) {
+        imageUrl = await uploadImage(selectedFile, 'gift-images', siteId);
+        if (!imageUrl) {
+          throw new Error('Falha no upload da imagem');
+        }
+      }
+
       const itemData = {
         site_id: siteId,
         name: formData.name,
         description: formData.description,
         price: parseFloat(formData.price),
         category: formData.category,
-        image_url: formData.image_url || null
+        image_url: imageUrl
       };
 
       if (editingItem) {
+        // Se está editando e tem nova imagem, deletar a antiga
+        if (imageUrl) {
+          const editingItemData = items.find(item => item.id === editingItem);
+          if (editingItemData?.image_url) {
+            const oldImagePath = extractPathFromUrl(editingItemData.image_url, 'gift-images');
+            if (oldImagePath) {
+              await deleteImage('gift-images', oldImagePath);
+            }
+          }
+        }
+
         const { error } = await supabase
           .from('gift_items')
-          .update(itemData)
+          .update(imageUrl ? itemData : { ...itemData, image_url: undefined })
           .eq('id', editingItem);
 
         if (error) throw error;
@@ -109,9 +159,7 @@ const GiftItemManager = ({ siteId }: GiftItemManagerProps) => {
         });
       }
 
-      setFormData({ name: '', description: '', price: '', category: 'Geral', image_url: '' });
-      setEditingItem(null);
-      setShowAddForm(false);
+      handleCancelEdit();
       fetchItems();
     } catch (error: any) {
       toast({
@@ -119,6 +167,8 @@ const GiftItemManager = ({ siteId }: GiftItemManagerProps) => {
         description: error.message,
         variant: "destructive",
       });
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -128,20 +178,34 @@ const GiftItemManager = ({ siteId }: GiftItemManagerProps) => {
       description: item.description || '',
       price: item.price.toString(),
       category: item.category,
-      image_url: item.image_url || ''
     });
     setEditingItem(item.id);
     setShowAddForm(true);
+    // Reset file selection for editing
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
-  const handleDeleteItem = async (itemId: string) => {
+  const handleDeleteItem = async (item: GiftItem) => {
     try {
+      // Deletar do banco
       const { error } = await supabase
         .from('gift_items')
         .delete()
-        .eq('id', itemId);
+        .eq('id', item.id);
 
       if (error) throw error;
+
+      // Deletar imagem do storage se existir
+      if (item.image_url) {
+        const imagePath = extractPathFromUrl(item.image_url, 'gift-images');
+        if (imagePath) {
+          await deleteImage('gift-images', imagePath);
+        }
+      }
 
       toast({
         title: "Item removido!",
@@ -159,9 +223,14 @@ const GiftItemManager = ({ siteId }: GiftItemManagerProps) => {
   };
 
   const handleCancelEdit = () => {
-    setFormData({ name: '', description: '', price: '', category: 'Geral', image_url: '' });
+    setFormData({ name: '', description: '', price: '', category: 'Geral' });
     setEditingItem(null);
     setShowAddForm(false);
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   if (loading) {
@@ -216,31 +285,59 @@ const GiftItemManager = ({ siteId }: GiftItemManagerProps) => {
               />
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label>Categoria</Label>
-                <Input
-                  value={formData.category}
-                  onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                  placeholder="Ex: Cozinha, Casa, Decoração"
+            <div>
+              <Label>Categoria</Label>
+              <Input
+                value={formData.category}
+                onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                placeholder="Ex: Cozinha, Casa, Decoração"
+              />
+            </div>
+
+            <div>
+              <Label>Imagem do Item</Label>
+              <div className="mt-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  onChange={handleFileSelect}
+                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                 />
-              </div>
-              <div>
-                <Label>URL da Imagem</Label>
-                <Input
-                  value={formData.image_url}
-                  onChange={(e) => setFormData(prev => ({ ...prev, image_url: e.target.value }))}
-                  placeholder="https://..."
-                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Formatos aceitos: JPEG, PNG, WebP. Máximo 5MB.
+                </p>
               </div>
             </div>
 
+            {previewUrl && (
+              <div className="mt-4">
+                <Label>Preview</Label>
+                <div className="mt-2 relative w-full h-48 bg-gray-100 rounded-lg overflow-hidden">
+                  <img 
+                    src={previewUrl} 
+                    alt="Preview" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+            )}
+
             <div className="flex space-x-2">
-              <Button onClick={handleSaveItem} className="flex items-center gap-2">
+              <Button 
+                onClick={handleSaveItem} 
+                className="flex items-center gap-2"
+                disabled={uploading}
+              >
                 <Save className="h-4 w-4" />
-                {editingItem ? 'Atualizar' : 'Adicionar'}
+                {uploading ? 'Salvando...' : (editingItem ? 'Atualizar' : 'Adicionar')}
               </Button>
-              <Button variant="outline" onClick={handleCancelEdit} className="flex items-center gap-2">
+              <Button 
+                variant="outline" 
+                onClick={handleCancelEdit} 
+                className="flex items-center gap-2"
+                disabled={uploading}
+              >
                 <X className="h-4 w-4" />
                 Cancelar
               </Button>
@@ -253,12 +350,16 @@ const GiftItemManager = ({ siteId }: GiftItemManagerProps) => {
         {items.map((item) => (
           <Card key={item.id} className="overflow-hidden">
             <CardContent className="p-4">
-              {item.image_url && (
+              {item.image_url ? (
                 <img 
                   src={item.image_url} 
                   alt={item.name}
                   className="w-full h-32 object-cover rounded mb-3"
                 />
+              ) : (
+                <div className="w-full h-32 bg-gray-100 rounded mb-3 flex items-center justify-center">
+                  <ImageIcon className="h-8 w-8 text-gray-400" />
+                </div>
               )}
               
               <div className="space-y-2">
@@ -299,7 +400,7 @@ const GiftItemManager = ({ siteId }: GiftItemManagerProps) => {
                   <Button 
                     size="sm" 
                     variant="destructive" 
-                    onClick={() => handleDeleteItem(item.id)}
+                    onClick={() => handleDeleteItem(item)}
                     disabled={showAddForm}
                     className="flex-1"
                   >
@@ -314,6 +415,7 @@ const GiftItemManager = ({ siteId }: GiftItemManagerProps) => {
 
       {items.length === 0 && (
         <div className="text-center py-12 text-gray-500">
+          <ImageIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
           <p>Nenhum item adicionado ainda.</p>
           <p className="text-sm">Clique em "Adicionar Item" para começar sua lista de presentes.</p>
         </div>

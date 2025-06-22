@@ -18,8 +18,6 @@ import GiftListSection from "@/components/wedding-site/GiftListSection";
 import RSVPSection from "@/components/wedding-site/RSVPSection";
 import MessagesSection from "@/components/wedding-site/MessagesSection";
 import FooterSection from "@/components/wedding-site/FooterSection";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
 
 interface SiteData {
   id: string;
@@ -136,68 +134,54 @@ const PublicSite = () => {
           weddingDate={siteData.wedding_date}
           welcomeMessage={siteData.ai_welcome_message}
           templateName={siteData.template_name}
-          quizAnswers={siteData.quiz_answers}
-          customContent={siteData.custom_content?.hero}
         />
 
         {/* Countdown Section */}
         <CountdownSection
           weddingDate={siteData.wedding_date}
-          customContent={siteData.custom_content?.countdown}
         />
 
         {/* Couple Section */}
         <CoupleSection
           coupleNames={siteData.couple_names}
-          quizAnswers={siteData.quiz_answers}
-          customContent={siteData.custom_content?.couple}
         />
 
         {/* Our Story Section */}
         <OurStorySection
           coupleNames={siteData.couple_names}
-          quizAnswers={siteData.quiz_answers}
-          customContent={siteData.custom_content?.our_story}
+          templateName={siteData.template_name}
         />
 
         {/* Gallery Section */}
         <GallerySection
           siteId={siteData.id}
           templateName={siteData.template_name}
-          quizAnswers={siteData.quiz_answers}
-          customContent={siteData.custom_content?.gallery}
         />
 
         {/* Event Details Section */}
         <EventDetailsSection
           weddingDate={siteData.wedding_date}
           templateName={siteData.template_name}
-          quizAnswers={siteData.quiz_answers}
-          customContent={siteData.custom_content?.event_details}
         />
 
         {/* Bridesmaids Section */}
-        <BridesmaidsSection
-          quizAnswers={siteData.quiz_answers}
-          customContent={siteData.custom_content?.bridesmaids}
-        />
+        <BridesmaidsSection />
 
         {/* Gift List Section */}
         <GiftListSection
           siteId={siteData.id}
-          customContent={siteData.custom_content?.gift_list}
         />
 
         {/* RSVP Section */}
         <RSVPSection
           siteId={siteData.id}
-          customContent={siteData.custom_content?.rsvp}
+          weddingDate={siteData.wedding_date}
+          templateName={siteData.template_name}
         />
 
         {/* Messages Section */}
         <MessagesSection
           siteId={siteData.id}
-          customContent={siteData.custom_content?.messages}
         />
 
         {/* Footer Section */}
