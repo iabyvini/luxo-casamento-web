@@ -13,15 +13,9 @@ const Hero = () => {
 
   return (
     <section id="home" className="relative pt-20 pb-24 min-h-screen overflow-hidden bg-gradient-to-br from-amber-50 via-rose-50 to-orange-50">
-      {/* Simplified background - only geometric shapes, no floating elements */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-20 left-20 w-32 h-32 rounded-full bg-gradient-luxury"></div>
-        <div className="absolute bottom-20 right-20 w-48 h-48 rounded-full bg-gradient-luxury"></div>
-      </div>
-
-      {/* Single static decorative element per corner - maximum opacity 0.1 */}
-      <div className="absolute top-32 right-24 text-amber-300 opacity-[0.08]">
-        <div className="w-8 h-8 rounded-full bg-current"></div>
+      {/* Single minimal background element - no animation */}
+      <div className="absolute top-32 right-24 opacity-[0.08]">
+        <div className="w-8 h-8 rounded-full bg-gradient-luxury"></div>
       </div>
 
       <div className="container mx-auto px-4">
@@ -101,15 +95,14 @@ const Hero = () => {
 
           {/* Right Column - Mockup simplificado */}
           <div className="relative">
-            {/* Single decorative element around mockup - static, low opacity */}
+            {/* Single decorative element - static, minimal */}
             <div className="absolute -top-6 -left-6 bg-white luxury-shadow rounded-2xl p-4 opacity-80">
               <Heart className="h-8 w-8 text-rose-400" fill="currentColor" />
             </div>
 
-            {/* Premium Site Mockup - contraste melhorado */}
+            {/* Premium Site Mockup */}
             <div className="relative luxury-card p-8 bg-white/98">
               <div className="bg-gradient-to-br from-rose-50 via-amber-50 to-orange-50 rounded-xl p-8 text-center relative overflow-hidden">
-                {/* Mockup header - tipografia com contraste */}
                 <div className="inline-flex items-center space-x-3 mb-6">
                   <Heart className="h-8 w-8 text-rose-500" fill="currentColor" />
                   <span className="text-3xl font-dancing font-bold gradient-text">Ana & João</span>
@@ -124,7 +117,6 @@ const Hero = () => {
                   Junte-se a nós neste dia especial que marcará o início da nossa nova jornada."
                 </p>
                 
-                {/* Mockup event cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                   <div className="bg-white/95 backdrop-blur-sm rounded-xl p-4 luxury-shadow">
                     <div className="font-semibold text-[#3C2B20] mb-1">Cerimônia</div>
@@ -143,7 +135,6 @@ const Hero = () => {
                   </div>
                 </div>
                 
-                {/* Premium CTA in mockup */}
                 <div className="mt-8">
                   <div className="inline-flex items-center space-x-2 bg-gradient-luxury text-white px-6 py-3 rounded-full font-medium">
                     <Heart className="h-4 w-4" fill="currentColor" />

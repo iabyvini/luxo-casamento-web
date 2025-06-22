@@ -7,19 +7,51 @@ import { useNavigate } from "react-router-dom";
 export const ExitIntentPopup = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [hasShown, setHasShown] = useState(false);
+  const [isActive, setIsActive] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Check if popup was already shown in this session
+    const sessionShown = sessionStorage.getItem('exitPopupShown');
+    if (sessionShown) {
+      setHasShown(true);
+      return;
+    }
+
+    // Start tracking user activity after 3 seconds
+    const activationTimer = setTimeout(() => {
+      setIsActive(true);
+    }, 3000);
+
     const handleMouseLeave = (e: MouseEvent) => {
-      if (e.clientY <= 0 && !hasShown) {
+      // Only trigger if cursor leaves from the top and user has been active
+      if (e.clientY <= 0 && !hasShown && isActive) {
         setIsVisible(true);
         setHasShown(true);
+        sessionStorage.setItem('exitPopupShown', 'true');
       }
     };
 
-    document.addEventListener('mouseleave', handleMouseLeave);
-    return () => document.removeEventListener('mouseleave', handleMouseLeave);
-  }, [hasShown]);
+    const handleBeforeUnload = () => {
+      if (!hasShown && isActive) {
+        setIsVisible(true);
+        setHasShown(true);
+        sessionStorage.setItem('exitPopupShown', 'true');
+      }
+    };
+
+    // Add listeners only after activation period
+    if (isActive) {
+      document.addEventListener('mouseleave', handleMouseLeave);
+      window.addEventListener('beforeunload', handleBeforeUnload);
+    }
+
+    return () => {
+      clearTimeout(activationTimer);
+      document.removeEventListener('mouseleave', handleMouseLeave);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [hasShown, isActive]);
 
   if (!isVisible) return null;
 
@@ -35,18 +67,15 @@ export const ExitIntentPopup = () => {
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 animate-fade-in">
       <div className="bg-white rounded-3xl luxury-shadow max-w-md w-full p-8 relative overflow-hidden animate-scale-in">
-        {/* Background decorations */}
-        <div className="absolute top-4 left-4 text-pink-200 opacity-30">
+        {/* Single background decoration - minimal */}
+        <div className="absolute top-4 right-4 text-amber-200 opacity-[0.08]">
           <Heart className="h-8 w-8" fill="currentColor" />
-        </div>
-        <div className="absolute bottom-4 right-4 text-amber-200 opacity-30">
-          <Sparkles className="h-8 w-8" fill="currentColor" />
         </div>
         
         {/* Close button */}
         <button
           onClick={handleClose}
-          className="absolute top-4 right-4 text-brown-400 hover:text-brown-600 transition-colors"
+          className="absolute top-4 right-4 text-[#3C2B20] hover:text-[#5D4037] transition-colors z-10"
         >
           <X className="h-6 w-6" />
         </button>
@@ -57,13 +86,13 @@ export const ExitIntentPopup = () => {
             <Gift className="h-8 w-8 text-white" />
           </div>
           
-          <h3 className="text-2xl font-playfair font-bold gradient-text mb-4">
+          <h3 className="text-2xl font-playfair font-bold text-[#3C2B20] mb-4">
             Espere! Oferta Especial
           </h3>
           
-          <p className="text-brown-600 mb-6 leading-relaxed">
+          <p className="text-[#5D4037] mb-6 leading-relaxed">
             Antes de sair, que tal criar seu site de casamento 
-            <span className="font-bold text-amber-700"> gratuitamente</span>? 
+            <span className="font-bold text-[#3C2B20]"> gratuitamente</span>? 
             Nosso quiz leva apenas 2 minutos!
           </p>
           
@@ -78,13 +107,13 @@ export const ExitIntentPopup = () => {
             
             <button
               onClick={handleClose}
-              className="w-full text-brown-500 text-sm hover:text-brown-600 transition-colors"
+              className="w-full text-[#5D4037] text-sm hover:text-[#3C2B20] transition-colors"
             >
               Não, obrigado
             </button>
           </div>
           
-          <div className="flex items-center justify-center mt-4 space-x-2 text-xs text-brown-500">
+          <div className="flex items-center justify-center mt-4 space-x-2 text-xs text-[#5D4037]">
             <Heart className="h-3 w-3" fill="currentColor" />
             <span>100% gratuito para começar</span>
           </div>

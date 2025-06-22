@@ -5,40 +5,28 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. */
-
 @layer base {
   :root {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
-
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
-
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-
     --primary: 222.2 47.4% 11.2%;
     --primary-foreground: 210 40% 98%;
-
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
-
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
-
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
-
     --radius: 0.5rem;
-
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -52,28 +40,20 @@
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
-
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-
     --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
-
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
-
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
@@ -98,7 +78,7 @@
   }
 }
 
-/* Enhanced luxury styles with premium typography - ONLY for institutional pages */
+/* Enhanced luxury styles - ONLY for institutional pages */
 .gradient-text {
   background: linear-gradient(135deg, #a67c52 0%, #d4af37 50%, #f4e4bc 100%);
   -webkit-background-clip: text;
@@ -117,9 +97,6 @@
 .luxury-card {
   @apply bg-white/95 backdrop-blur-md border border-brown-100/50 luxury-shadow rounded-2xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.02];
 }
-
-/* REMOVED: All floating animations from institutional pages */
-/* floating-animation, romantic-float, boho-float classes removed */
 
 .premium-glow {
   box-shadow: 0 0 30px rgba(212, 175, 55, 0.3), 0 0 60px rgba(212, 175, 55, 0.1);
@@ -238,9 +215,6 @@ html {
   transition: opacity 0.3s ease;
 }
 
-/* REMOVED: All decorative heart and sparkle animations */
-/* decorative-heart, decorative-sparkle, sparkle animation removed */
-
 /* Responsive utilities */
 @media (max-width: 768px) {
   .luxury-card {
@@ -269,24 +243,25 @@ html {
 }
 
 /* Sistema condicional para desativar dourado quando tema customizado está ativo */
-.custom-theme-active .bg-gradient-luxury {
+body.custom-theme-active .bg-gradient-luxury {
   background: var(--primary-color) !important;
 }
 
-.custom-theme-active .gradient-text {
-  background: var(--primary-color) !important;
+body.custom-theme-active .gradient-text {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%) !important;
   -webkit-background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
   background-clip: text !important;
 }
 
-.custom-theme-active .luxury-shadow {
-  box-shadow: 0 25px 50px -12px var(--primary-color)15, 0 10px 20px -5px var(--primary-color)08 !important;
+body.custom-theme-active .luxury-shadow {
+  box-shadow: 0 25px 50px -12px color-mix(in srgb, var(--primary-color) 15%, transparent), 
+              0 10px 20px -5px color-mix(in srgb, var(--primary-color) 8%, transparent) !important;
 }
 
 /* Background layer tokens para templates personalizados */
 .section-bg-dynamic {
-  background: var(--background-gradient);
+  background: var(--template-bg-gradient);
   position: relative;
 }
 
@@ -294,7 +269,51 @@ html {
   content: '';
   position: absolute;
   inset: 0;
-  background-image: var(--texture-overlay);
+  background-image: var(--template-bg-texture);
   opacity: 0.05;
   pointer-events: none;
+}
+
+/* Hero template backgrounds */
+.hero-template-bg {
+  background: var(--template-bg-gradient);
+  background-image: var(--template-bg-texture);
+}
+
+/* High contrast typography fixes */
+.text-contrast-primary {
+  color: #3C2B20 !important;
+  font-weight: 600;
+}
+
+.text-contrast-secondary {
+  color: #5D4037 !important;
+  font-weight: 500;
+}
+
+/* Remove all floating animations */
+.romantic-float,
+.boho-float,
+.floating-animation {
+  animation: none !important;
+  transform: none !important;
+}
+
+/* Animation utilities */
+.animate-fade-in {
+  animation: fadeIn 1s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-scale-in {
+  animation: scaleIn 0.3s ease-out;
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }

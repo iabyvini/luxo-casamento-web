@@ -1,3 +1,4 @@
+
 import { Card, CardContent } from "@/components/ui/card";
 import { 
   Palette, 
@@ -14,7 +15,6 @@ import {
   Zap
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { ScrollToSection } from "./SmoothScroll";
 
 const Features = () => {
   const navigate = useNavigate();
@@ -92,22 +92,9 @@ const Features = () => {
 
   return (
     <section id="funcionalidades" className="py-24 bg-white relative overflow-hidden">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 opacity-5">
-        <div className="absolute top-20 right-20 w-64 h-64 rounded-full bg-gradient-luxury"></div>
-        <div className="absolute bottom-20 left-20 w-48 h-48 rounded-full bg-gradient-luxury"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full bg-gradient-luxury"></div>
-      </div>
-
-      {/* Floating romantic elements */}
-      <div className="absolute top-32 left-16 text-pink-200 romantic-float">
-        <Heart className="h-6 w-6" fill="currentColor" />
-      </div>
-      <div className="absolute top-48 right-24 text-amber-200 romantic-float" style={{ animationDelay: '2s' }}>
-        <Sparkles className="h-5 w-5" fill="currentColor" />
-      </div>
-      <div className="absolute bottom-32 right-32 text-rose-200 romantic-float" style={{ animationDelay: '4s' }}>
-        <Star className="h-6 w-6" fill="currentColor" />
+      {/* Single minimal decorative element */}
+      <div className="absolute top-32 right-24 opacity-[0.08]">
+        <div className="w-8 h-8 rounded-full bg-gradient-luxury"></div>
       </div>
 
       <div className="container mx-auto px-4 relative">
@@ -116,21 +103,21 @@ const Features = () => {
             <div className="bg-gradient-luxury p-2 rounded-full">
               <Zap className="h-4 w-4 text-white" />
             </div>
-            <span className="text-sm font-medium text-brown-700">
+            <span className="text-sm font-medium text-[#3C2B20]">
               Funcionalidades que Encantam
             </span>
           </div>
           
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-playfair font-bold mb-8">
-            <span className="text-brown-800">Tudo que Vocês Precisam</span>
+            <span className="text-[#3C2B20]">Tudo que Vocês Precisam</span>
             <span className="block gradient-text text-5xl md:text-6xl lg:text-7xl font-dancing mt-2">
               para um Dia Perfeito
             </span>
           </h2>
           
-          <p className="text-xl md:text-2xl text-brown-600 max-w-3xl mx-auto leading-relaxed font-light">
+          <p className="text-xl md:text-2xl text-[#5D4037] max-w-3xl mx-auto leading-relaxed font-light">
             Ferramentas inteligentes que transformam a organização do seu casamento em uma 
-            <span className="font-medium text-amber-700"> experiência mágica e sem estresse</span>.
+            <span className="font-medium text-[#3C2B20]"> experiência mágica e sem estresse</span>.
           </p>
         </div>
 
@@ -142,26 +129,23 @@ const Features = () => {
               className="luxury-card hover:scale-105 transition-all duration-500 group cursor-pointer relative overflow-hidden elegant-entrance"
               style={{ animationDelay: feature.delay }}
             >
-              {/* Gradient Background Overlay */}
               <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}></div>
               
               <CardContent className="p-8 text-center relative">
-                {/* Animated Icon Container */}
                 <div className={`bg-gradient-to-br ${feature.color} p-4 rounded-2xl inline-flex mb-6 group-hover:scale-110 transition-all duration-300 shadow-lg`}>
                   <feature.icon className="h-8 w-8 text-white" />
                 </div>
                 
-                <h3 className="text-lg font-playfair font-semibold text-brown-800 mb-3">
+                <h3 className="text-lg font-playfair font-semibold text-[#3C2B20] mb-3">
                   {feature.title}
                 </h3>
                 
-                <p className="text-brown-600 text-sm leading-relaxed mb-4 font-light">
+                <p className="text-[#5D4037] text-sm leading-relaxed mb-4 font-light">
                   {feature.description}
                 </p>
                 
-                {/* Emotional Benefit */}
                 <div className="bg-gradient-to-r from-amber-50 to-rose-50 rounded-full px-4 py-2 border border-amber-200/50">
-                  <span className="text-xs font-medium text-amber-700 flex items-center justify-center space-x-1">
+                  <span className="text-xs font-medium text-[#3C2B20] flex items-center justify-center space-x-1">
                     <Heart className="h-3 w-3" fill="currentColor" />
                     <span>{feature.emotion}</span>
                   </span>
@@ -171,18 +155,12 @@ const Features = () => {
           ))}
         </div>
 
-        {/* Enhanced CTA Section with improved CTAs */}
+        {/* Enhanced CTA Section */}
         <div className="text-center elegant-entrance" style={{ animationDelay: '0.8s' }}>
           <div className="luxury-card rounded-3xl p-12 md:p-16 bg-gradient-to-br from-amber-50 via-rose-50 to-orange-50 border-2 border-amber-200/50 relative overflow-hidden">
-            {/* Background decorative hearts */}
-            <div className="absolute top-8 left-8 text-pink-200 opacity-30">
-              <Heart className="h-12 w-12" fill="currentColor" />
-            </div>
-            <div className="absolute bottom-8 right-8 text-amber-200 opacity-30">
+            {/* Single minimal background decoration */}
+            <div className="absolute bottom-8 right-8 text-amber-200 opacity-[0.08]">
               <Sparkles className="h-12 w-12" fill="currentColor" />
-            </div>
-            <div className="absolute top-8 right-8 text-rose-200 opacity-30">
-              <Star className="h-10 w-10" fill="currentColor" />
             </div>
             
             <div className="max-w-3xl mx-auto relative">
@@ -192,13 +170,13 @@ const Features = () => {
                 </div>
               </div>
               
-              <h3 className="text-4xl md:text-5xl font-playfair font-bold gradient-text mb-6">
+              <h3 className="text-4xl md:text-5xl font-playfair font-bold text-[#3C2B20] mb-6">
                 Prontos para Começar esta Jornada?
               </h3>
               
-              <p className="text-brown-600 mb-10 text-xl leading-relaxed font-light">
-                Junte-se a mais de <span className="font-bold text-amber-700">10.000 casais apaixonados</span> que já criaram 
-                seus sites de casamento conosco. <span className="font-medium text-rose-700">O amor de vocês merece ser celebrado com estilo!</span>
+              <p className="text-[#5D4037] mb-10 text-xl leading-relaxed font-light">
+                Junte-se a mais de <span className="font-bold text-[#3C2B20]">10.000 casais apaixonados</span> que já criaram 
+                seus sites de casamento conosco. <span className="font-medium text-[#3C2B20]">O amor de vocês merece ser celebrado com estilo!</span>
               </p>
               
               <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
@@ -211,7 +189,7 @@ const Features = () => {
                   <Heart className="ml-3 h-5 w-5 group-hover:scale-110 transition-transform" fill="currentColor" />
                 </button>
                 
-                <div className="flex items-center space-x-2 text-brown-600">
+                <div className="flex items-center space-x-2 text-[#5D4037]">
                   <div className="flex -space-x-1">
                     {[...Array(5)].map((_, i) => (
                       <Star key={i} className="h-5 w-5 text-amber-400" fill="currentColor" />

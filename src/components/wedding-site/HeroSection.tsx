@@ -3,6 +3,7 @@ import { Heart, Calendar, MapPin, Sparkles, Leaf, Waves, Church, Crown } from "l
 import { useState } from "react";
 import { QuizAnswers } from "@/types/quiz";
 import { useVisualTokens } from "@/contexts/VisualTokensContext";
+import { renderContextualShape } from "@/utils/shapeTokens";
 import PhotoUpload from "./PhotoUpload";
 
 interface HeroSectionProps {
@@ -45,57 +46,45 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
     }
   };
 
-  // Sistema de limite absoluto: apenas 1 elemento decorativo por seção
-  const renderSingleDecorative = () => {
-    if (!visualTokens?.decorations) return null;
+  // Get template ID for contextual shapes
+  const getTemplateId = () => {
+    if (!quizAnswers) return 'minimal-modern';
+    
+    const styleLocalMap: Record<string, string> = {
+      'Romântico-Fazenda': 'romantic-garden',
+      'Romântico-Praia': 'romantic-beach',
+      'Minimalista': 'minimal-modern',
+      'Boho': 'boho-forest',
+      'Clássico': 'classic-cathedral',
+      'Vintage': 'vintage-mansion'
+    };
 
-    // Escolher apenas 1 elemento baseado no template
-    const element = visualTokens.decorations.heroElements[0];
-    if (!element) return null;
+    const key = quizAnswers.local ? `${quizAnswers.estilo}-${quizAnswers.local}` : quizAnswers.estilo;
+    return styleLocalMap[key] || styleLocalMap[quizAnswers.estilo] || 'minimal-modern';
+  };
 
-    const IconComponent = getDecorationIcon(element);
-    if (!IconComponent) return null;
+  // Render single contextual decorative element
+  const renderContextualDecorative = () => {
+    const templateId = getTemplateId();
+    const shapeConfig = renderContextualShape(templateId);
+    const IconComponent = shapeConfig.component;
 
     return (
-      <div className="absolute top-32 right-24 opacity-[0.08]">
+      <div className={shapeConfig.className} style={shapeConfig.style}>
         <IconComponent
           className="h-8 w-8"
-          style={{ color: visualTokens.colors.primary }}
-          fill={element.includes('heart') || element.includes('star') ? "currentColor" : "none"}
+          style={{ color: visualTokens?.colors.primary || '#3C2B20' }}
+          fill={templateId.includes('romantic') || templateId.includes('boho') ? "currentColor" : "none"}
         />
       </div>
     );
   };
 
-  const getDecorationIcon = (element: string) => {
-    const iconMap: Record<string, any> = {
-      'hearts': Heart,
-      'roses': Heart,
-      'butterflies': Sparkles,
-      'leaves': Leaf,
-      'feathers': Leaf,
-      'waves': Waves,
-      'stars': Sparkles,
-      'crowns': Crown,
-      'ornate-borders': Crown,
-      'geometric-lines': Sparkles
-    };
-
-    return iconMap[element] || Heart;
-  };
-
   const getBackgroundStyle = () => {
     if (visualTokens && isCustomThemeActive) {
-      return {
-        background: visualTokens.colors.background,
-        backgroundImage: visualTokens.colors.textureOverlay
-      };
+      return 'hero-template-bg';
     }
-    
-    // Fallback para quando não há tokens ativos
-    return {
-      background: 'linear-gradient(135deg, #f8f6f3 0%, #f1ede7 50%, #e8ddd4 100%)'
-    };
+    return '';
   };
 
   const getTypographyStyle = () => {
@@ -108,7 +97,7 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
     return {};
   };
 
-  // Determinar se usar cores personalizadas ou padrão
+  // Always use high contrast colors
   const getTextColor = (type: 'primary' | 'secondary') => {
     if (isCustomThemeActive && visualTokens) {
       return type === 'primary' ? visualTokens.colors.primary : visualTokens.colors.secondary;
@@ -117,15 +106,14 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
   };
 
   return (
-    <section id="home" className="relative min-h-screen flex items-center justify-center py-20 overflow-hidden">
-      {/* Background dinâmico ou padrão */}
-      <div 
-        className={`absolute inset-0 ${isCustomThemeActive ? 'section-bg-dynamic' : ''}`}
-        style={getBackgroundStyle()}
-      />
+    <section id="home" className={`relative min-h-screen flex items-center justify-center py-20 overflow-hidden ${getBackgroundStyle()}`}>
+      {/* Template-specific background */}
+      {!isCustomThemeActive && (
+        <div className="absolute inset-0 bg-gradient-to-br from-amber-50 via-rose-50 to-orange-50" />
+      )}
       
-      {/* Sistema de limite absoluto: apenas 1 decoração por seção */}
-      {renderSingleDecorative()}
+      {/* Single contextual decorative element */}
+      {renderContextualDecorative()}
       
       {/* Content */}
       <div className="relative z-10 text-center max-w-6xl mx-auto px-4">
@@ -133,7 +121,7 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
           
           {/* Left Column - Text Content */}
           <div className="lg:text-left">
-            {/* Couple Names - tipografia com contraste fixo */}
+            {/* Couple Names */}
             <div className="mb-8">
               <div className="inline-flex items-center space-x-4 mb-4">
                 <Heart 
@@ -218,7 +206,7 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
             </div>
           </div>
 
-          {/* Right Column - Photo Upload */}
+          {/* Right Column - Photo Upload with contextual frame */}
           <div className="flex justify-center lg:justify-end">
             <PhotoUpload
               onPhotoChange={setCouplePhoto}
