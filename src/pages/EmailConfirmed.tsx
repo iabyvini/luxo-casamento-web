@@ -16,17 +16,55 @@ const EmailConfirmed = () => {
   useEffect(() => {
     const handleEmailConfirmation = async () => {
       try {
-        // Parse URL hash parameters
+        console.log('EmailConfirmed - Starting confirmation process');
+        console.log('Location:', location);
+        console.log('Location hash:', location.hash);
+        console.log('Location search:', location.search);
+        
+        // Parse URL hash parameters (Supabase sends tokens in hash)
         const hashParams = new URLSearchParams(location.hash.substring(1));
         const accessToken = hashParams.get('access_token');
         const refreshToken = hashParams.get('refresh_token');
         const type = hashParams.get('type');
+        
+        console.log('Hash params:', {
+          accessToken: accessToken ? 'present' : 'missing',
+          refreshToken: refreshToken ? 'present' : 'missing',
+          type,
+          allParams: Object.fromEntries(hashParams.entries())
+        });
 
-        if (accessToken && refreshToken && type === 'signup') {
+        // Also try to get from search params as fallback
+        const searchParams = new URLSearchParams(location.search);
+        const searchAccessToken = searchParams.get('access_token');
+        const searchRefreshToken = searchParams.get('refresh_token');
+        const searchType = searchParams.get('type');
+        
+        console.log('Search params:', {
+          accessToken: searchAccessToken ? 'present' : 'missing',
+          refreshToken: searchRefreshToken ? 'present' : 'missing',
+          type: searchType,
+          allParams: Object.fromEntries(searchParams.entries())
+        });
+
+        // Use tokens from hash first, then fallback to search
+        const finalAccessToken = accessToken || searchAccessToken;
+        const finalRefreshToken = refreshToken || searchRefreshToken;
+        const finalType = type || searchType;
+
+        console.log('Final tokens to use:', {
+          accessToken: finalAccessToken ? 'present' : 'missing',
+          refreshToken: finalRefreshToken ? 'present' : 'missing',
+          type: finalType
+        });
+
+        if (finalAccessToken && finalRefreshToken && finalType === 'signup') {
+          console.log('Setting session with tokens...');
+          
           // Set the session with the tokens from the email link
           const { error } = await supabase.auth.setSession({
-            access_token: accessToken,
-            refresh_token: refreshToken,
+            access_token: finalAccessToken,
+            refresh_token: finalRefreshToken,
           });
 
           if (error) {
@@ -40,6 +78,7 @@ const EmailConfirmed = () => {
             return;
           }
 
+          console.log('Session set successfully');
           setStatus('success');
           toast({
             title: "Email confirmado!",
@@ -59,6 +98,7 @@ const EmailConfirmed = () => {
           }, 1000);
 
         } else {
+          console.log('Invalid or missing tokens/type');
           setStatus('error');
           toast({
             title: "Link inválido",
@@ -78,7 +118,7 @@ const EmailConfirmed = () => {
     };
 
     handleEmailConfirmation();
-  }, [location.hash, navigate, toast]);
+  }, [location.hash, location.search, navigate, toast]);
 
   const handleManualRedirect = () => {
     navigate('/dashboard');

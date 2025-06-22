@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,7 +22,10 @@ const PublicSite = () => {
   const [error, setError] = useState<string | null>(null);
   const [guestName, setGuestName] = useState("");
   const [guestEmail, setGuestEmail] = useState("");
-  const [isAttending, setIsAttending] = useState<boolean>(true);
+  const [guestPhone, setGuestPhone] = useState("");
+  const [willAttend, setWillAttend] = useState<boolean>(true);
+  const [companionCount, setCompanionCount] = useState(0);
+  const [dietaryRestrictions, setDietaryRestrictions] = useState("");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -38,7 +42,7 @@ const PublicSite = () => {
         
         // Increment view count
         const { error: incrementError } = await supabase.rpc('increment_site_views', { 
-          site_slug: slug as string 
+          site_slug: slug 
         });
         
         if (incrementError) {
@@ -92,13 +96,16 @@ const PublicSite = () => {
 
     try {
       const { data, error } = await supabase
-        .from('guests')
+        .from('rsvp_responses')
         .insert([
           {
             site_id: siteData.id,
-            name: guestName,
-            email: guestEmail,
-            is_attending: isAttending,
+            guest_name: guestName,
+            guest_email: guestEmail,
+            guest_phone: guestPhone,
+            will_attend: willAttend,
+            companion_count: companionCount,
+            dietary_restrictions: dietaryRestrictions,
             message: message,
           },
         ]);
@@ -115,7 +122,10 @@ const PublicSite = () => {
       // Clear form fields
       setGuestName("");
       setGuestEmail("");
-      setIsAttending(true);
+      setGuestPhone("");
+      setWillAttend(true);
+      setCompanionCount(0);
+      setDietaryRestrictions("");
       setMessage("");
     } catch (error: any) {
       console.error('Error submitting RSVP:', error);
@@ -180,8 +190,10 @@ const PublicSite = () => {
       <div className="container mx-auto px-4">
         {/* Header Section */}
         <header className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-rose-700 mb-2">{siteData.title}</h1>
-          <p className="text-gray-600">{siteData.description}</p>
+          <h1 className="text-4xl font-bold text-rose-700 mb-2">{siteData.couple_names}</h1>
+          <p className="text-gray-600">
+            {siteData.wedding_date && format(new Date(siteData.wedding_date), 'dd/MM/yyyy')}
+          </p>
         </header>
 
         {/* Event Details Section */}
@@ -192,22 +204,8 @@ const PublicSite = () => {
               <div className="flex items-center text-gray-700 mb-2">
                 <CalendarDays className="h-5 w-5 mr-2 text-rose-500" />
                 <span>
-                  {format(new Date(siteData.event_date), 'EEEE, dd \'de\' MMMM \'de\' yyyy', { locale: ptBR })}
+                  {siteData.wedding_date && format(new Date(siteData.wedding_date), 'EEEE, dd \'de\' MMMM \'de\' yyyy', { locale: ptBR })}
                 </span>
-              </div>
-              <div className="flex items-center text-gray-700 mb-2">
-                <Clock className="h-5 w-5 mr-2 text-rose-500" />
-                <span>{siteData.event_time}</span>
-              </div>
-            </div>
-            <div>
-              <div className="flex items-center text-gray-700 mb-2">
-                <MapPin className="h-5 w-5 mr-2 text-rose-500" />
-                <span>{siteData.location}</span>
-              </div>
-              <div className="flex items-center text-gray-700 mb-2">
-                <Users className="h-5 w-5 mr-2 text-rose-500" />
-                <span>{siteData.dress_code}</span>
               </div>
             </div>
           </div>
@@ -242,34 +240,72 @@ const PublicSite = () => {
               />
             </div>
             <div>
+              <Label htmlFor="guestPhone" className="text-gray-800">Telefone (Opcional)</Label>
+              <Input
+                id="guestPhone"
+                type="tel"
+                placeholder="(11) 99999-9999"
+                value={guestPhone}
+                onChange={(e) => setGuestPhone(e.target.value)}
+                className="border-rose-300 focus:border-rose-500"
+              />
+            </div>
+            <div>
               <Label className="text-gray-800">Confirmação</Label>
               <div className="flex items-center space-x-4">
                 <Button
                   type="button"
-                  variant={isAttending ? "default" : "outline"}
-                  className={` ${isAttending
+                  variant={willAttend ? "default" : "outline"}
+                  className={` ${willAttend
                     ? "bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white"
                     : "border-rose-300 text-rose-600 hover:bg-rose-50"
                     }`}
-                  onClick={() => setIsAttending(true)}
+                  onClick={() => setWillAttend(true)}
                 >
                   <CheckCircle className="h-4 w-4 mr-2" />
                   Sim, estarei presente
                 </Button>
                 <Button
                   type="button"
-                  variant={!isAttending ? "default" : "outline"}
-                  className={`${!isAttending
+                  variant={!willAttend ? "default" : "outline"}
+                  className={`${!willAttend
                     ? "bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white"
                     : "border-rose-300 text-rose-600 hover:bg-rose-50"
                     }`}
-                  onClick={() => setIsAttending(false)}
+                  onClick={() => setWillAttend(false)}
                 >
                   <XCircle className="h-4 w-4 mr-2" />
                   Não poderei comparecer
                 </Button>
               </div>
             </div>
+            {willAttend && (
+              <div>
+                <Label htmlFor="companionCount" className="text-gray-800">Número de Acompanhantes</Label>
+                <Input
+                  id="companionCount"
+                  type="number"
+                  min="0"
+                  max="10"
+                  value={companionCount}
+                  onChange={(e) => setCompanionCount(parseInt(e.target.value) || 0)}
+                  className="border-rose-300 focus:border-rose-500"
+                />
+              </div>
+            )}
+            {willAttend && (
+              <div>
+                <Label htmlFor="dietaryRestrictions" className="text-gray-800">Restrições Alimentares (Opcional)</Label>
+                <Input
+                  id="dietaryRestrictions"
+                  type="text"
+                  placeholder="Ex: Vegetariano, alérgico a frutos do mar..."
+                  value={dietaryRestrictions}
+                  onChange={(e) => setDietaryRestrictions(e.target.value)}
+                  className="border-rose-300 focus:border-rose-500"
+                />
+              </div>
+            )}
             <div>
               <Label htmlFor="message" className="text-gray-800">Mensagem (Opcional)</Label>
               <Textarea
@@ -288,27 +324,6 @@ const PublicSite = () => {
               {submitting ? 'Enviando...' : 'Confirmar Presença'}
             </Button>
           </form>
-        </section>
-
-        {/* Contact Section */}
-        <section className="bg-white/80 backdrop-blur-sm border border-rose-200 rounded-2xl p-6 shadow-lg">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Entre em Contato</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <div className="flex items-center text-gray-700 mb-2">
-                <Mail className="h-5 w-5 mr-2 text-rose-500" />
-                <a href={`mailto:${siteData.contact_email}`} className="hover:text-rose-600">
-                  {siteData.contact_email}
-                </a>
-              </div>
-            </div>
-            <div>
-              <div className="flex items-center text-gray-700 mb-2">
-                <Phone className="h-5 w-5 mr-2 text-rose-500" />
-                <span>{siteData.contact_phone}</span>
-              </div>
-            </div>
-          </div>
         </section>
       </div>
     </div>
