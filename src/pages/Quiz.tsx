@@ -5,10 +5,16 @@ import { ArrowLeft, Sparkles } from "lucide-react";
 import QuizStep from "@/components/QuizStep";
 import { QuizQuestion, QuizAnswers } from "@/types/quiz";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const Quiz = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [answers, setAnswers] = useState<QuizAnswers>({
     estilo: '',
     local: '',
@@ -73,12 +79,99 @@ const Quiz = () => {
     }));
   };
 
-  const handleNext = () => {
+  const generateSlug = (coupleNames: string, weddingDate: string) => {
+    const names = coupleNames.toLowerCase()
+      .replace(/[^a-z0-9\s&-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/&/g, 'e');
+    
+    const year = new Date(weddingDate).getFullYear();
+    const timestamp = Date.now().toString().slice(-4);
+    
+    return `${names}-${year}-${timestamp}`;
+  };
+
+  const getTemplateFromStyle = (style: string) => {
+    const templateMap: Record<string, string> = {
+      'Clássico': 'Classic Elegance',
+      'Moderno': 'Modern Minimalist',
+      'Romântico': 'Romantic Garden',
+      'Minimalista': 'Clean Modern',
+      'Vintage': 'Vintage Romance',
+      'Boho': 'Boho Chic'
+    };
+    return templateMap[style] || 'Classic Elegance';
+  };
+
+  const handleNext = async () => {
     if (currentStep < questions.length - 1) {
       setCurrentStep(currentStep + 1);
     } else {
-      // Submeter quiz e ir para preview
-      navigate('/preview', { state: { quizAnswers: answers } });
+      await submitQuiz();
+    }
+  };
+
+  const submitQuiz = async () => {
+    if (!user) {
+      toast({
+        title: "Erro de autenticação",
+        description: "Usuário não encontrado. Faça login novamente.",
+        variant: "destructive",
+      });
+      navigate('/auth');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      const slug = generateSlug(answers.nomes, answers.data_casamento);
+      const templateName = getTemplateFromStyle(answers.estilo);
+      
+      // Gerar mensagem de boas-vindas simples
+      const welcomeMessage = `Bem-vindos ao nosso site de casamento! Estamos muito felizes em compartilhar este momento especial com vocês. Confirme sua presença e deixe seu carinho para nós!`;
+
+      const { data, error } = await supabase
+        .from('wedding_sites')
+        .insert({
+          user_id: user.id,
+          slug,
+          couple_names: answers.nomes,
+          wedding_date: answers.data_casamento,
+          template_name: templateName,
+          quiz_answers: answers,
+          ai_welcome_message: welcomeMessage,
+          custom_content: {
+            hero: {
+              title: answers.nomes,
+              subtitle: `${new Date(answers.data_casamento).toLocaleDateString('pt-BR')}`,
+              message: welcomeMessage
+            }
+          },
+          is_published: false
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Site criado com sucesso!",
+        description: "Seu site de casamento foi gerado. Agora você pode editá-lo e publicá-lo.",
+      });
+
+      // Redirecionar para o editor
+      navigate(`/editor/${data.id}`);
+
+    } catch (error: any) {
+      console.error('Erro ao criar site:', error);
+      toast({
+        title: "Erro ao criar site",
+        description: error.message || "Não foi possível criar seu site. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -97,11 +190,11 @@ const Quiz = () => {
         <div className="flex items-center justify-between mb-8">
           <Button
             variant="ghost"
-            onClick={() => navigate('/')}
+            onClick={() => navigate('/dashboard')}
             className="text-brown-600 hover:text-primary"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar ao Início
+            Voltar ao Dashboard
           </Button>
           
           <div className="text-center">
@@ -136,6 +229,7 @@ const Quiz = () => {
           isFirst={currentStep === 0}
           isLast={currentStep === questions.length - 1}
           isValid={isValid}
+          isSubmitting={isSubmitting}
         />
       </div>
     </div>

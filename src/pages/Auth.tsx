@@ -1,40 +1,49 @@
 
 import { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Heart, ArrowLeft, Loader2 } from "lucide-react";
-import { PreviewData } from "@/types/quiz";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Auth = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [isLogin, setIsLogin] = useState(false);
+  const { signIn, signUp } = useAuth();
+  const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
+    fullName: '',
     confirmPassword: ''
   });
 
-  const previewData = location.state?.previewData as PreviewData;
+  const from = location.state?.from?.pathname || '/dashboard';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      // Aqui será integrado com Supabase quando disponível
-      console.log('Dados para autenticação:', formData);
-      console.log('Dados do site para salvar:', previewData);
-      
-      // Simular delay de autenticação
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Navegar para editor após autenticação
-      navigate('/editor', { state: { previewData, authenticated: true } });
-    } catch (error) {
+      if (isLogin) {
+        const { error } = await signIn(formData.email, formData.password);
+        if (!error) {
+          navigate(from, { replace: true });
+        }
+      } else {
+        if (formData.password !== formData.confirmPassword) {
+          throw new Error('As senhas não coincidem');
+        }
+        
+        const { error } = await signUp(formData.email, formData.password, formData.fullName);
+        if (!error) {
+          // Aguardar confirmação por email antes de redirecionar
+          setIsLogin(true);
+        }
+      }
+    } catch (error: any) {
       console.error('Erro na autenticação:', error);
     } finally {
       setIsLoading(false);
@@ -49,43 +58,60 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-brown-50 to-gold-50 flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-rose-50 to-pink-50 flex items-center justify-center">
       <div className="container mx-auto px-4 py-6">
         <div className="max-w-md mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
             <Button
               variant="ghost"
-              onClick={() => navigate(-1)}
-              className="text-brown-600 hover:text-primary mb-4"
+              onClick={() => navigate('/')}
+              className="text-rose-600 hover:text-rose-700 mb-4"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
-              Voltar ao Preview
+              Voltar ao Início
             </Button>
             
             <div className="inline-flex items-center space-x-2 mb-4">
-              <div className="bg-gradient-luxury p-2 rounded-lg">
+              <div className="bg-gradient-to-r from-rose-500 to-pink-500 p-2 rounded-lg">
                 <Heart className="h-6 w-6 text-white" fill="white" />
               </div>
-              <h1 className="text-2xl font-bold gradient-text">Casamento Luxo</h1>
+              <h1 className="text-2xl font-bold text-rose-600">Casamento Luxo</h1>
             </div>
             
-            <h2 className="text-xl font-semibold text-brown-800 mb-2">
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">
               {isLogin ? 'Entre na sua conta' : 'Crie sua conta gratuitamente'}
             </h2>
-            <p className="text-brown-600">
+            <p className="text-gray-600">
               {isLogin 
                 ? 'Acesse seu painel e gerencie seus sites' 
-                : 'Salve seu site personalizado e acesse quando quiser'
+                : 'Comece a criar sites de casamento únicos'
               }
             </p>
           </div>
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="luxury-card rounded-2xl p-8">
+          <form onSubmit={handleSubmit} className="bg-white/80 backdrop-blur-sm border border-rose-200 rounded-2xl p-8 shadow-lg">
             <div className="space-y-4">
+              {!isLogin && (
+                <div>
+                  <Label htmlFor="fullName" className="text-gray-800">
+                    Nome Completo
+                  </Label>
+                  <Input
+                    id="fullName"
+                    type="text"
+                    value={formData.fullName}
+                    onChange={(e) => handleInputChange('fullName', e.target.value)}
+                    placeholder="Seu nome completo"
+                    className="border-rose-300 focus:border-rose-500"
+                    required={!isLogin}
+                  />
+                </div>
+              )}
+
               <div>
-                <Label htmlFor="email" className="text-brown-800">
+                <Label htmlFor="email" className="text-gray-800">
                   E-mail
                 </Label>
                 <Input
@@ -94,13 +120,13 @@ const Auth = () => {
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
                   placeholder="seu@email.com"
-                  className="border-brown-300 focus:border-primary"
+                  className="border-rose-300 focus:border-rose-500"
                   required
                 />
               </div>
 
               <div>
-                <Label htmlFor="password" className="text-brown-800">
+                <Label htmlFor="password" className="text-gray-800">
                   Senha
                 </Label>
                 <Input
@@ -109,14 +135,14 @@ const Auth = () => {
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
                   placeholder="Sua senha"
-                  className="border-brown-300 focus:border-primary"
+                  className="border-rose-300 focus:border-rose-500"
                   required
                 />
               </div>
 
               {!isLogin && (
                 <div>
-                  <Label htmlFor="confirmPassword" className="text-brown-800">
+                  <Label htmlFor="confirmPassword" className="text-gray-800">
                     Confirmar Senha
                   </Label>
                   <Input
@@ -125,7 +151,7 @@ const Auth = () => {
                     value={formData.confirmPassword}
                     onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                     placeholder="Confirme sua senha"
-                    className="border-brown-300 focus:border-primary"
+                    className="border-rose-300 focus:border-rose-500"
                     required
                   />
                 </div>
@@ -135,7 +161,7 @@ const Auth = () => {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full mt-6 bg-gradient-luxury hover:opacity-90 text-white"
+              className="w-full mt-6 bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white"
             >
               {isLoading ? (
                 <>
@@ -151,7 +177,7 @@ const Auth = () => {
               <button
                 type="button"
                 onClick={() => setIsLogin(!isLogin)}
-                className="text-primary hover:underline"
+                className="text-rose-600 hover:text-rose-700 hover:underline"
               >
                 {isLogin 
                   ? 'Não tem conta? Cadastre-se gratuitamente' 
@@ -160,21 +186,6 @@ const Auth = () => {
               </button>
             </div>
           </form>
-
-          {/* Preview Info */}
-          {previewData && (
-            <div className="mt-6 p-4 bg-white/80 rounded-lg border border-brown-200">
-              <h3 className="font-semibold text-brown-800 mb-2">
-                Seu site será salvo:
-              </h3>
-              <p className="text-sm text-brown-600">
-                <strong>{previewData.coupleNames}</strong> - {previewData.templateName}
-              </p>
-              <p className="text-sm text-brown-500">
-                Data: {new Date(previewData.weddingDate).toLocaleDateString('pt-BR')}
-              </p>
-            </div>
-          )}
         </div>
       </div>
     </div>

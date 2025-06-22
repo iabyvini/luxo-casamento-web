@@ -5,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Plus, ExternalLink, Edit, Copy, Trash2, BarChart3 } from 'lucide-react';
+import { Plus, ExternalLink, Edit, Copy, Trash2, BarChart3, Eye, DollarSign } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
@@ -20,12 +20,14 @@ interface WeddingSite {
   is_published: boolean;
   views_count: number;
   created_at: string;
+  custom_content?: any;
 }
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
   const [sites, setSites] = useState<WeddingSite[]>([]);
   const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState({ totalViews: 0, totalSites: 0, publishedSites: 0 });
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -41,7 +43,18 @@ const Dashboard = () => {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+      
       setSites(data || []);
+      
+      // Calcular estatísticas
+      const totalViews = data?.reduce((sum, site) => sum + (site.views_count || 0), 0) || 0;
+      const publishedSites = data?.filter(site => site.is_published).length || 0;
+      
+      setStats({
+        totalViews,
+        totalSites: data?.length || 0,
+        publishedSites
+      });
     } catch (error: any) {
       toast({
         title: "Erro ao carregar sites",
@@ -58,11 +71,46 @@ const Dashboard = () => {
   };
 
   const handleViewSite = (slug: string) => {
-    window.open(`/${slug}`, '_blank');
+    // URL única real do site
+    const siteUrl = `${window.location.origin}/site/${slug}`;
+    window.open(siteUrl, '_blank');
   };
 
   const handleEditSite = (siteId: string) => {
     navigate(`/editor/${siteId}`);
+  };
+
+  const handlePublishToggle = async (siteId: string, currentStatus: boolean) => {
+    try {
+      const { error } = await supabase
+        .from('wedding_sites')
+        .update({ is_published: !currentStatus })
+        .eq('id', siteId);
+
+      if (error) throw error;
+      
+      toast({
+        title: !currentStatus ? "Site publicado!" : "Site despublicado",
+        description: !currentStatus ? "Seu site está agora acessível publicamente" : "Seu site foi removido do ar",
+      });
+      
+      fetchSites();
+    } catch (error: any) {
+      toast({
+        title: "Erro ao alterar status",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleCopyUrl = (slug: string) => {
+    const siteUrl = `${window.location.origin}/site/${slug}`;
+    navigator.clipboard.writeText(siteUrl);
+    toast({
+      title: "URL copiada!",
+      description: "Link do seu site foi copiado para a área de transferência",
+    });
   };
 
   const handleDuplicateSite = async (site: WeddingSite) => {
@@ -77,6 +125,7 @@ const Dashboard = () => {
           wedding_date: site.wedding_date,
           template_name: site.template_name,
           quiz_answers: {},
+          custom_content: site.custom_content || {},
           is_published: false,
         });
 
@@ -130,9 +179,9 @@ const Dashboard = () => {
       <div className="container mx-auto px-4 py-8">
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-64 bg-gray-200 rounded"></div>
+              <div key={i} className="h-32 bg-gray-200 rounded"></div>
             ))}
           </div>
         </div>
@@ -145,11 +194,11 @@ const Dashboard = () => {
       <header className="bg-white shadow-sm border-b">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Meus Sites de Casamento</h1>
+            <h1 className="text-2xl font-bold text-gray-900">Dashboard - Casamento Luxo</h1>
             <p className="text-gray-600">Bem-vindo, {user?.email}</p>
           </div>
           <div className="flex items-center gap-4">
-            <Button onClick={handleCreateSite} className="flex items-center gap-2">
+            <Button onClick={handleCreateSite} className="flex items-center gap-2 bg-rose-500 hover:bg-rose-600">
               <Plus className="h-4 w-4" />
               Criar Novo Site
             </Button>
@@ -161,6 +210,37 @@ const Dashboard = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
+        {/* Estatísticas */}
+        <div className="grid gap-6 md:grid-cols-3 mb-8">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total de Sites</CardTitle>
+              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalSites}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Sites Publicados</CardTitle>
+              <Eye className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.publishedSites}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total de Visualizações</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.totalViews}</div>
+            </CardContent>
+          </Card>
+        </div>
+
         {sites.length === 0 ? (
           <div className="text-center py-12">
             <div className="max-w-md mx-auto">
@@ -170,7 +250,7 @@ const Dashboard = () => {
               <p className="text-gray-600 mb-6">
                 Crie seu primeiro site de casamento personalizado em poucos minutos!
               </p>
-              <Button onClick={handleCreateSite} size="lg" className="flex items-center gap-2">
+              <Button onClick={handleCreateSite} size="lg" className="flex items-center gap-2 bg-rose-500 hover:bg-rose-600">
                 <Plus className="h-5 w-5" />
                 Criar Meu Primeiro Site
               </Button>
@@ -197,7 +277,9 @@ const Dashboard = () => {
                   <div className="space-y-4">
                     <div className="text-sm text-gray-600">
                       <p>Template: {site.template_name}</p>
-                      <p>URL: /{site.slug}</p>
+                      <p className="text-xs text-blue-600 break-all">
+                        URL: casamentoluxo.com/site/{site.slug}
+                      </p>
                       <p className="flex items-center gap-1">
                         <BarChart3 className="h-3 w-3" />
                         {site.views_count} visualizações
@@ -212,7 +294,16 @@ const Dashboard = () => {
                         className="flex items-center gap-1"
                       >
                         <ExternalLink className="h-3 w-3" />
-                        Ver
+                        Ver Site
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleCopyUrl(site.slug)}
+                        className="flex items-center gap-1"
+                      >
+                        <Copy className="h-3 w-3" />
+                        Copiar URL
                       </Button>
                       <Button
                         size="sm"
@@ -223,6 +314,17 @@ const Dashboard = () => {
                         <Edit className="h-3 w-3" />
                         Editar
                       </Button>
+                    </div>
+
+                    <div className="flex gap-2 flex-wrap pt-2 border-t">
+                      <Button
+                        size="sm"
+                        variant={site.is_published ? "destructive" : "default"}
+                        onClick={() => handlePublishToggle(site.id, site.is_published)}
+                        className="flex-1"
+                      >
+                        {site.is_published ? "Despublicar" : "Publicar"}
+                      </Button>
                       <Button
                         size="sm"
                         variant="outline"
@@ -230,7 +332,6 @@ const Dashboard = () => {
                         className="flex items-center gap-1"
                       >
                         <Copy className="h-3 w-3" />
-                        Duplicar
                       </Button>
                       <Button
                         size="sm"
@@ -239,7 +340,6 @@ const Dashboard = () => {
                         className="flex items-center gap-1 text-red-600 hover:text-red-700"
                       >
                         <Trash2 className="h-3 w-3" />
-                        Excluir
                       </Button>
                     </div>
                   </div>
