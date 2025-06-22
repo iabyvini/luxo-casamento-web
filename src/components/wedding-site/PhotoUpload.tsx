@@ -1,196 +1,165 @@
 
-import React, { useState, useRef } from 'react';
-import { Camera, Upload, X, Loader2 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { uploadImage, deleteImage, extractPathFromUrl, validateImageFile } from '@/utils/supabaseStorage';
-import { useModernVisualTokens } from '@/contexts/ModernVisualTokensContext';
+import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Upload, X, Image } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { useModernVisualTokens } from "@/contexts/ModernVisualTokensContext";
 
 interface PhotoUploadProps {
-  frameStyle?: 'classic' | 'modern' | 'rustic';
-  compact?: boolean;
-  siteId: string;
+  onPhotoUploaded: (url: string) => void;
 }
 
-const PhotoUpload: React.FC<PhotoUploadProps> = ({ 
-  frameStyle = 'classic', 
-  compact = false,
-  siteId 
-}) => {
-  const { couplePhotoUrl, setCouplePhotoUrl } = useModernVisualTokens();
-  const { toast } = useToast();
-  const fileInputRef = useRef<HTMLInputElement>(null);
+const PhotoUpload = ({ onPhotoUploaded }: PhotoUploadProps) => {
   const [uploading, setUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const { toast } = useToast();
+  const { couplePhotoUrl, setCouplePhotoUrl } = useModernVisualTokens();
 
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const validation = validateImageFile(file);
-    if (!validation.valid) {
-      toast({
-        title: "Arquivo inválido",
-        description: validation.error,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setUploading(true);
+  const uploadPhoto = async (file: File) => {
     try {
-      // Deletar foto anterior se existir
-      if (couplePhotoUrl) {
-        const oldPath = extractPathFromUrl(couplePhotoUrl, 'couple-photos');
-        if (oldPath) {
-          await deleteImage('couple-photos', oldPath);
-        }
+      setUploading(true);
+
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        throw new Error('Por favor, selecione apenas arquivos de imagem');
       }
 
-      // Upload nova foto
-      const photoUrl = await uploadImage(file, 'couple-photos', `${siteId}/couple`);
-      
-      if (photoUrl) {
-        setCouplePhotoUrl(photoUrl);
-        toast({
-          title: "Foto enviada!",
-          description: "A foto do casal foi atualizada com sucesso.",
-        });
-      } else {
-        throw new Error('Falha no upload');
+      // Validate file size (5MB limit)
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error('A imagem deve ter menos de 5MB');
       }
-    } catch (error) {
-      console.error('Erro no upload:', error);
+
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+
+      const { data, error } = await supabase.storage
+        .from('couple-photos')
+        .upload(fileName, file);
+
+      if (error) throw error;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('couple-photos')
+        .getPublicUrl(fileName);
+
+      console.log('📸 Foto do casal carregada:', publicUrl);
+      
+      // Update context
+      setCouplePhotoUrl(publicUrl);
+      onPhotoUploaded(publicUrl);
+
       toast({
-        title: "Erro no upload",
-        description: "Não foi possível enviar a foto. Tente novamente.",
+        title: "Foto carregada com sucesso!",
+        description: "A foto do casal foi atualizada.",
+      });
+
+    } catch (error: any) {
+      console.error('Erro ao fazer upload:', error);
+      toast({
+        title: "Erro ao carregar foto",
+        description: error.message,
         variant: "destructive",
       });
     } finally {
       setUploading(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
     }
   };
 
-  const handleRemovePhoto = async () => {
-    if (!couplePhotoUrl) return;
-
-    try {
-      const path = extractPathFromUrl(couplePhotoUrl, 'couple-photos');
-      if (path) {
-        await deleteImage('couple-photos', path);
-      }
-      setCouplePhotoUrl(null);
-      toast({
-        title: "Foto removida",
-        description: "A foto do casal foi removida com sucesso.",
-      });
-    } catch (error) {
-      console.error('Erro ao remover foto:', error);
-      toast({
-        title: "Erro ao remover",
-        description: "Não foi possível remover a foto.",
-        variant: "destructive",
-      });
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      uploadPhoto(file);
     }
   };
 
-  if (compact) {
-    return (
-      <div className="flex items-center space-x-2">
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleFileSelect}
-          className="hidden"
-        />
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => fileInputRef.current?.click()}
-          disabled={uploading}
-        >
-          {uploading ? (
-            <Loader2 className="h-4 w-4 animate-spin mr-2" />
-          ) : (
-            <Camera className="h-4 w-4 mr-2" />
-          )}
-          {couplePhotoUrl ? 'Trocar Foto' : 'Adicionar Foto'}
-        </Button>
-        
-        {couplePhotoUrl && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={handleRemovePhoto}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        )}
-      </div>
-    );
-  }
+  const handleDrop = (event: React.DragEvent) => {
+    event.preventDefault();
+    setDragOver(false);
+    
+    const file = event.dataTransfer.files[0];
+    if (file) {
+      uploadPhoto(file);
+    }
+  };
+
+  const handleDragOver = (event: React.DragEvent) => {
+    event.preventDefault();
+    setDragOver(true);
+  };
+
+  const handleDragLeave = () => {
+    setDragOver(false);
+  };
+
+  const removePhoto = () => {
+    setCouplePhotoUrl(null);
+    onPhotoUploaded('');
+    toast({
+      title: "Foto removida",
+      description: "A foto do casal foi removida.",
+    });
+  };
 
   return (
     <div className="space-y-4">
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleFileSelect}
-        className="hidden"
-      />
-
       {couplePhotoUrl ? (
         <div className="relative">
-          <div className="aspect-[4/3] rounded-lg overflow-hidden bg-gray-100">
-            <img
-              src={couplePhotoUrl}
-              alt="Foto do casal"
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div className="flex justify-center space-x-2 mt-4">
-            <Button
-              variant="outline"
-              onClick={() => fileInputRef.current?.click()}
-              disabled={uploading}
-            >
-              {uploading ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              ) : (
-                <Camera className="h-4 w-4 mr-2" />
-              )}
-              Trocar Foto
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={handleRemovePhoto}
-            >
-              <X className="h-4 w-4 mr-2" />
-              Remover
-            </Button>
+          <img
+            src={couplePhotoUrl}
+            alt="Foto do casal"
+            className="w-full max-w-md h-64 object-cover rounded-lg border-2 border-gray-200"
+          />
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={removePhoto}
+            className="absolute top-2 right-2"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+          <div className="absolute bottom-2 left-2 bg-black/50 text-white px-2 py-1 rounded text-xs">
+            Foto do casal
           </div>
         </div>
       ) : (
-        <div 
-          className="aspect-[4/3] border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition-colors"
-          onClick={() => fileInputRef.current?.click()}
+        <div
+          className={`border-2 border-dashed rounded-lg p-8 text-center transition-colors ${
+            dragOver
+              ? 'border-blue-400 bg-blue-50'
+              : 'border-gray-300 hover:border-gray-400'
+          }`}
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
         >
-          {uploading ? (
-            <div className="text-center">
-              <Loader2 className="h-8 w-8 text-gray-400 mx-auto mb-2 animate-spin" />
-              <p className="text-sm text-gray-500">Enviando...</p>
-            </div>
-          ) : (
-            <div className="text-center">
-              <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm text-gray-600 font-medium">Clique para adicionar foto</p>
-              <p className="text-xs text-gray-500 mt-1">PNG, JPG ou WebP até 5MB</p>
-            </div>
-          )}
+          <Image className="mx-auto h-12 w-12 text-gray-400 mb-4" />
+          <p className="text-sm text-gray-600 mb-4">
+            Arraste uma foto aqui ou clique para selecionar
+          </p>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleFileSelect}
+            className="hidden"
+            id="photo-upload"
+            disabled={uploading}
+          />
+          <label htmlFor="photo-upload">
+            <Button
+              type="button"
+              variant="outline"
+              disabled={uploading}
+              className="cursor-pointer"
+              asChild
+            >
+              <span>
+                <Upload className="h-4 w-4 mr-2" />
+                {uploading ? 'Carregando...' : 'Selecionar Foto'}
+              </span>
+            </Button>
+          </label>
         </div>
       )}
     </div>

@@ -23,6 +23,7 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode }>
   const [templateProfile, setTemplateProfile] = useState<any | null>(null);
 
   const setCouplePhotoUrl = (url: string | null) => {
+    console.log('📸 Atualizando foto do casal no contexto:', url);
     setCouplePhotoUrlState(url);
     if (url) {
       localStorage.setItem('couplePhotoUrl', url);
@@ -34,6 +35,7 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode }>
   useEffect(() => {
     const savedPhotoUrl = localStorage.getItem('couplePhotoUrl');
     if (savedPhotoUrl) {
+      console.log('📸 Carregando foto do casal salva:', savedPhotoUrl);
       setCouplePhotoUrlState(savedPhotoUrl);
     }
   }, []);
@@ -64,7 +66,7 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode }>
     const cssContent = applyModernVisualTokensToCSS(tokens);
     styleElement.textContent = cssContent;
     
-    console.log('✅ CSS aplicado:', cssContent.substring(0, 200) + '...');
+    console.log('✅ CSS aplicado para template:', profile.id);
     
     // Aplicar classes no body
     document.body.classList.add('modern-theme-active');
