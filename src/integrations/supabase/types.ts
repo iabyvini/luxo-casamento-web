@@ -9,7 +9,285 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      gift_lists: {
+        Row: {
+          commission_rate: number | null
+          created_at: string
+          current_amount: number | null
+          description: string | null
+          gift_type: string
+          id: string
+          is_active: boolean | null
+          pix_key: string | null
+          site_id: string
+          store_name: string | null
+          store_url: string | null
+          target_amount: number | null
+          title: string
+        }
+        Insert: {
+          commission_rate?: number | null
+          created_at?: string
+          current_amount?: number | null
+          description?: string | null
+          gift_type: string
+          id?: string
+          is_active?: boolean | null
+          pix_key?: string | null
+          site_id: string
+          store_name?: string | null
+          store_url?: string | null
+          target_amount?: number | null
+          title: string
+        }
+        Update: {
+          commission_rate?: number | null
+          created_at?: string
+          current_amount?: number | null
+          description?: string | null
+          gift_type?: string
+          id?: string
+          is_active?: boolean | null
+          pix_key?: string | null
+          site_id?: string
+          store_name?: string | null
+          store_url?: string | null
+          target_amount?: number | null
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "gift_lists_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "wedding_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      messages: {
+        Row: {
+          created_at: string
+          id: string
+          is_approved: boolean | null
+          message: string
+          sender_email: string | null
+          sender_name: string
+          site_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_approved?: boolean | null
+          message: string
+          sender_email?: string | null
+          sender_name: string
+          site_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_approved?: boolean | null
+          message?: string
+          sender_email?: string | null
+          sender_name?: string
+          site_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "wedding_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          phone: string | null
+          subscription_end: string | null
+          subscription_status: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id: string
+          phone?: string | null
+          subscription_end?: string | null
+          subscription_status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          phone?: string | null
+          subscription_end?: string | null
+          subscription_status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      rsvp_responses: {
+        Row: {
+          companion_count: number | null
+          confirmed_at: string
+          dietary_restrictions: string | null
+          guest_email: string | null
+          guest_name: string
+          guest_phone: string | null
+          id: string
+          message: string | null
+          site_id: string
+          will_attend: boolean
+        }
+        Insert: {
+          companion_count?: number | null
+          confirmed_at?: string
+          dietary_restrictions?: string | null
+          guest_email?: string | null
+          guest_name: string
+          guest_phone?: string | null
+          id?: string
+          message?: string | null
+          site_id: string
+          will_attend: boolean
+        }
+        Update: {
+          companion_count?: number | null
+          confirmed_at?: string
+          dietary_restrictions?: string | null
+          guest_email?: string | null
+          guest_name?: string
+          guest_phone?: string | null
+          id?: string
+          message?: string | null
+          site_id?: string
+          will_attend?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rsvp_responses_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "wedding_sites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscriptions: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string | null
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          plan_name: string
+          plan_type: string
+          status: string
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan_name: string
+          plan_type: string
+          status: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string | null
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan_name?: string
+          plan_type?: string
+          status?: string
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wedding_sites: {
+        Row: {
+          ai_welcome_message: string | null
+          analytics_data: Json | null
+          couple_names: string
+          created_at: string
+          custom_content: Json | null
+          domain_custom: string | null
+          id: string
+          is_published: boolean | null
+          quiz_answers: Json
+          slug: string
+          template_name: string
+          updated_at: string
+          user_id: string
+          views_count: number | null
+          wedding_date: string
+        }
+        Insert: {
+          ai_welcome_message?: string | null
+          analytics_data?: Json | null
+          couple_names: string
+          created_at?: string
+          custom_content?: Json | null
+          domain_custom?: string | null
+          id?: string
+          is_published?: boolean | null
+          quiz_answers: Json
+          slug: string
+          template_name: string
+          updated_at?: string
+          user_id: string
+          views_count?: number | null
+          wedding_date: string
+        }
+        Update: {
+          ai_welcome_message?: string | null
+          analytics_data?: Json | null
+          couple_names?: string
+          created_at?: string
+          custom_content?: Json | null
+          domain_custom?: string | null
+          id?: string
+          is_published?: boolean | null
+          quiz_answers?: Json
+          slug?: string
+          template_name?: string
+          updated_at?: string
+          user_id?: string
+          views_count?: number | null
+          wedding_date?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

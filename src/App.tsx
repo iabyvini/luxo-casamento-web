@@ -5,11 +5,14 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { VisualTokensProvider } from "@/contexts/VisualTokensContext";
+import { AuthProvider } from "@/contexts/AuthContext";
+import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Quiz from "./pages/Quiz";
 import Preview from "./pages/Preview";
 import Auth from "./pages/Auth";
 import Editor from "./pages/Editor";
+import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -17,20 +20,39 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <VisualTokensProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/quiz" element={<Quiz />} />
-            <Route path="/preview" element={<Preview />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/editor" element={<Editor />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </VisualTokensProvider>
+      <AuthProvider>
+        <VisualTokensProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/quiz" element={
+                <ProtectedRoute>
+                  <Quiz />
+                </ProtectedRoute>
+              } />
+              <Route path="/preview" element={
+                <ProtectedRoute>
+                  <Preview />
+                </ProtectedRoute>
+              } />
+              <Route path="/editor/:siteId?" element={
+                <ProtectedRoute>
+                  <Editor />
+                </ProtectedRoute>
+              } />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </VisualTokensProvider>
+      </AuthProvider>
     </TooltipProvider>
   </QueryClientProvider>
 );
