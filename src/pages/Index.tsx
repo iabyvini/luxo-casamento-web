@@ -90,26 +90,6 @@ const Index = () => {
       <Features />
       <Templates />
       
-      {/* CTA Final */}
-      <section className="py-20 bg-rose-500 text-white">
-        <div className="container mx-auto text-center px-4">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Comece Seu Site de Casamento Hoje
-          </h2>
-          <p className="text-xl mb-8 opacity-90">
-            Junte-se a milhares de casais que já criaram seus sites conosco
-          </p>
-          <Button 
-            size="lg" 
-            variant="secondary"
-            onClick={handleGetStarted}
-            className="px-8 py-4 text-lg"
-          >
-            Criar Meu Site Agora
-          </Button>
-        </div>
-      </section>
-
       <Footer />
     </div>
   );

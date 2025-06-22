@@ -12,6 +12,7 @@ import { Plus, Trash2, Upload, Eye, Save } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import GiftItemManager from "./GiftItemManager";
 import GalleryPhotoManager from "./GalleryPhotoManager";
+import RSVPDashboard from "./RSVPDashboard";
 
 interface SiteEditorProps {
   siteData: any;
@@ -83,7 +84,7 @@ interface CustomContent {
 const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorProps) => {
   const { toast } = useToast();
   const [customContent, setCustomContent] = useState<CustomContent>({});
-  const [activeTab, setActiveTab] = useState("hero");
+  const [activeTab, setActiveTab] = useState("principal");
 
   useEffect(() => {
     if (siteData?.custom_content) {
@@ -163,7 +164,7 @@ const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorPro
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-7">
-          <TabsTrigger value="hero">Hero</TabsTrigger>
+          <TabsTrigger value="principal">Principal</TabsTrigger>
           <TabsTrigger value="story">História</TabsTrigger>
           <TabsTrigger value="gallery">Galeria</TabsTrigger>
           <TabsTrigger value="event">Evento</TabsTrigger>
@@ -172,11 +173,11 @@ const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorPro
           <TabsTrigger value="messages">Recados</TabsTrigger>
         </TabsList>
 
-        {/* Hero Section */}
-        <TabsContent value="hero" className="space-y-4">
+        {/* Principal Section */}
+        <TabsContent value="principal" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Seção Principal (Hero)</CardTitle>
+              <CardTitle>Seção Principal</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -542,38 +543,7 @@ const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorPro
 
               <Separator />
 
-              <div>
-                <Label className="text-base font-semibold mb-4 block">Campos do Formulário</Label>
-                <div className="space-y-3">
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      checked={customContent.rsvp?.fields?.companions !== false}
-                      onCheckedChange={(checked) => updateSection('rsvp', {
-                        fields: { ...customContent.rsvp?.fields, companions: checked }
-                      })}
-                    />
-                    <Label>Número de acompanhantes</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      checked={customContent.rsvp?.fields?.dietary_restrictions !== false}
-                      onCheckedChange={(checked) => updateSection('rsvp', {
-                        fields: { ...customContent.rsvp?.fields, dietary_restrictions: checked }
-                      })}
-                    />
-                    <Label>Restrições alimentares</Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      checked={customContent.rsvp?.fields?.message !== false}
-                      onCheckedChange={(checked) => updateSection('rsvp', {
-                        fields: { ...customContent.rsvp?.fields, message: checked }
-                      })}
-                    />
-                    <Label>Campo para mensagem</Label>
-                  </div>
-                </div>
-              </div>
+              <RSVPDashboard siteId={siteData?.id} />
             </CardContent>
           </Card>
         </TabsContent>

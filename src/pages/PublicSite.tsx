@@ -156,12 +156,14 @@ const PublicSite = () => {
         <GallerySection
           siteId={siteData.id}
           templateName={siteData.template_name}
+          quizAnswers={siteData.quiz_answers}
         />
 
         {/* Event Details Section */}
         <EventDetailsSection
           weddingDate={siteData.wedding_date}
           templateName={siteData.template_name}
+          quizAnswers={siteData.quiz_answers}
         />
 
         {/* Bridesmaids Section */}

@@ -43,7 +43,7 @@ const PreviewSite = ({ data }: PreviewSiteProps) => {
       
       <BridesmaidsSection />
       
-      <GiftListSection />
+      <GiftListSection siteId="preview" />
       
       <RSVPSection 
         weddingDate={data.weddingDate}

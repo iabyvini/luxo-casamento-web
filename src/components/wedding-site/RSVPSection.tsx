@@ -18,11 +18,6 @@ interface RSVPSectionProps {
     title?: string;
     message?: string;
     deadline?: string;
-    fields?: {
-      companions?: boolean;
-      dietary_restrictions?: boolean;
-      message?: boolean;
-    };
   };
 }
 
@@ -30,11 +25,8 @@ const RSVPSection = ({ weddingDate, templateName, siteId, customContent }: RSVPS
   const { toast } = useToast();
   const [formData, setFormData] = useState({
     guest_name: '',
-    guest_email: '',
-    guest_phone: '',
     will_attend: true,
     companion_count: 0,
-    dietary_restrictions: '',
     message: ''
   });
   const [submitting, setSubmitting] = useState(false);
@@ -48,11 +40,6 @@ const RSVPSection = ({ weddingDate, templateName, siteId, customContent }: RSVPS
   const sectionTitle = customContent?.title || "Confirmação de Presença";
   const sectionMessage = customContent?.message || "Por favor, confirme sua presença até a data indicada. Sua confirmação é muito importante para nós!";
   const deadline = customContent?.deadline;
-  const fields = customContent?.fields || {
-    companions: true,
-    dietary_restrictions: true,
-    message: true
-  };
 
   const formattedDeadline = deadline ? new Date(deadline).toLocaleDateString('pt-BR') : null;
   const weddingDateFormatted = new Date(weddingDate).toLocaleDateString('pt-BR', {
@@ -81,11 +68,8 @@ const RSVPSection = ({ weddingDate, templateName, siteId, customContent }: RSVPS
         .insert({
           site_id: siteId,
           guest_name: formData.guest_name,
-          guest_email: formData.guest_email,
-          guest_phone: formData.guest_phone,
           will_attend: formData.will_attend,
           companion_count: formData.companion_count,
-          dietary_restrictions: formData.dietary_restrictions,
           message: formData.message
         });
 
@@ -168,38 +152,15 @@ const RSVPSection = ({ weddingDate, templateName, siteId, customContent }: RSVPS
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor="guest_name">Nome Completo *</Label>
-                    <Input
-                      id="guest_name"
-                      type="text"
-                      required
-                      value={formData.guest_name}
-                      onChange={(e) => setFormData(prev => ({ ...prev, guest_name: e.target.value }))}
-                      placeholder="Seu nome completo"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="guest_email">E-mail</Label>
-                    <Input
-                      id="guest_email"
-                      type="email"
-                      value={formData.guest_email}
-                      onChange={(e) => setFormData(prev => ({ ...prev, guest_email: e.target.value }))}
-                      placeholder="seu@email.com"
-                    />
-                  </div>
-                </div>
-
                 <div>
-                  <Label htmlFor="guest_phone">Telefone/WhatsApp</Label>
+                  <Label htmlFor="guest_name">Nome do Convite *</Label>
                   <Input
-                    id="guest_phone"
-                    type="tel"
-                    value={formData.guest_phone}
-                    onChange={(e) => setFormData(prev => ({ ...prev, guest_phone: e.target.value }))}
-                    placeholder="(11) 99999-9999"
+                    id="guest_name"
+                    type="text"
+                    required
+                    value={formData.guest_name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, guest_name: e.target.value }))}
+                    placeholder="Nome do convite"
                   />
                 </div>
 
@@ -229,45 +190,30 @@ const RSVPSection = ({ weddingDate, templateName, siteId, customContent }: RSVPS
                   </div>
                 </div>
 
-                {formData.will_attend && fields.companions && (
+                {formData.will_attend && (
                   <div>
-                    <Label htmlFor="companion_count">Número de Acompanhantes</Label>
+                    <Label htmlFor="companion_count">Número de Convidados (incluindo você)</Label>
                     <Input
                       id="companion_count"
                       type="number"
-                      min="0"
-                      max="5"
-                      value={formData.companion_count}
-                      onChange={(e) => setFormData(prev => ({ ...prev, companion_count: parseInt(e.target.value) || 0 }))}
+                      min="1"
+                      max="10"
+                      value={formData.companion_count + 1}
+                      onChange={(e) => setFormData(prev => ({ ...prev, companion_count: Math.max(0, parseInt(e.target.value) - 1) || 0 }))}
                     />
                   </div>
                 )}
 
-                {formData.will_attend && fields.dietary_restrictions && (
-                  <div>
-                    <Label htmlFor="dietary_restrictions">Restrições Alimentares</Label>
-                    <Input
-                      id="dietary_restrictions"
-                      type="text"
-                      value={formData.dietary_restrictions}
-                      onChange={(e) => setFormData(prev => ({ ...prev, dietary_restrictions: e.target.value }))}
-                      placeholder="Vegetariano, alergia a frutos do mar, etc."
-                    />
-                  </div>
-                )}
-
-                {fields.message && (
-                  <div>
-                    <Label htmlFor="message">Mensagem para os Noivos</Label>
-                    <Textarea
-                      id="message"
-                      value={formData.message}
-                      onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
-                      placeholder="Deixe uma mensagem carinhosa para os noivos..."
-                      rows={4}
-                    />
-                  </div>
-                )}
+                <div>
+                  <Label htmlFor="message">Observação</Label>
+                  <Textarea
+                    id="message"
+                    value={formData.message}
+                    onChange={(e) => setFormData(prev => ({ ...prev, message: e.target.value }))}
+                    placeholder="Alguma observação especial..."
+                    rows={4}
+                  />
+                </div>
 
                 <Button
                   type="submit"
