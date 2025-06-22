@@ -75,7 +75,7 @@ const Editor = () => {
       if (error) throw error;
 
       // Atualizar dados locais
-      setSite Data(prev => prev ? { ...prev, ...updates } : null);
+      setSiteData(prev => prev ? { ...prev, ...updates } : null);
 
     } catch (error: any) {
       toast({
