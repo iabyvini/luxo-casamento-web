@@ -46,13 +46,19 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
   }, [imageFile, isOpen]);
 
   const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
-    // Definir um crop inicial flexível no centro da imagem
+    const image = e.currentTarget;
+    const { naturalWidth, naturalHeight } = image;
+    
+    // Calcular crop inicial baseado na menor dimensão para garantir que seja quadrado
+    const minDimension = Math.min(naturalWidth, naturalHeight);
+    const cropSize = Math.min(70, (minDimension / Math.max(naturalWidth, naturalHeight)) * 100);
+    
     setCrop({
       unit: '%',
-      width: 70,
-      height: 70,
-      x: 15,
-      y: 15,
+      width: cropSize,
+      height: cropSize,
+      x: (100 - cropSize) / 2,
+      y: (100 - cropSize) / 2,
     });
   }, []);
 
@@ -65,26 +71,48 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
         throw new Error('No 2d context');
       }
 
-      // Tamanho final da imagem (sempre quadrada)
-      const targetSize = 800;
-      canvas.width = targetSize;
-      canvas.height = targetSize;
-
       // Calcular as proporções reais da imagem
       const scaleX = image.naturalWidth / image.width;
       const scaleY = image.naturalHeight / image.height;
 
-      // Desenhar a imagem recortada no canvas
+      // Usar as dimensões exatas do crop (mantendo proporções)
+      const cropWidth = pixelCrop.width * scaleX;
+      const cropHeight = pixelCrop.height * scaleY;
+      
+      // Definir o tamanho do canvas baseado no crop real
+      // Para manter qualidade, usar um tamanho adequado mas proporcional
+      const maxSize = 800;
+      const cropRatio = cropWidth / cropHeight;
+      
+      let canvasWidth, canvasHeight;
+      
+      if (cropRatio === 1) {
+        // Crop quadrado
+        canvasWidth = canvasHeight = maxSize;
+      } else if (cropRatio > 1) {
+        // Crop mais largo que alto
+        canvasWidth = maxSize;
+        canvasHeight = maxSize / cropRatio;
+      } else {
+        // Crop mais alto que largo
+        canvasHeight = maxSize;
+        canvasWidth = maxSize * cropRatio;
+      }
+
+      canvas.width = canvasWidth;
+      canvas.height = canvasHeight;
+
+      // Desenhar a imagem recortada mantendo proporções
       ctx.drawImage(
         image,
         pixelCrop.x * scaleX,
         pixelCrop.y * scaleY,
-        pixelCrop.width * scaleX,
-        pixelCrop.height * scaleY,
+        cropWidth,
+        cropHeight,
         0,
         0,
-        targetSize,
-        targetSize
+        canvasWidth,
+        canvasHeight
       );
 
       return new Promise((resolve) => {
@@ -118,13 +146,19 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
   };
 
   const handleReset = () => {
-    setCrop({
-      unit: '%',
-      width: 70,
-      height: 70,
-      x: 15,
-      y: 15,
-    });
+    if (imgRef.current) {
+      const { naturalWidth, naturalHeight } = imgRef.current;
+      const minDimension = Math.min(naturalWidth, naturalHeight);
+      const cropSize = Math.min(70, (minDimension / Math.max(naturalWidth, naturalHeight)) * 100);
+      
+      setCrop({
+        unit: '%',
+        width: cropSize,
+        height: cropSize,
+        x: (100 - cropSize) / 2,
+        y: (100 - cropSize) / 2,
+      });
+    }
   };
 
   return (
@@ -136,12 +170,12 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
         
         <div className="space-y-4">
           <p className="text-sm text-gray-600">
-            Ajuste a área de recorte arrastando e redimensionando. O resultado será sempre uma imagem quadrada.
+            Ajuste a área de recorte arrastando e redimensionando. A imagem será salva mantendo as proporções do recorte selecionado.
           </p>
           
           {imageSrc && (
             <div className="flex justify-center">
-              <div className="crop-container relative w-full max-w-2xl" style={{ height: '500px' }}>
+              <div className="crop-container relative w-full max-w-2xl bg-gray-100 rounded-lg overflow-hidden" style={{ height: '500px' }}>
                 <ReactCrop
                   crop={crop}
                   onChange={(c) => setCrop(c)}
@@ -158,7 +192,6 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
                     onLoad={onImageLoad}
                     alt="Imagem para recorte"
                     className="w-full h-full object-contain"
-                    style={{ maxHeight: '500px' }}
                   />
                 </ReactCrop>
               </div>
