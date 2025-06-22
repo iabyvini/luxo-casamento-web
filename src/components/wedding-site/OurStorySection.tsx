@@ -1,183 +1,140 @@
 
-import { Heart, Users, Calendar, Sparkles } from "lucide-react";
+import { Heart, Clock } from "lucide-react";
 import { QuizAnswers } from "@/types/quiz";
 
 interface OurStorySectionProps {
   coupleNames: string;
   templateName: string;
-  quizAnswers: QuizAnswers;
+  quizAnswers?: QuizAnswers;
+  customContent?: {
+    enabled?: boolean;
+    title?: string;
+    content?: string;
+    timeline?: Array<{
+      year: string;
+      title: string;
+      description: string;
+    }>;
+  };
 }
 
-const OurStorySection = ({ coupleNames, templateName, quizAnswers }: OurStorySectionProps) => {
+const OurStorySection = ({ coupleNames, templateName, quizAnswers, customContent }: OurStorySectionProps) => {
+  // Se a seção está desabilitada, não renderizar
+  if (customContent?.enabled === false) {
+    return null;
+  }
+
   const [firstName, secondName] = coupleNames.split(' & ').map(name => name.trim());
-
-  const getStoryByTemplate = (template: string) => {
-    switch (template) {
-      case 'Bohemian Dream':
-        return {
-          title: "Nossa Jornada Livre",
-          story: `Como duas almas livres que se encontraram no momento perfeito, ${firstName} e ${secondName} descobriram que o amor verdadeiro não segue regras, apenas o coração. Nossa história começou de forma espontânea e cresceu naturalmente, como flores selvagens que florescem onde o vento as leva.`,
-          milestone1: "Primeiro Encontro",
-          milestone1Desc: "Um encontro casual que mudou tudo",
-          milestone2: "Primeira Viagem",
-          milestone2Desc: "Descobrindo o mundo juntos",
-          milestone3: "O Pedido",
-          milestone3Desc: "Uma proposta sob as estrelas"
-        };
-      case 'Vintage Charm':
-        return {
-          title: "Um Amor Atemporal",
-          story: `Como em uma história dos tempos antigos, ${firstName} e ${secondName} encontraram um amor que transcende épocas. Nossa jornada é uma carta de amor escrita com momentos preciosos, memórias douradas e a promessa de um futuro construído sobre a base sólida de um amor verdadeiro e duradouro.`,
-          milestone1: "O Primeiro Olhar",
-          milestone1Desc: "Quando o tempo parou",
-          milestone2: "Cartas de Amor",
-          milestone2Desc: "Palavras que aqueceram o coração",
-          milestone3: "A Promessa",
-          milestone3Desc: "Um compromisso eterno"
-        };
-      case 'Modern Love':
-        return {
-          title: "Amor Contemporâneo",
-          story: `Em um mundo conectado, ${firstName} e ${secondName} provaram que o amor real ainda existe. Nossa história moderna é feita de mensagens carinhosas, videochamadas apaixonadas e momentos reais que construíram uma base sólida para um futuro juntos.`,
-          milestone1: "Match Perfeito",
-          milestone1Desc: "Quando a tecnologia nos uniu",
-          milestone2: "Primeiro Date",
-          milestone2Desc: "Do virtual para o real",
-          milestone3: "Next Level",
-          milestone3Desc: "Decidindo construir juntos"
-        };
-      default:
-        return {
-          title: "Nossa História de Amor",
-          story: `${firstName} e ${secondName} se encontraram e descobriram que algumas pessoas são destinadas a estar juntas. Nossa história é feita de momentos simples que se tornaram extraordinários, risos compartilhados e a certeza de que encontramos nossa pessoa para toda a vida.`,
-          milestone1: "Primeiro Encontro",
-          milestone1Desc: "Quando tudo começou",
-          milestone2: "Namorando",
-          milestone2Desc: "Construindo memórias",
-          milestone3: "Noivado",
-          milestone3Desc: "O sim mais importante"
-        };
-    }
-  };
-
-  const storyContent = getStoryByTemplate(templateName);
+  const sectionTitle = customContent?.title || "Nossa História";
+  const storyContent = customContent?.content || `${firstName} e ${secondName} se conheceram de uma forma muito especial. O que começou como uma amizade floresceu em um amor verdadeiro e profundo. Hoje, estão prontos para dar o próximo passo em suas vidas juntos.`;
+  const timeline = customContent?.timeline || [];
 
   return (
-    <section id="story" className="py-20 bg-gradient-to-br from-brown-50 to-gold-50">
+    <section id="our-story" className="py-20 bg-gradient-to-br from-green-50 to-white">
       <div className="container mx-auto px-4">
-        <div className="max-w-4xl mx-auto text-center mb-16">
-          <div className="inline-flex items-center space-x-2 bg-white/80 backdrop-blur-sm border border-brown-200 rounded-full px-6 py-3 mb-6">
-            <Heart className="h-5 w-5 text-primary" fill="currentColor" />
-            <span className="font-medium text-brown-700">Nossa História</span>
+        <div className="text-center mb-16">
+          <div className="inline-flex items-center space-x-2 bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium mb-6">
+            <Heart className="h-4 w-4" fill="currentColor" />
+            <span>Nossa História</span>
           </div>
           
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">
-            {storyContent.title}
+          <h2 className="text-4xl md:text-5xl font-serif text-gray-800 mb-6">
+            {sectionTitle}
           </h2>
           
-          <p className="text-lg md:text-xl text-brown-600 leading-relaxed max-w-3xl mx-auto">
-            {storyContent.story}
-          </p>
+          <div className="max-w-4xl mx-auto">
+            <p className="text-lg text-gray-600 leading-relaxed mb-12">
+              {storyContent}
+            </p>
+          </div>
         </div>
 
         {/* Timeline */}
-        <div className="relative max-w-6xl mx-auto">
-          <div className="absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-gradient-luxury rounded-full"></div>
-          
-          <div className="space-y-16">
-            {/* Milestone 1 */}
-            <div className="flex items-center justify-between">
-              <div className="w-5/12 text-right pr-8">
-                <div className="luxury-card rounded-xl p-6">
-                  <h3 className="text-xl font-bold text-brown-800 mb-2">
-                    {storyContent.milestone1}
-                  </h3>
-                  <p className="text-brown-600">
-                    {storyContent.milestone1Desc}
-                  </p>
-                </div>
+        {timeline.length > 0 && (
+          <div className="max-w-4xl mx-auto">
+            <div className="text-center mb-12">
+              <div className="inline-flex items-center space-x-2 bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium mb-4">
+                <Clock className="h-4 w-4" />
+                <span>Nossa Jornada</span>
               </div>
-              
-              <div className="flex items-center justify-center w-2/12">
-                <div className="w-12 h-12 bg-gradient-luxury rounded-full flex items-center justify-center luxury-shadow">
-                  <Users className="h-6 w-6 text-white" />
-                </div>
-              </div>
-              
-              <div className="w-5/12"></div>
+              <h3 className="text-2xl font-serif text-gray-800">
+                Marcos do Nosso Relacionamento
+              </h3>
             </div>
 
-            {/* Milestone 2 */}
-            <div className="flex items-center justify-between">
-              <div className="w-5/12"></div>
+            <div className="relative">
+              {/* Linha vertical */}
+              <div className="absolute left-1/2 transform -translate-x-1/2 w-1 h-full bg-green-200 rounded-full"></div>
               
-              <div className="flex items-center justify-center w-2/12">
-                <div className="w-12 h-12 bg-gradient-luxury rounded-full flex items-center justify-center luxury-shadow">
-                  <Heart className="h-6 w-6 text-white" fill="currentColor" />
-                </div>
+              <div className="space-y-12">
+                {timeline.map((item, index) => (
+                  <div key={index} className={`flex items-center ${index % 2 === 0 ? 'flex-row-reverse' : ''}`}>
+                    <div className={`w-1/2 ${index % 2 === 0 ? 'pl-8' : 'pr-8'}`}>
+                      <div className="bg-white rounded-xl p-6 shadow-lg border border-green-100 relative">
+                        {/* Seta */}
+                        <div className={`absolute top-6 w-4 h-4 bg-white border-green-100 transform rotate-45 ${
+                          index % 2 === 0 
+                            ? 'left-0 -translate-x-1/2 border-l border-b' 
+                            : 'right-0 translate-x-1/2 border-r border-t'
+                        }`}></div>
+                        
+                        <div className="space-y-3">
+                          <div className="inline-flex items-center space-x-2 bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                            <span>{item.year}</span>
+                          </div>
+                          <h4 className="text-xl font-semibold text-gray-800">
+                            {item.title}
+                          </h4>
+                          <p className="text-gray-600">
+                            {item.description}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Marcador central */}
+                    <div className="w-6 h-6 bg-green-600 rounded-full border-4 border-white shadow-lg z-10 relative"></div>
+                    
+                    <div className="w-1/2"></div>
+                  </div>
+                ))}
               </div>
-              
-              <div className="w-5/12 text-left pl-8">
-                <div className="luxury-card rounded-xl p-6">
-                  <h3 className="text-xl font-bold text-brown-800 mb-2">
-                    {storyContent.milestone2}
-                  </h3>
-                  <p className="text-brown-600">
-                    {storyContent.milestone2Desc}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            {/* Milestone 3 */}
-            <div className="flex items-center justify-between">
-              <div className="w-5/12 text-right pr-8">
-                <div className="luxury-card rounded-xl p-6">
-                  <h3 className="text-xl font-bold text-brown-800 mb-2">
-                    {storyContent.milestone3}
-                  </h3>
-                  <p className="text-brown-600">
-                    {storyContent.milestone3Desc}
-                  </p>
-                </div>
-              </div>
-              
-              <div className="flex items-center justify-center w-2/12">
-                <div className="w-12 h-12 bg-gradient-luxury rounded-full flex items-center justify-center luxury-shadow">
-                  <Sparkles className="h-6 w-6 text-white" fill="currentColor" />
-                </div>
-              </div>
-              
-              <div className="w-5/12"></div>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Mobile Timeline */}
-        <div className="block md:hidden mt-16">
-          <div className="space-y-8">
-            {[
-              { title: storyContent.milestone1, desc: storyContent.milestone1Desc, icon: Users },
-              { title: storyContent.milestone2, desc: storyContent.milestone2Desc, icon: Heart },
-              { title: storyContent.milestone3, desc: storyContent.milestone3Desc, icon: Sparkles }
-            ].map((milestone, index) => {
-              const IconComponent = milestone.icon;
-              return (
-                <div key={index} className="flex items-start space-x-4">
-                  <div className="w-10 h-10 bg-gradient-luxury rounded-full flex items-center justify-center luxury-shadow flex-shrink-0">
-                    <IconComponent className="h-5 w-5 text-white" fill={milestone.icon === Heart || milestone.icon === Sparkles ? "currentColor" : "none"} />
-                  </div>
-                  <div className="luxury-card rounded-lg p-4 flex-1">
-                    <h3 className="font-bold text-brown-800 mb-1">
-                      {milestone.title}
-                    </h3>
-                    <p className="text-brown-600 text-sm">
-                      {milestone.desc}
-                    </p>
-                  </div>
-                </div>
-              );
-            })}
+        {/* Casal Info */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 max-w-6xl mx-auto mt-16">
+          {/* Primeiro */}
+          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 text-center">
+            <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center">
+              <span className="text-4xl font-serif text-green-700">
+                {firstName?.charAt(0)}
+              </span>
+            </div>
+            <h3 className="text-2xl font-serif text-gray-800 mb-2">
+              {firstName}
+            </h3>
+            <p className="text-green-600 font-medium mb-4">O Noivo</p>
+            <p className="text-gray-600">
+              Apaixonado pela vida e por construir momentos especiais ao lado de quem ama.
+            </p>
+          </div>
+
+          {/* Segunda */}
+          <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100 text-center">
+            <div className="w-32 h-32 mx-auto mb-6 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center">
+              <span className="text-4xl font-serif text-green-700">
+                {secondName?.charAt(0)}
+              </span>
+            </div>
+            <h3 className="text-2xl font-serif text-gray-800 mb-2">
+              {secondName}
+            </h3>
+            <p className="text-green-600 font-medium mb-4">A Noiva</p>
+            <p className="text-gray-600">
+              Criativa e cheia de sonhos, sempre em busca de construir uma família feliz.
+            </p>
           </div>
         </div>
       </div>

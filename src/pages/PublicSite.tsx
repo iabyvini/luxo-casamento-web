@@ -149,6 +149,8 @@ const PublicSite = () => {
     quizAnswers: siteData.quiz_answers
   };
 
+  const customContent = siteData.custom_content || {};
+
   return (
     <VisualTokensProvider>
       <div className="min-h-screen bg-white">
@@ -157,7 +159,7 @@ const PublicSite = () => {
         <HeroSection
           coupleNames={previewData.coupleNames}
           weddingDate={previewData.weddingDate}
-          welcomeMessage={previewData.welcomeMessage}
+          welcomeMessage={customContent.hero?.message || previewData.welcomeMessage}
           templateName={previewData.templateName}
           quizAnswers={previewData.quizAnswers}
         />
@@ -170,6 +172,7 @@ const PublicSite = () => {
           coupleNames={previewData.coupleNames}
           templateName={previewData.templateName}
           quizAnswers={previewData.quizAnswers}
+          customContent={customContent.our_story}
         />
         
         <GallerySection 
@@ -181,16 +184,19 @@ const PublicSite = () => {
           weddingDate={previewData.weddingDate}
           templateName={previewData.templateName}
           quizAnswers={previewData.quizAnswers}
+          customContent={customContent.event_details}
         />
         
-        <GiftListSection />
+        <GiftListSection customContent={customContent.gift_list} />
         
         <RSVPSection 
           weddingDate={previewData.weddingDate}
           templateName={previewData.templateName}
+          siteId={siteData.id}
+          customContent={customContent.rsvp}
         />
         
-        <MessagesSection />
+        <MessagesSection siteId={siteData.id} customContent={customContent.messages} />
         
         <FooterSection
           coupleNames={previewData.coupleNames}

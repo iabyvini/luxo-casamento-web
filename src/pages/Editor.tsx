@@ -2,13 +2,13 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Save, Eye, Settings, Upload } from "lucide-react";
+import { ArrowLeft, Save, Eye, Settings } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import SiteEditor from "@/components/SiteEditor";
+import SlugEditor from "@/components/SlugEditor";
 
 interface SiteData {
   id: string;
@@ -22,21 +22,6 @@ interface SiteData {
   slug: string;
 }
 
-interface CustomContent {
-  hero?: {
-    title?: string;
-    subtitle?: string;
-    message?: string;
-  };
-  our_story?: string;
-  wedding_details?: {
-    ceremony_location?: string;
-    reception_location?: string;
-    ceremony_time?: string;
-    reception_time?: string;
-  };
-}
-
 const Editor = () => {
   const { siteId } = useParams<{ siteId: string }>();
   const navigate = useNavigate();
@@ -45,19 +30,6 @@ const Editor = () => {
   const [siteData, setSiteData] = useState<SiteData | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [editData, setEditData] = useState({
-    couple_names: '',
-    ai_welcome_message: '',
-    hero_title: '',
-    hero_subtitle: '',
-    our_story: '',
-    wedding_details: {
-      ceremony_location: '',
-      reception_location: '',
-      ceremony_time: '',
-      reception_time: ''
-    }
-  });
 
   useEffect(() => {
     if (siteId) {
@@ -77,23 +49,6 @@ const Editor = () => {
       if (error) throw error;
 
       setSiteData(data);
-      
-      // Safely parse custom_content
-      const customContent = (data.custom_content as CustomContent) || {};
-      
-      setEditData({
-        couple_names: data.couple_names,
-        ai_welcome_message: data.ai_welcome_message || '',
-        hero_title: customContent.hero?.title || data.couple_names,
-        hero_subtitle: customContent.hero?.subtitle || '',
-        our_story: customContent.our_story || '',
-        wedding_details: {
-          ceremony_location: customContent.wedding_details?.ceremony_location || '',
-          reception_location: customContent.wedding_details?.reception_location || '',
-          ceremony_time: customContent.wedding_details?.ceremony_time || '',
-          reception_time: customContent.wedding_details?.reception_time || ''
-        }
-      });
     } catch (error: any) {
       console.error('Erro ao carregar site:', error);
       toast({
@@ -107,45 +62,20 @@ const Editor = () => {
     }
   };
 
-  const handleSave = async () => {
+  const handleUpdateSite = async (updates: any) => {
     if (!siteData) return;
 
     setSaving(true);
     try {
-      const updatedCustomContent = {
-        ...((siteData.custom_content as CustomContent) || {}),
-        hero: {
-          title: editData.hero_title,
-          subtitle: editData.hero_subtitle,
-          message: editData.ai_welcome_message
-        },
-        our_story: editData.our_story,
-        wedding_details: editData.wedding_details
-      };
-
       const { error } = await supabase
         .from('wedding_sites')
-        .update({
-          couple_names: editData.couple_names,
-          ai_welcome_message: editData.ai_welcome_message,
-          custom_content: updatedCustomContent
-        })
+        .update(updates)
         .eq('id', siteData.id);
 
       if (error) throw error;
 
-      toast({
-        title: "Site salvo!",
-        description: "Suas alterações foram salvas com sucesso.",
-      });
-
       // Atualizar dados locais
-      setSiteData(prev => prev ? {
-        ...prev,
-        couple_names: editData.couple_names,
-        ai_welcome_message: editData.ai_welcome_message,
-        custom_content: updatedCustomContent
-      } : null);
+      setSite Data(prev => prev ? { ...prev, ...updates } : null);
 
     } catch (error: any) {
       toast({
@@ -153,9 +83,14 @@ const Editor = () => {
         description: error.message,
         variant: "destructive",
       });
+      throw error;
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleSlugChange = async (newSlug: string) => {
+    await handleUpdateSite({ slug: newSlug });
   };
 
   const handlePreview = () => {
@@ -169,14 +104,7 @@ const Editor = () => {
 
     try {
       const newStatus = !siteData.is_published;
-      const { error } = await supabase
-        .from('wedding_sites')
-        .update({ is_published: newStatus })
-        .eq('id', siteData.id);
-
-      if (error) throw error;
-
-      setSiteData(prev => prev ? { ...prev, is_published: newStatus } : null);
+      await handleUpdateSite({ is_published: newStatus });
       
       toast({
         title: newStatus ? "Site publicado!" : "Site despublicado",
@@ -239,14 +167,6 @@ const Editor = () => {
               Preview
             </Button>
             <Button
-              onClick={handleSave}
-              disabled={saving}
-              className="flex items-center gap-2 bg-rose-500 hover:bg-rose-600"
-            >
-              <Save className="h-4 w-4" />
-              {saving ? 'Salvando...' : 'Salvar'}
-            </Button>
-            <Button
               onClick={handlePublishToggle}
               variant={siteData.is_published ? "destructive" : "default"}
             >
@@ -255,192 +175,80 @@ const Editor = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Editor Panel */}
+          <div className="lg:col-span-2">
+            <SiteEditor
+              siteData={siteData}
+              onUpdateSite={handleUpdateSite}
+              onPreview={handlePreview}
+              saving={saving}
+            />
+          </div>
+
+          {/* Settings Sidebar */}
           <div className="space-y-6">
-            {/* Informações Básicas */}
+            {/* URL Settings */}
             <Card>
               <CardHeader>
-                <CardTitle>Informações Básicas</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Nome do Casal</label>
-                  <Input
-                    value={editData.couple_names}
-                    onChange={(e) => setEditData(prev => ({ ...prev, couple_names: e.target.value }))}
-                    placeholder="Ana & João"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Mensagem de Boas-vindas</label>
-                  <Textarea
-                    value={editData.ai_welcome_message}
-                    onChange={(e) => setEditData(prev => ({ ...prev, ai_welcome_message: e.target.value }))}
-                    placeholder="Mensagem especial para os convidados..."
-                    rows={4}
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Seção Hero */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Seção Principal (Hero)</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1">Título Principal</label>
-                  <Input
-                    value={editData.hero_title}
-                    onChange={(e) => setEditData(prev => ({ ...prev, hero_title: e.target.value }))}
-                    placeholder="Título da página"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-1">Subtítulo</label>
-                  <Input
-                    value={editData.hero_subtitle}
-                    onChange={(e) => setEditData(prev => ({ ...prev, hero_subtitle: e.target.value }))}
-                    placeholder="Data do casamento, localização..."
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Nossa História */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Nossa História</CardTitle>
+                <CardTitle>Configurações da URL</CardTitle>
               </CardHeader>
               <CardContent>
-                <Textarea
-                  value={editData.our_story}
-                  onChange={(e) => setEditData(prev => ({ ...prev, our_story: e.target.value }))}
-                  placeholder="Conte a história do casal..."
-                  rows={6}
+                <SlugEditor
+                  coupleNames={siteData.couple_names}
+                  weddingDate={siteData.wedding_date}
+                  currentSlug={siteData.slug}
+                  onSlugChange={handleSlugChange}
+                  disabled={saving}
                 />
               </CardContent>
             </Card>
 
-            {/* Detalhes do Casamento */}
+            {/* Site Status */}
             <Card>
               <CardHeader>
-                <CardTitle>Detalhes do Evento</CardTitle>
+                <CardTitle>Status do Site</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Local da Cerimônia</label>
-                    <Input
-                      value={editData.wedding_details.ceremony_location}
-                      onChange={(e) => setEditData(prev => ({
-                        ...prev,
-                        wedding_details: { ...prev.wedding_details, ceremony_location: e.target.value }
-                      }))}
-                      placeholder="Igreja, salão..."
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Horário da Cerimônia</label>
-                    <Input
-                      value={editData.wedding_details.ceremony_time}
-                      onChange={(e) => setEditData(prev => ({
-                        ...prev,
-                        wedding_details: { ...prev.wedding_details, ceremony_time: e.target.value }
-                      }))}
-                      placeholder="18:00"
-                    />
-                  </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Status</span>
+                  <span className={`text-sm px-2 py-1 rounded-full ${
+                    siteData.is_published 
+                      ? 'bg-green-100 text-green-800' 
+                      : 'bg-yellow-100 text-yellow-800'
+                  }`}>
+                    {siteData.is_published ? 'Publicado' : 'Rascunho'}
+                  </span>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Local da Recepção</label>
-                    <Input
-                      value={editData.wedding_details.reception_location}
-                      onChange={(e) => setEditData(prev => ({
-                        ...prev,
-                        wedding_details: { ...prev.wedding_details, reception_location: e.target.value }
-                      }))}
-                      placeholder="Salão de festas..."
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-1">Horário da Recepção</label>
-                    <Input
-                      value={editData.wedding_details.reception_time}
-                      onChange={(e) => setEditData(prev => ({
-                        ...prev,
-                        wedding_details: { ...prev.wedding_details, reception_time: e.target.value }
-                      }))}
-                      placeholder="20:00"
-                    />
-                  </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Visualizações</span>
+                  <span className="text-sm text-gray-600">
+                    {siteData.views_count || 0}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Template</span>
+                  <span className="text-sm text-gray-600">
+                    {siteData.template_name}
+                  </span>
                 </div>
               </CardContent>
             </Card>
-          </div>
 
-          {/* Preview Panel */}
-          <div className="lg:sticky lg:top-6">
+            {/* Quick Actions */}
             <Card>
               <CardHeader>
-                <CardTitle>Preview do Site</CardTitle>
+                <CardTitle>Ações Rápidas</CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="bg-white border rounded-lg p-6 space-y-6 min-h-96">
-                  {/* Hero Preview */}
-                  <div className="text-center space-y-4">
-                    <h1 className="text-3xl font-bold text-gray-900">
-                      {editData.hero_title || siteData.couple_names}
-                    </h1>
-                    {editData.hero_subtitle && (
-                      <p className="text-lg text-gray-600">{editData.hero_subtitle}</p>
-                    )}
-                    {editData.ai_welcome_message && (
-                      <p className="text-gray-700 max-w-md mx-auto">
-                        {editData.ai_welcome_message}
-                      </p>
-                    )}
-                  </div>
-
-                  {/* Our Story Preview */}
-                  {editData.our_story && (
-                    <div className="border-t pt-6">
-                      <h2 className="text-xl font-semibold mb-3">Nossa História</h2>
-                      <p className="text-gray-700 text-sm leading-relaxed">
-                        {editData.our_story.substring(0, 200)}
-                        {editData.our_story.length > 200 && '...'}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Wedding Details Preview */}
-                  {(editData.wedding_details.ceremony_location || editData.wedding_details.reception_location) && (
-                    <div className="border-t pt-6">
-                      <h2 className="text-xl font-semibold mb-3">Detalhes do Evento</h2>
-                      <div className="space-y-2 text-sm">
-                        {editData.wedding_details.ceremony_location && (
-                          <p><strong>Cerimônia:</strong> {editData.wedding_details.ceremony_location} {editData.wedding_details.ceremony_time && `às ${editData.wedding_details.ceremony_time}`}</p>
-                        )}
-                        {editData.wedding_details.reception_location && (
-                          <p><strong>Recepção:</strong> {editData.wedding_details.reception_location} {editData.wedding_details.reception_time && `às ${editData.wedding_details.reception_time}`}</p>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                <div className="mt-4 text-center">
-                  <Button
-                    onClick={handlePreview}
-                    variant="outline"
-                    className="w-full"
-                  >
-                    Ver Site Completo
-                  </Button>
-                </div>
+              <CardContent className="space-y-2">
+                <Button variant="outline" className="w-full" onClick={handlePreview}>
+                  <Eye className="h-4 w-4 mr-2" />
+                  Visualizar Site
+                </Button>
+                <Button variant="outline" className="w-full">
+                  <Save className="h-4 w-4 mr-2" />
+                  Exportar Configurações
+                </Button>
               </CardContent>
             </Card>
           </div>
