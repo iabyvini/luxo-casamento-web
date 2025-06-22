@@ -48,7 +48,7 @@ export const deleteImage = async (bucket: string, path: string): Promise<boolean
 };
 
 // Função para extrair o path da URL pública
-export const extractPathFromUrl = (url: string, bucket: string): string | null => => {
+export const extractPathFromUrl = (url: string, bucket: string): string | null => {
   try {
     const bucketPath = `/storage/v1/object/public/${bucket}/`;
     const pathIndex = url.indexOf(bucketPath);
