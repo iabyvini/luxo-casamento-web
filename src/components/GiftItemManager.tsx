@@ -10,6 +10,7 @@ import { Plus, Trash2, Edit2, Save, X, Upload, Image as ImageIcon } from "lucide
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { uploadImage, deleteImage, extractPathFromUrl, validateImageFile } from "@/utils/supabaseStorage";
+import ImageCropper from "./ImageCropper";
 
 interface GiftItem {
   id: string;
@@ -35,6 +36,7 @@ const GiftItemManager = ({ siteId }: GiftItemManagerProps) => {
   const [editingItem, setEditingItem] = useState<string | null>(null);
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [showCropper, setShowCropper] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -83,13 +85,17 @@ const GiftItemManager = ({ siteId }: GiftItemManagerProps) => {
     }
 
     setSelectedFile(file);
-    
-    // Criar preview
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreviewUrl(e.target?.result as string);
-    };
-    reader.readAsDataURL(file);
+    setShowCropper(true);
+  };
+
+  const handleCropComplete = (croppedBlob: Blob) => {
+    const url = URL.createObjectURL(croppedBlob);
+    setPreviewUrl(url);
+    // Criar um arquivo a partir do blob para upload
+    const croppedFile = new File([croppedBlob], selectedFile?.name || 'cropped-image.jpg', {
+      type: croppedBlob.type
+    });
+    setSelectedFile(croppedFile);
   };
 
   const handleSaveItem = async () => {
@@ -107,7 +113,7 @@ const GiftItemManager = ({ siteId }: GiftItemManagerProps) => {
       let imageUrl = null;
 
       // Upload da imagem se houver arquivo selecionado
-      if (selectedFile) {
+      if (selectedFile && selectedFile instanceof File) {
         imageUrl = await uploadImage(selectedFile, 'gift-images', siteId);
         if (!imageUrl) {
           throw new Error('Falha no upload da imagem');
@@ -238,189 +244,203 @@ const GiftItemManager = ({ siteId }: GiftItemManagerProps) => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">Itens da Lista de Presentes</h3>
-        <Button 
-          onClick={() => setShowAddForm(true)}
-          className="flex items-center gap-2"
-          disabled={showAddForm}
-        >
-          <Plus className="h-4 w-4" />
-          Adicionar Item
-        </Button>
-      </div>
+    <>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold">Itens da Lista de Presentes</h3>
+          <Button 
+            onClick={() => setShowAddForm(true)}
+            className="flex items-center gap-2"
+            disabled={showAddForm}
+          >
+            <Plus className="h-4 w-4" />
+            Adicionar Item
+          </Button>
+        </div>
 
-      {showAddForm && (
-        <Card className="p-4 border-2 border-dashed">
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label>Nome do Item *</Label>
-                <Input
-                  value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="Ex: Jogo de panelas"
-                />
-              </div>
-              <div>
-                <Label>Preço (R$) *</Label>
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={formData.price}
-                  onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
-                  placeholder="0.00"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <Label>Descrição</Label>
-              <Textarea
-                value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Descrição do item..."
-                rows={2}
-              />
-            </div>
-
-            <div>
-              <Label>Categoria</Label>
-              <Input
-                value={formData.category}
-                onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                placeholder="Ex: Cozinha, Casa, Decoração"
-              />
-            </div>
-
-            <div>
-              <Label>Imagem do Item</Label>
-              <div className="mt-2">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/jpeg,image/jpg,image/png,image/webp"
-                  onChange={handleFileSelect}
-                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Formatos aceitos: JPEG, PNG, WebP. Máximo 5MB.
-                </p>
-              </div>
-            </div>
-
-            {previewUrl && (
-              <div className="mt-4">
-                <Label>Preview</Label>
-                <div className="mt-2 relative w-full h-48 bg-gray-100 rounded-lg overflow-hidden">
-                  <img 
-                    src={previewUrl} 
-                    alt="Preview" 
-                    className="w-full h-full object-cover"
+        {showAddForm && (
+          <Card className="p-4 border-2 border-dashed">
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Nome do Item *</Label>
+                  <Input
+                    value={formData.name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="Ex: Jogo de panelas"
+                  />
+                </div>
+                <div>
+                  <Label>Preço (R$) *</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={formData.price}
+                    onChange={(e) => setFormData(prev => ({ ...prev, price: e.target.value }))}
+                    placeholder="0.00"
                   />
                 </div>
               </div>
-            )}
-
-            <div className="flex space-x-2">
-              <Button 
-                onClick={handleSaveItem} 
-                className="flex items-center gap-2"
-                disabled={uploading}
-              >
-                <Save className="h-4 w-4" />
-                {uploading ? 'Salvando...' : (editingItem ? 'Atualizar' : 'Adicionar')}
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={handleCancelEdit} 
-                className="flex items-center gap-2"
-                disabled={uploading}
-              >
-                <X className="h-4 w-4" />
-                Cancelar
-              </Button>
-            </div>
-          </div>
-        </Card>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {items.map((item) => (
-          <Card key={item.id} className="overflow-hidden">
-            <CardContent className="p-4">
-              {item.image_url ? (
-                <img 
-                  src={item.image_url} 
-                  alt={item.name}
-                  className="w-full h-32 object-cover rounded mb-3"
-                />
-              ) : (
-                <div className="w-full h-32 bg-gray-100 rounded mb-3 flex items-center justify-center">
-                  <ImageIcon className="h-8 w-8 text-gray-400" />
-                </div>
-              )}
               
-              <div className="space-y-2">
-                <div className="flex justify-between items-start">
-                  <h4 className="font-semibold text-sm">{item.name}</h4>
-                  <Badge variant={item.is_purchased ? "destructive" : "default"}>
-                    {item.is_purchased ? "Comprado" : "Disponível"}
-                  </Badge>
-                </div>
-                
-                {item.description && (
-                  <p className="text-xs text-gray-600 line-clamp-2">{item.description}</p>
-                )}
-                
-                <div className="flex justify-between items-center">
-                  <span className="font-bold text-green-600">
-                    R$ {item.price.toFixed(2)}
-                  </span>
-                  <span className="text-xs text-gray-500">{item.category}</span>
-                </div>
+              <div>
+                <Label>Descrição</Label>
+                <Textarea
+                  value={formData.description}
+                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  placeholder="Descrição do item..."
+                  rows={2}
+                />
+              </div>
 
-                {item.is_purchased && item.purchased_by && (
-                  <p className="text-xs text-gray-500">
-                    Comprado por: {item.purchased_by}
+              <div>
+                <Label>Categoria</Label>
+                <Input
+                  value={formData.category}
+                  onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                  placeholder="Ex: Cozinha, Casa, Decoração"
+                />
+              </div>
+
+              <div>
+                <Label>Imagem do Item</Label>
+                <div className="mt-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    onChange={handleFileSelect}
+                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    A imagem será automaticamente recortada em formato quadrado. Formatos aceitos: JPEG, PNG, WebP. Máximo 5MB.
                   </p>
-                )}
-
-                <div className="flex space-x-1 pt-2">
-                  <Button 
-                    size="sm" 
-                    variant="outline" 
-                    onClick={() => handleEditItem(item)}
-                    disabled={showAddForm}
-                    className="flex-1"
-                  >
-                    <Edit2 className="h-3 w-3" />
-                  </Button>
-                  <Button 
-                    size="sm" 
-                    variant="destructive" 
-                    onClick={() => handleDeleteItem(item)}
-                    disabled={showAddForm}
-                    className="flex-1"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
                 </div>
               </div>
-            </CardContent>
+
+              {previewUrl && (
+                <div className="mt-4">
+                  <Label>Preview</Label>
+                  <div className="mt-2 relative w-32 h-32 bg-gray-100 rounded-lg overflow-hidden">
+                    <img 
+                      src={previewUrl} 
+                      alt="Preview" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="flex space-x-2">
+                <Button 
+                  onClick={handleSaveItem} 
+                  className="flex items-center gap-2"
+                  disabled={uploading}
+                >
+                  <Save className="h-4 w-4" />
+                  {uploading ? 'Salvando...' : (editingItem ? 'Atualizar' : 'Adicionar')}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={handleCancelEdit} 
+                  className="flex items-center gap-2"
+                  disabled={uploading}
+                >
+                  <X className="h-4 w-4" />
+                  Cancelar
+                </Button>
+              </div>
+            </div>
           </Card>
-        ))}
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {items.map((item) => (
+            <Card key={item.id} className="overflow-hidden">
+              <CardContent className="p-4">
+                {item.image_url ? (
+                  <div className="aspect-square mb-3 overflow-hidden rounded">
+                    <img 
+                      src={item.image_url} 
+                      alt={item.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                ) : (
+                  <div className="aspect-square bg-gray-100 rounded mb-3 flex items-center justify-center">
+                    <ImageIcon className="h-8 w-8 text-gray-400" />
+                  </div>
+                )}
+                
+                <div className="space-y-2">
+                  <div className="flex justify-between items-start">
+                    <h4 className="font-semibold text-sm">{item.name}</h4>
+                    <Badge variant={item.is_purchased ? "destructive" : "default"}>
+                      {item.is_purchased ? "Comprado" : "Disponível"}
+                    </Badge>
+                  </div>
+                  
+                  {item.description && (
+                    <p className="text-xs text-gray-600 line-clamp-2">{item.description}</p>
+                  )}
+                  
+                  <div className="flex justify-between items-center">
+                    <span className="font-bold text-green-600">
+                      R$ {item.price.toFixed(2)}
+                    </span>
+                    <span className="text-xs text-gray-500">{item.category}</span>
+                  </div>
+
+                  {item.is_purchased && item.purchased_by && (
+                    <p className="text-xs text-gray-500">
+                      Comprado por: {item.purchased_by}
+                    </p>
+                  )}
+
+                  <div className="flex space-x-1 pt-2">
+                    <Button 
+                      size="sm" 
+                      variant="outline" 
+                      onClick={() => handleEditItem(item)}
+                      disabled={showAddForm}
+                      className="flex-1"
+                    >
+                      <Edit2 className="h-3 w-3" />
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="destructive" 
+                      onClick={() => handleDeleteItem(item)}
+                      disabled={showAddForm}
+                      className="flex-1"
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {items.length === 0 && (
+          <div className="text-center py-12 text-gray-500">
+            <ImageIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>Nenhum item adicionado ainda.</p>
+            <p className="text-sm">Clique em "Adicionar Item" para começar sua lista de presentes.</p>
+          </div>
+        )}
       </div>
 
-      {items.length === 0 && (
-        <div className="text-center py-12 text-gray-500">
-          <ImageIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
-          <p>Nenhum item adicionado ainda.</p>
-          <p className="text-sm">Clique em "Adicionar Item" para começar sua lista de presentes.</p>
-        </div>
+      {selectedFile && (
+        <ImageCropper
+          isOpen={showCropper}
+          onClose={() => setShowCropper(false)}
+          onCropComplete={handleCropComplete}
+          imageFile={selectedFile}
+          title="Recortar Imagem do Presente"
+        />
       )}
-    </div>
+    </>
   );
 };
 

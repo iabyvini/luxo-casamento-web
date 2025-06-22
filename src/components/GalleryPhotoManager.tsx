@@ -8,6 +8,7 @@ import { Plus, Trash2, Upload, X, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { uploadImage, deleteImage, extractPathFromUrl, validateImageFile } from "@/utils/supabaseStorage";
+import ImageCropper from "./ImageCropper";
 
 interface GalleryPhoto {
   id: string;
@@ -29,6 +30,7 @@ const GalleryPhotoManager = ({ siteId }: GalleryPhotoManagerProps) => {
   const [uploading, setUploading] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [showCropper, setShowCropper] = useState(false);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     caption: '',
@@ -75,29 +77,13 @@ const GalleryPhotoManager = ({ siteId }: GalleryPhotoManagerProps) => {
     }
 
     setSelectedFile(file);
-    
-    // Criar preview
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setPreviewUrl(e.target?.result as string);
-    };
-    reader.readAsDataURL(file);
+    setShowCropper(true);
   };
 
-  const handleAddPhoto = async () => {
-    if (!selectedFile) {
-      toast({
-        title: "Selecione uma imagem",
-        description: "É necessário selecionar uma imagem para adicionar à galeria",
-        variant: "destructive",
-      });
-      return;
-    }
-
+  const handleCropComplete = async (croppedBlob: Blob) => {
     setUploading(true);
     try {
-      // Upload da imagem
-      const imageUrl = await uploadImage(selectedFile, 'gallery-photos', siteId);
+      const imageUrl = await uploadImage(croppedBlob, 'gallery-photos', siteId);
       
       if (!imageUrl) {
         throw new Error('Falha no upload da imagem');
@@ -189,144 +175,156 @@ const GalleryPhotoManager = ({ siteId }: GalleryPhotoManagerProps) => {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h3 className="text-lg font-semibold">Fotos da Galeria</h3>
-        <Button 
-          onClick={() => setShowAddForm(true)}
-          className="flex items-center gap-2"
-          disabled={showAddForm}
-        >
-          <Plus className="h-4 w-4" />
-          Adicionar Foto
-        </Button>
-      </div>
+    <>
+      <div className="space-y-6">
+        <div className="flex justify-between items-center">
+          <h3 className="text-lg font-semibold">Fotos da Galeria</h3>
+          <Button 
+            onClick={() => setShowAddForm(true)}
+            className="flex items-center gap-2"
+            disabled={showAddForm}
+          >
+            <Plus className="h-4 w-4" />
+            Adicionar Foto
+          </Button>
+        </div>
 
-      {showAddForm && (
-        <Card className="p-4 border-2 border-dashed">
-          <div className="space-y-4">
-            <div>
-              <Label>Selecionar Imagem *</Label>
-              <div className="mt-2">
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="image/jpeg,image/jpg,image/png,image/webp"
-                  onChange={handleFileSelect}
-                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Formatos aceitos: JPEG, PNG, WebP. Máximo 5MB.
-                </p>
+        {showAddForm && (
+          <Card className="p-4 border-2 border-dashed">
+            <div className="space-y-4">
+              <div>
+                <Label>Selecionar Imagem *</Label>
+                <div className="mt-2">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    onChange={handleFileSelect}
+                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    A imagem será automaticamente recortada em formato quadrado. Formatos aceitos: JPEG, PNG, WebP. Máximo 5MB.
+                  </p>
+                </div>
               </div>
-            </div>
 
-            {previewUrl && (
-              <div className="mt-4">
-                <Label>Preview</Label>
-                <div className="mt-2 relative w-full h-48 bg-gray-100 rounded-lg overflow-hidden">
-                  <img 
-                    src={previewUrl} 
-                    alt="Preview" 
-                    className="w-full h-full object-cover"
+              {previewUrl && (
+                <div className="mt-4">
+                  <Label>Preview</Label>
+                  <div className="mt-2 relative w-32 h-32 bg-gray-100 rounded-lg overflow-hidden">
+                    <img 
+                      src={previewUrl} 
+                      alt="Preview" 
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                </div>
+              )}
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label>Legenda</Label>
+                  <Input
+                    value={formData.caption}
+                    onChange={(e) => setFormData(prev => ({ ...prev, caption: e.target.value }))}
+                    placeholder="Descrição da foto..."
                   />
                 </div>
+                <div>
+                  <Label>Categoria</Label>
+                  <select 
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                    value={formData.category}
+                    onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                  >
+                    <option value="Ensaio">Ensaio</option>
+                    <option value="Preparativos">Preparativos</option>
+                    <option value="Cerimônia">Cerimônia</option>
+                    <option value="Festa">Festa</option>
+                    <option value="Detalhes">Detalhes</option>
+                    <option value="Família">Família</option>
+                  </select>
+                </div>
               </div>
-            )}
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label>Legenda</Label>
-                <Input
-                  value={formData.caption}
-                  onChange={(e) => setFormData(prev => ({ ...prev, caption: e.target.value }))}
-                  placeholder="Descrição da foto..."
-                />
-              </div>
-              <div>
-                <Label>Categoria</Label>
-                <select 
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                  value={formData.category}
-                  onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                >
-                  <option value="Ensaio">Ensaio</option>
-                  <option value="Preparativos">Preparativos</option>
-                  <option value="Cerimônia">Cerimônia</option>
-                  <option value="Festa">Festa</option>
-                  <option value="Detalhes">Detalhes</option>
-                  <option value="Família">Família</option>
-                </select>
-              </div>
-            </div>
 
-            <div className="flex space-x-2">
-              <Button 
-                onClick={handleAddPhoto} 
-                className="flex items-center gap-2"
-                disabled={uploading || !selectedFile}
-              >
-                <Upload className="h-4 w-4" />
-                {uploading ? 'Enviando...' : 'Adicionar Foto'}
-              </Button>
-              <Button 
-                variant="outline" 
-                onClick={handleCancelAdd}
-                className="flex items-center gap-2"
-                disabled={uploading}
-              >
-                <X className="h-4 w-4" />
-                Cancelar
-              </Button>
-            </div>
-          </div>
-        </Card>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {photos.map((photo) => (
-          <Card key={photo.id} className="overflow-hidden">
-            <CardContent className="p-0">
-              <div className="relative">
-                <img 
-                  src={photo.photo_url} 
-                  alt={photo.caption || 'Foto da galeria'}
-                  className="w-full h-48 object-cover"
-                />
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  className="absolute top-2 right-2"
-                  onClick={() => handleDeletePhoto(photo)}
+              <div className="flex space-x-2">
+                <Button 
+                  onClick={() => fileInputRef.current?.click()} 
+                  className="flex items-center gap-2"
+                  disabled={uploading}
                 >
-                  <Trash2 className="h-3 w-3" />
+                  <Upload className="h-4 w-4" />
+                  {uploading ? 'Enviando...' : 'Selecionar e Recortar Foto'}
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={handleCancelAdd}
+                  className="flex items-center gap-2"
+                  disabled={uploading}
+                >
+                  <X className="h-4 w-4" />
+                  Cancelar
                 </Button>
               </div>
-              
-              <div className="p-3">
-                <div className="flex justify-between items-start mb-2">
-                  <span className="text-xs bg-gray-100 px-2 py-1 rounded">
-                    {photo.category}
-                  </span>
+            </div>
+          </Card>
+        )}
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {photos.map((photo) => (
+            <Card key={photo.id} className="overflow-hidden">
+              <CardContent className="p-0">
+                <div className="relative aspect-square">
+                  <img 
+                    src={photo.photo_url} 
+                    alt={photo.caption || 'Foto da galeria'}
+                    className="w-full h-full object-cover"
+                  />
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    className="absolute top-2 right-2 h-6 w-6 p-0"
+                    onClick={() => handleDeletePhoto(photo)}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
                 </div>
                 
-                {photo.caption && (
-                  <p className="text-sm text-gray-600">{photo.caption}</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                <div className="p-3">
+                  <div className="flex justify-between items-start mb-2">
+                    <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+                      {photo.category}
+                    </span>
+                  </div>
+                  
+                  {photo.caption && (
+                    <p className="text-sm text-gray-600 line-clamp-2">{photo.caption}</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+
+        {photos.length === 0 && (
+          <div className="text-center py-12 text-gray-500">
+            <ImageIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>Nenhuma foto adicionada ainda.</p>
+            <p className="text-sm">Clique em "Adicionar Foto" para começar sua galeria.</p>
+          </div>
+        )}
       </div>
 
-      {photos.length === 0 && (
-        <div className="text-center py-12 text-gray-500">
-          <ImageIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
-          <p>Nenhuma foto adicionada ainda.</p>
-          <p className="text-sm">Clique em "Adicionar Foto" para começar sua galeria.</p>
-        </div>
+      {selectedFile && (
+        <ImageCropper
+          isOpen={showCropper}
+          onClose={() => setShowCropper(false)}
+          onCropComplete={handleCropComplete}
+          imageFile={selectedFile}
+          title="Recortar Foto da Galeria"
+        />
       )}
-    </div>
+    </>
   );
 };
 

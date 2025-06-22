@@ -3,36 +3,82 @@ import React, { useState, useRef } from 'react';
 import { Camera, Upload, X, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useVisualTokens } from '@/contexts/VisualTokensContext';
+import ImageCropper from '../ImageCropper';
+import { uploadImage, validateImageFile, createFileFromBlob } from '@/utils/supabaseStorage';
+import { useToast } from '@/hooks/use-toast';
 
 interface PhotoUploadProps {
   onPhotoChange?: (photoUrl: string | null) => void;
   frameStyle: 'floral' | 'vintage' | 'modern' | 'geometric' | 'organic';
   fallbackIllustration?: string;
   compact?: boolean;
+  siteId?: string;
 }
 
 const PhotoUpload: React.FC<PhotoUploadProps> = ({ 
   onPhotoChange, 
   frameStyle, 
   fallbackIllustration,
-  compact = false
+  compact = false,
+  siteId
 }) => {
   const [isUploading, setIsUploading] = useState(false);
+  const [showCropper, setShowCropper] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { visualTokens, isCustomThemeActive, couplePhotoUrl, setCouplePhotoUrl } = useVisualTokens();
+  const { toast } = useToast();
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      setIsUploading(true);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const url = e.target?.result as string;
-        setCouplePhotoUrl(url);
-        onPhotoChange?.(url);
-        setIsUploading(false);
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
+      toast({
+        title: "Arquivo inválido",
+        description: validation.error,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setSelectedFile(file);
+    setShowCropper(true);
+  };
+
+  const handleCropComplete = async (croppedBlob: Blob) => {
+    if (!siteId) {
+      // Para preview, usar URL local
+      const url = URL.createObjectURL(croppedBlob);
+      setCouplePhotoUrl(url);
+      onPhotoChange?.(url);
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const imageUrl = await uploadImage(croppedBlob, 'couple-photos', siteId);
+      
+      if (!imageUrl) {
+        throw new Error('Falha no upload da imagem');
+      }
+
+      setCouplePhotoUrl(imageUrl);
+      onPhotoChange?.(imageUrl);
+      
+      toast({
+        title: "Foto carregada!",
+        description: "A foto do casal foi adicionada com sucesso.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erro no upload",
+        description: error.message,
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploading(false);
     }
   };
 
@@ -112,69 +158,81 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
   const size = compact ? 'w-32 h-32 md:w-40 md:h-40' : 'w-48 h-48 md:w-64 md:h-64';
 
   return (
-    <div className="relative">
-      <div 
-        className={`${size} overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 ${frameConfig.container} ${frameConfig.border} ${frameConfig.shadow}`}
-        style={{ 
-          borderColor: frameConfig.borderColor
-        }}
-      >
-        {couplePhotoUrl ? (
-          <div className="relative w-full h-full">
-            <img 
-              src={couplePhotoUrl} 
-              alt="Foto do casal" 
-              className="w-full h-full object-cover"
-            />
-            <Button
-              onClick={handleRemovePhoto}
-              size="sm"
-              variant="destructive"
-              className="absolute top-2 right-2 h-6 w-6 p-0 rounded-full opacity-80 hover:opacity-100"
+    <>
+      <div className="relative">
+        <div 
+          className={`${size} overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 ${frameConfig.container} ${frameConfig.border} ${frameConfig.shadow}`}
+          style={{ 
+            borderColor: frameConfig.borderColor
+          }}
+        >
+          {couplePhotoUrl ? (
+            <div className="relative w-full h-full">
+              <img 
+                src={couplePhotoUrl} 
+                alt="Foto do casal" 
+                className="w-full h-full object-cover"
+              />
+              <Button
+                onClick={handleRemovePhoto}
+                size="sm"
+                variant="destructive"
+                className="absolute top-2 right-2 h-6 w-6 p-0 rounded-full opacity-80 hover:opacity-100"
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
+          ) : (
+            <div 
+              onClick={() => fileInputRef.current?.click()}
+              className="w-full h-full hover:bg-opacity-80 transition-all duration-300"
             >
-              <X className="h-3 w-3" />
-            </Button>
-          </div>
-        ) : (
-          <div 
+              {getFallbackContent()}
+            </div>
+          )}
+        </div>
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileSelect}
+          className="hidden"
+        />
+
+        {!couplePhotoUrl && !compact && (
+          <Button
             onClick={() => fileInputRef.current?.click()}
-            className="w-full h-full hover:bg-opacity-80 transition-all duration-300"
+            className="mt-3 w-full transition-all duration-300 hover:scale-105 text-sm"
+            style={{ 
+              background: isCustomThemeActive ? visualTokens?.colors.primary : '#3C2B20',
+              color: 'white'
+            }}
+            disabled={isUploading}
           >
-            {getFallbackContent()}
+            <Upload className="h-4 w-4 mr-2" />
+            {isUploading ? 'Carregando...' : 'Adicionar Foto'}
+          </Button>
+        )}
+
+        {couplePhotoUrl && !compact && (
+          <div className="flex items-center justify-center mt-2">
+            <Check className="h-4 w-4 text-green-600 mr-1" />
+            <span className="text-xs text-green-600 font-medium">Foto adicionada</span>
           </div>
         )}
       </div>
 
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleFileSelect}
-        className="hidden"
-      />
-
-      {!couplePhotoUrl && !compact && (
-        <Button
-          onClick={() => fileInputRef.current?.click()}
-          className="mt-3 w-full transition-all duration-300 hover:scale-105 text-sm"
-          style={{ 
-            background: isCustomThemeActive ? visualTokens?.colors.primary : '#3C2B20',
-            color: 'white'
-          }}
-          disabled={isUploading}
-        >
-          <Upload className="h-4 w-4 mr-2" />
-          {isUploading ? 'Carregando...' : 'Adicionar Foto'}
-        </Button>
+      {selectedFile && (
+        <ImageCropper
+          isOpen={showCropper}
+          onClose={() => setShowCropper(false)}
+          onCropComplete={handleCropComplete}
+          imageFile={selectedFile}
+          title="Recortar Foto do Casal"
+        />
       )}
-
-      {couplePhotoUrl && !compact && (
-        <div className="flex items-center justify-center mt-2">
-          <Check className="h-4 w-4 text-green-600 mr-1" />
-          <span className="text-xs text-green-600 font-medium">Foto adicionada</span>
-        </div>
-      )}
-    </div>
+    </>
   );
 };
 
