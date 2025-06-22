@@ -1,7 +1,17 @@
-
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Allura&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Sacramento&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Satisfy&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -109,6 +119,48 @@
   top: calc(50% - 6px);
   left: -6px;
   cursor: w-resize;
+}
+
+/* Modern Wedding Site Styles */
+.modern-theme-active {
+  font-family: var(--modern-body-font, 'Inter'), sans-serif;
+  color: var(--modern-text, #2c2c2c);
+}
+
+.modern-theme-active .modern-heading {
+  font-family: var(--modern-heading-font, 'Playfair Display'), serif;
+  font-weight: var(--modern-heading-weight, 400);
+  color: var(--modern-primary, #1a1a1a);
+}
+
+.modern-theme-active .modern-script {
+  font-family: var(--modern-script-font, 'Dancing Script'), cursive;
+  color: var(--modern-accent, #d4af37);
+}
+
+.modern-theme-active .modern-body {
+  font-family: var(--modern-body-font, 'Inter'), sans-serif;
+  font-weight: var(--modern-body-weight, 300);
+  color: var(--modern-text, #2c2c2c);
+}
+
+/* Enhanced animations for modern theme */
+.modern-entrance {
+  animation: modernEntrance 1.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  opacity: 0;
+  transform: translateY(40px);
+}
+
+@keyframes modernEntrance {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modern-parallax {
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 /* Existing CSS... */

@@ -40,14 +40,51 @@ export const VisualTokensProvider: React.FC<{ children: React.ReactNode }> = ({ 
   }, []);
 
   const applyTokens = (quizAnswers: QuizAnswers) => {
-    const templateProfile = findBestTemplateProfile(quizAnswers);
-    const tokens = generateVisualTokens(templateProfile);
-    const backgroundToken = getBackgroundToken(templateProfile);
+    // Usar o novo sistema moderno como padrão
+    const { findBestModernTemplate, generateModernVisualTokens, applyModernVisualTokensToCSS } = require('@/utils/modernTemplateProfiles');
+    const { generateModernVisualTokens: genTokens, applyModernVisualTokensToCSS: applyCSS } = require('@/utils/modernVisualTokens');
     
-    setVisualTokens(tokens);
+    const modernTemplate = findBestModernTemplate(quizAnswers);
+    const modernTokens = genTokens(modernTemplate);
+    
+    // Converter para o formato antigo para compatibilidade
+    const legacyTokens = {
+      colors: {
+        primary: modernTokens.colors.primary,
+        secondary: modernTokens.colors.secondary,
+        accent: modernTokens.colors.accent,
+        background: modernTokens.colors.background,
+        textureOverlay: undefined
+      },
+      typography: {
+        fontFamilies: {
+          heading: modernTokens.typography.heading.family,
+          body: modernTokens.typography.body.family,
+          accent: modernTokens.typography.script.family
+        },
+        weights: {
+          heading: modernTokens.typography.heading.weight,
+          body: modernTokens.typography.body.weight
+        }
+      },
+      layout: {
+        spacing: 'normal' as const,
+        borderRadius: 'soft' as const,
+        shadows: 'subtle' as const,
+        contentWidth: 'normal' as const
+      },
+      decorations: {
+        heroElements: [],
+        sectionDividers: [],
+        backgroundPatterns: [],
+        iconStyle: 'minimal' as const
+      }
+    };
+    
+    setVisualTokens(legacyTokens);
     setIsCustomThemeActive(true);
     
-    // Apply CSS variables with background tokens and COMPLETE gold override
+    // Aplicar CSS moderno
     const styleId = 'global-visual-tokens';
     let styleElement = document.getElementById(styleId) as HTMLStyleElement;
     
@@ -58,61 +95,24 @@ export const VisualTokensProvider: React.FC<{ children: React.ReactNode }> = ({ 
     }
     
     styleElement.textContent = `
-      ${applyVisualTokensToCSS(tokens)}
-      ${generateBackgroundCSS(backgroundToken)}
+      ${applyCSS(modernTokens)}
       
-      /* ELIMINAÇÃO TOTAL do sistema dourado quando tokens personalizados estão ativos */
-      body.custom-theme-active .bg-gradient-luxury,
-      body.custom-theme-active .gradient-luxury,
-      body.custom-theme-active .btn-premium {
-        background: var(--primary-color) !important;
+      /* Modern theme overrides */
+      body.custom-theme-active {
+        font-family: ${modernTokens.typography.body.family}, sans-serif;
+        color: ${modernTokens.colors.text};
+        background: ${modernTokens.colors.background};
       }
       
-      body.custom-theme-active .gradient-text {
-        background: none !important;
-        -webkit-background-clip: unset !important;
-        -webkit-text-fill-color: unset !important;
-        background-clip: unset !important;
-        color: var(--primary-color) !important;
-      }
-      
-      body.custom-theme-active .luxury-shadow {
-        box-shadow: 0 25px 50px -12px color-mix(in srgb, var(--primary-color) 8%, transparent), 
-                    0 10px 20px -5px color-mix(in srgb, var(--primary-color) 4%, transparent) !important;
-      }
-      
-      /* Sobrescrever TODAS as referências de cores douradas */
-      body.custom-theme-active .text-accent,
-      body.custom-theme-active .border-accent,
-      body.custom-theme-active .bg-accent {
-        color: var(--primary-color) !important;
-        border-color: var(--primary-color) !important;
-        background-color: var(--secondary-color) !important;
-      }
-      
-      /* Template-specific backgrounds */
-      .section-bg-dynamic {
-        background: var(--template-bg-gradient);
-        position: relative;
-      }
-      
-      .section-bg-dynamic::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background-image: var(--template-bg-texture);
-        opacity: 0.03;
-        pointer-events: none;
-      }
-      
-      /* Contextual hero backgrounds */
-      .hero-template-bg {
-        background: var(--template-bg-gradient);
-        background-image: var(--template-bg-texture);
+      body.custom-theme-active .modern-active {
+        --primary-color: ${modernTokens.colors.primary};
+        --secondary-color: ${modernTokens.colors.secondary};
+        --accent-color: ${modernTokens.colors.accent};
+        --background-color: ${modernTokens.colors.background};
+        --text-color: ${modernTokens.colors.text};
       }
     `;
     
-    // Add custom theme class to body
     document.body.classList.add('custom-theme-active');
   };
 
