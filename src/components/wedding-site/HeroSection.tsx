@@ -204,9 +204,7 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
             {/* Location hint */}
             <div className="flex items-center justify-center lg:justify-start space-x-2">
               <div style={{ color: getTextColor('secondary') }}>
-                {getLocationIcon(quizAnsw
-
-  .local)}
+                {getLocationIcon(quizAnswers?.local)}
               </div>
               <span 
                 className="text-lg"
