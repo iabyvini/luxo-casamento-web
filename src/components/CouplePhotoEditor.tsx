@@ -24,9 +24,9 @@ const CouplePhotoEditor: React.FC<CouplePhotoEditorProps> = ({ siteId }) => {
           </p>
           <div className="flex justify-center">
             <PhotoUpload
-              frameStyle="modern"
-              compact={false}
-              siteId={siteId}
+              onPhotoUploaded={(url) => {
+                console.log('📸 Foto do casal atualizada:', url);
+              }}
             />
           </div>
         </div>

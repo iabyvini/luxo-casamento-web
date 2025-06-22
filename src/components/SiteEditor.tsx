@@ -3,10 +3,8 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Eye, Save } from "lucide-react";
+import { Eye } from "lucide-react";
 import PhotoUpload from "./wedding-site/PhotoUpload";
-import OurStoryEditor from "./OurStoryEditor";
-import EventDetailsEditor from "./EventDetailsEditor";
 
 interface SiteEditorProps {
   siteData: any;
@@ -71,7 +69,6 @@ const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorPro
                 <PhotoUpload
                   onPhotoUploaded={(url) => {
                     console.log('📸 Foto do casal atualizada:', url);
-                    // A foto será gerenciada pelo contexto ModernVisualTokens
                   }}
                 />
                 <p className="text-xs text-gray-500 mt-1">
@@ -99,11 +96,17 @@ const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorPro
 
         {/* Aba História */}
         <TabsContent value="historia" className="mt-6">
-          <OurStoryEditor
-            siteData={siteData}
-            onUpdateSite={onUpdateSite}
-            saving={saving}
-          />
+          <Card>
+            <CardHeader>
+              <CardTitle>Nossa História</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600">
+                A seção "Nossa História" é gerada automaticamente com base nas suas respostas.
+                Personalizações avançadas estarão disponíveis em breve.
+              </p>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Aba Galeria */}
@@ -122,11 +125,17 @@ const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorPro
 
         {/* Aba Evento */}
         <TabsContent value="evento" className="mt-6">
-          <EventDetailsEditor
-            siteData={siteData}
-            onUpdateSite={onUpdateSite}
-            saving={saving}
-          />
+          <Card>
+            <CardHeader>
+              <CardTitle>Detalhes do Evento</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-gray-600">
+                Os detalhes do evento são configurados automaticamente com base na data e local informados.
+                Personalizações estarão disponíveis em breve.
+              </p>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Aba Presentes */}
