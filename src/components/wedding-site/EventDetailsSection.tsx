@@ -1,6 +1,8 @@
-import { MapPin, Clock, Heart, Car, Gift, Music } from "lucide-react";
-import { getTemplateColors } from "@/utils/templateMapping";
+
+import { Calendar, Clock, MapPin, Users, Camera, Music, Utensils } from "lucide-react";
 import { QuizAnswers } from "@/types/quiz";
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 interface EventDetailsSectionProps {
   weddingDate: string;
@@ -9,190 +11,220 @@ interface EventDetailsSectionProps {
 }
 
 const EventDetailsSection = ({ weddingDate, templateName, quizAnswers }: EventDetailsSectionProps) => {
-  const colors = getTemplateColors(templateName);
-  const formattedDate = new Date(weddingDate).toLocaleDateString('pt-BR', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
+  const formattedDate = format(new Date(weddingDate), 'EEEE, dd \'de\' MMMM \'de\' yyyy', { locale: ptBR });
+  const formattedTime = format(new Date(weddingDate), 'HH:mm', { locale: ptBR });
 
-  const eventDetails = [
-    {
-      id: 'ceremony',
-      title: 'Cerimônia',
-      location: 'Igreja São José',
-      address: 'Rua das Flores, 123 - Centro',
-      time: '16:00',
-      icon: Heart,
-      description: 'Momento sagrado da nossa união',
-      color: colors[0],
-      features: ['Música ao vivo', 'Fotógrafo profissional', 'Pétalas de rosa']
-    },
-    {
-      id: 'reception',
-      title: 'Recepção',
-      location: 'Fazenda Vista Alegre',
-      address: 'Estrada Rural, Km 15 - Zona Rural',
-      time: '18:00',
-      icon: MapPin,
-      description: 'Celebração com família e amigos',
-      color: colors[1],
-      features: ['Coquetel de boas-vindas', 'Jantar servido', 'Área externa']
-    },
-    {
-      id: 'party',
-      title: 'Festa',
-      location: 'Salão Dourado',
-      address: 'Av. Celebration, 456 - Jardim Alegria',
-      time: '20:00',
-      icon: Music,
-      description: 'Diversão garantida até o amanhecer',
-      color: colors[2] || colors[0],
-      features: ['DJ profissional', 'Pista de dança', 'Bar completo']
-    }
-  ];
+  const getEventDetails = (template: string, quiz: QuizAnswers) => {
+    const baseDetails = {
+      ceremony: {
+        time: "16:00",
+        duration: "45 minutos",
+        location: quiz.local || "Local a ser confirmado"
+      },
+      reception: {
+        time: "17:00", 
+        duration: "Até 01:00",
+        location: "Mesmo local da cerimônia"
+      },
+      dressCode: getDressCode(template, quiz),
+      specialNotes: getSpecialNotes(template, quiz)
+    };
 
-  const additionalInfo = [
-    {
-      icon: Car,
-      title: 'Estacionamento',
-      description: 'Estacionamento gratuito disponível em todos os locais'
-    },
-    {
-      icon: Gift,
-      title: 'Lista de Presentes',
-      description: 'Sua presença já é nosso maior presente'
+    return baseDetails;
+  };
+
+  const getDressCode = (template: string, quiz: QuizAnswers) => {
+    if (quiz.local === "Igreja") {
+      return {
+        title: "Traje Social Elegante",
+        description: "Cores neutras ou pastéis. Evitar decotes e ombros descobertos na cerimônia.",
+        suggestions: ["Homens: terno ou blazer", "Mulheres: vestido midi ou longo", "Evitar: branco, bege claro"]
+      };
     }
-  ];
+
+    if (quiz.local === "Praia") {
+      return {
+        title: "Traje Esporte Fino",
+        description: "Roupas leves e confortáveis para ambiente ao ar livre.",
+        suggestions: ["Homens: camisa social e calça", "Mulheres: vestido leve", "Sapatos baixos recomendados"]
+      };
+    }
+
+    return {
+      title: "Traje Passeio Completo",
+      description: "Elegante mas confortável para celebrar conosco.",
+      suggestions: ["Cores permitidas: todas exceto branco", "Traje festivo bem-vindo", "Conforto é essencial"]
+    };
+  };
+
+  const getSpecialNotes = (template: string, quiz: QuizAnswers) => {
+    const notes = [];
+    
+    if (quiz.local === "Fazenda") {
+      notes.push("Evento ao ar livre - traga um casaquinho para a noite");
+    }
+    
+    if (quiz.local === "Praia") {
+      notes.push("Cerimônia na areia - evite saltos muito altos");
+    }
+
+    if (template === "Bohemian Dream") {
+      notes.push("Celebração livre e descontraída - venha com o coração aberto");
+    }
+
+    notes.push("Confirmação de presença até 30 dias antes do evento");
+    
+    return notes;
+  };
+
+  const eventDetails = getEventDetails(templateName, quizAnswers);
 
   return (
-    <section id="details" className="py-20 bg-white">
+    <section id="details" className="py-20 bg-gradient-to-br from-brown-50 to-gold-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <div className="inline-flex items-center space-x-2 bg-brown-50 border border-brown-200 rounded-full px-6 py-3 mb-6">
-            <Clock className="h-5 w-5 text-primary" />
+          <div className="inline-flex items-center space-x-2 bg-white/80 backdrop-blur-sm border border-brown-200 rounded-full px-6 py-3 mb-6">
+            <Calendar className="h-5 w-5 text-primary" />
             <span className="font-medium text-brown-700">Detalhes do Evento</span>
           </div>
           
           <h2 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">
-            Nosso Grande Dia
+            Informações Importantes
           </h2>
           
-          <p className="text-lg text-brown-600 mb-4 capitalize">
-            {formattedDate}
-          </p>
-          
-          <p className="text-brown-500 max-w-2xl mx-auto">
-            Prepare-se para um dia repleto de amor, alegria e momentos inesquecíveis. 
-            Aqui estão todos os detalhes para você não perder nada!
+          <p className="text-lg text-brown-600 max-w-2xl mx-auto">
+            Tudo que você precisa saber para celebrar conosco este momento especial.
           </p>
         </div>
 
-        {/* Timeline dos Eventos */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-16">
-          {eventDetails.map((event, index) => {
-            const IconComponent = event.icon;
-            return (
-              <div key={event.id} className="relative group">
-                {/* Timeline connector */}
-                {index < eventDetails.length - 1 && (
-                  <div className="hidden lg:block absolute top-8 left-full w-full h-0.5 bg-gradient-luxury transform -translate-x-4 z-0"></div>
-                )}
-                
-                <div className="luxury-card rounded-2xl p-8 text-center relative z-10 group-hover:scale-105 transition-all duration-300">
-                  {/* Icon with color */}
-                  <div 
-                    className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-6 luxury-shadow"
-                    style={{ backgroundColor: event.color }}
-                  >
-                    <IconComponent className="h-8 w-8 text-white" fill={event.icon === Heart ? "currentColor" : "none"} />
-                  </div>
-                  
-                  {/* Event Info */}
-                  <h3 className="text-2xl font-bold text-brown-800 mb-2">
-                    {event.title}
-                  </h3>
-                  
-                  <p className="text-brown-600 mb-4 italic">
-                    {event.description}
-                  </p>
-                  
-                  <div className="space-y-3 mb-6">
-                    <div className="flex items-center justify-center space-x-2 text-brown-700">
-                      <Clock className="h-4 w-4" />
-                      <span className="font-semibold text-lg">{event.time}</span>
-                    </div>
-                    
-                    <div className="text-brown-600">
-                      <p className="font-medium">{event.location}</p>
-                      <p className="text-sm">{event.address}</p>
-                    </div>
-                  </div>
-                  
-                  {/* Features */}
-                  <div className="space-y-2">
-                    {event.features.map((feature, featureIndex) => (
-                      <div key={featureIndex} className="flex items-center justify-center space-x-2 text-sm text-brown-500">
-                        <div className="w-1.5 h-1.5 bg-current rounded-full"></div>
-                        <span>{feature}</span>
-                      </div>
-                    ))}
-                  </div>
+        {/* Data e Local Principal */}
+        <div className="max-w-4xl mx-auto mb-16">
+          <div className="luxury-card rounded-2xl p-8 text-center">
+            <div className="flex flex-col md:flex-row items-center justify-center space-y-6 md:space-y-0 md:space-x-12">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-gradient-luxury rounded-full flex items-center justify-center luxury-shadow">
+                  <Calendar className="h-6 w-6 text-white" />
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-medium text-brown-600 uppercase tracking-wider">Data</p>
+                  <p className="text-lg font-bold text-brown-800 capitalize">{formattedDate}</p>
                 </div>
               </div>
-            );
-          })}
+              
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-gradient-luxury rounded-full flex items-center justify-center luxury-shadow">
+                  <MapPin className="h-6 w-6 text-white" />
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-medium text-brown-600 uppercase tracking-wider">Local</p>
+                  <p className="text-lg font-bold text-brown-800">{eventDetails.ceremony.location}</p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
-        {/* Informações Adicionais */}
-        <div className="max-w-4xl mx-auto">
-          <h3 className="text-2xl font-bold text-center text-brown-800 mb-8">
-            Informações Importantes
+        {/* Timeline do Evento */}
+        <div className="max-w-6xl mx-auto mb-16">
+          <h3 className="text-2xl font-bold text-brown-800 text-center mb-8">
+            Programação do Dia
           </h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-            {additionalInfo.map((info, index) => {
-              const IconComponent = info.icon;
-              return (
-                <div key={index} className="flex items-start space-x-4 bg-gradient-to-r from-brown-50 to-gold-50 rounded-xl p-6">
-                  <div className="w-10 h-10 bg-gradient-luxury rounded-full flex items-center justify-center flex-shrink-0">
-                    <IconComponent className="h-5 w-5 text-white" />
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-brown-800 mb-1">
-                      {info.title}
-                    </h4>
-                    <p className="text-brown-600 text-sm">
-                      {info.description}
-                    </p>
-                  </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Cerimônia */}
+            <div className="luxury-card rounded-xl p-6">
+              <div className="flex items-center mb-4">
+                <div className="w-10 h-10 bg-gradient-luxury rounded-full flex items-center justify-center mr-4">
+                  <Users className="h-5 w-5 text-white" />
                 </div>
-              );
-            })}
-          </div>
+                <div>
+                  <h4 className="text-xl font-bold text-brown-800">Cerimônia</h4>
+                  <p className="text-brown-600">{eventDetails.ceremony.time}</p>
+                </div>
+              </div>
+              
+              <div className="space-y-2 text-brown-600">
+                <div className="flex items-center space-x-2">
+                  <Clock className="h-4 w-4" />
+                  <span>Duração: {eventDetails.ceremony.duration}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <MapPin className="h-4 w-4" />
+                  <span>{eventDetails.ceremony.location}</span>
+                </div>
+              </div>
+            </div>
 
-          {/* Dress Code */}
-          <div className="text-center bg-gradient-to-r from-brown-50 to-gold-50 rounded-2xl p-8 border border-brown-200">
-            <h4 className="text-xl font-bold text-brown-800 mb-4">
-              Dress Code
-            </h4>
-            <p className="text-brown-600 mb-4">
-              Traje social/esporte fino. Sugerimos tons terrosos e dourados para harmonizar com nossa paleta.
-            </p>
-            <div className="flex items-center justify-center space-x-3">
-              {colors.map((color, index) => (
-                <div key={index} className="flex items-center space-x-2">
-                  <div 
-                    className="w-4 h-4 rounded-full border-2 border-white shadow-sm"
-                    style={{ backgroundColor: color }}
-                  ></div>
-                  {index < colors.length - 1 && <span className="text-brown-400">•</span>}
+            {/* Recepção */}
+            <div className="luxury-card rounded-xl p-6">
+              <div className="flex items-center mb-4">
+                <div className="w-10 h-10 bg-gradient-luxury rounded-full flex items-center justify-center mr-4">
+                  <Music className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold text-brown-800">Recepção</h4>
+                  <p className="text-brown-600">{eventDetails.reception.time}</p>
+                </div>
+              </div>
+              
+              <div className="space-y-2 text-brown-600">
+                <div className="flex items-center space-x-2">
+                  <Clock className="h-4 w-4" />
+                  <span>Duração: {eventDetails.reception.duration}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Utensils className="h-4 w-4" />
+                  <span>Jantar + Festa</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Dress Code */}
+        <div className="max-w-4xl mx-auto mb-16">
+          <div className="luxury-card rounded-xl p-8">
+            <div className="text-center mb-6">
+              <div className="w-12 h-12 bg-gradient-luxury rounded-full flex items-center justify-center mx-auto mb-4">
+                <Camera className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-brown-800 mb-2">
+                {eventDetails.dressCode.title}
+              </h3>
+              <p className="text-brown-600">
+                {eventDetails.dressCode.description}
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {eventDetails.dressCode.suggestions.map((suggestion, index) => (
+                <div key={index} className="bg-brown-50 rounded-lg p-4 text-center">
+                  <p className="text-brown-700 font-medium">{suggestion}</p>
                 </div>
               ))}
             </div>
           </div>
         </div>
+
+        {/* Observações Especiais */}
+        {eventDetails.specialNotes.length > 0 && (
+          <div className="max-w-4xl mx-auto">
+            <div className="luxury-card rounded-xl p-8">
+              <h3 className="text-xl font-bold text-brown-800 mb-4 text-center">
+                Observações Importantes
+              </h3>
+              
+              <div className="space-y-3">
+                {eventDetails.specialNotes.map((note, index) => (
+                  <div key={index} className="flex items-start space-x-3">
+                    <div className="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
+                    <p className="text-brown-600">{note}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

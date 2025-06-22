@@ -1,17 +1,21 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { CalendarDays, Clock, MapPin, Users, Mail, Phone, MessageSquare, CheckCircle, XCircle } from "lucide-react";
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { useToast } from "@/hooks/use-toast";
-import { Separator } from "@/components/ui/separator";
-import { Badge } from "@/components/ui/badge";
+import { VisualTokensProvider } from "@/contexts/VisualTokensContext";
+import WeddingSiteNavigation from "@/components/wedding-site/WeddingSiteNavigation";
+import HeroSection from "@/components/wedding-site/HeroSection";
+import CountdownSection from "@/components/wedding-site/CountdownSection";
+import CoupleSection from "@/components/wedding-site/CoupleSection";
+import OurStorySection from "@/components/wedding-site/OurStorySection";
+import GallerySection from "@/components/wedding-site/GallerySection";
+import EventDetailsSection from "@/components/wedding-site/EventDetailsSection";
+import GiftListSection from "@/components/wedding-site/GiftListSection";
+import RSVPSection from "@/components/wedding-site/RSVPSection";
+import MessagesSection from "@/components/wedding-site/MessagesSection";
+import FooterSection from "@/components/wedding-site/FooterSection";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 
 const PublicSite = () => {
   const { slug } = useParams();
@@ -19,14 +23,6 @@ const PublicSite = () => {
   const [siteData, setSiteData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [guestName, setGuestName] = useState("");
-  const [guestEmail, setGuestEmail] = useState("");
-  const [guestPhone, setGuestPhone] = useState("");
-  const [willAttend, setWillAttend] = useState<boolean>(true);
-  const [companionCount, setCompanionCount] = useState(0);
-  const [dietaryRestrictions, setDietaryRestrictions] = useState("");
-  const [message, setMessage] = useState("");
-  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (!slug) {
@@ -77,255 +73,131 @@ const PublicSite = () => {
     fetchSiteData();
   }, [slug]);
 
-  const { toast } = useToast();
-
-  const handleRSVPSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!guestName || !guestEmail) {
-      toast({
-        title: "Preencha os campos",
-        description: "Por favor, preencha seu nome e email.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setSubmitting(true);
-
-    try {
-      const { data, error } = await supabase
-        .from('rsvp_responses')
-        .insert([
-          {
-            site_id: siteData.id,
-            guest_name: guestName,
-            guest_email: guestEmail,
-            guest_phone: guestPhone,
-            will_attend: willAttend,
-            companion_count: companionCount,
-            dietary_restrictions: dietaryRestrictions,
-            message: message,
-          },
-        ]);
-
-      if (error) {
-        throw error;
-      }
-
-      toast({
-        title: "Confirmação enviada!",
-        description: "Agradecemos por confirmar sua presença.",
-      });
-
-      // Clear form fields
-      setGuestName("");
-      setGuestEmail("");
-      setGuestPhone("");
-      setWillAttend(true);
-      setCompanionCount(0);
-      setDietaryRestrictions("");
-      setMessage("");
-    } catch (error: any) {
-      console.error('Error submitting RSVP:', error);
-      toast({
-        title: "Erro ao confirmar",
-        description: "Ocorreu um erro ao enviar sua confirmação. Tente novamente.",
-        variant: "destructive",
-      });
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
   if (loading) {
     return (
-      <div className="container mx-auto p-4">
-        <Skeleton className="w-[280px] h-[32px] rounded-md mb-4" />
-        <Skeleton className="w-[200px] h-[24px] rounded-md mb-2" />
-        <Skeleton className="w-[350px] h-[20px] rounded-md mb-1" />
-        <Skeleton className="w-[300px] h-[20px] rounded-md mb-4" />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Skeleton className="w-[150px] h-[24px] rounded-md mb-2" />
-            <Skeleton className="w-full h-[150px] rounded-md mb-4" />
+      <div className="min-h-screen bg-gradient-to-br from-rose-50 to-pink-50">
+        <div className="container mx-auto p-4">
+          <Skeleton className="w-[280px] h-[32px] rounded-md mb-4" />
+          <Skeleton className="w-[200px] h-[24px] rounded-md mb-2" />
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-[80vh] mb-8">
+            <div className="order-2 lg:order-1 flex justify-center">
+              <Skeleton className="w-80 h-96 md:w-96 md:h-[480px] rounded-2xl" />
+            </div>
+            <div className="order-1 lg:order-2 space-y-8">
+              <Skeleton className="w-[350px] h-[60px] rounded-md" />
+              <Skeleton className="w-[250px] h-[30px] rounded-md" />
+              <Skeleton className="w-[300px] h-[120px] rounded-md" />
+            </div>
           </div>
-          <div>
-            <Skeleton className="w-[150px] h-[24px] rounded-md mb-2" />
-            <Skeleton className="w-full h-[150px] rounded-md mb-4" />
+          
+          <div className="space-y-8">
+            <Skeleton className="w-full h-[200px] rounded-md" />
+            <Skeleton className="w-full h-[300px] rounded-md" />
+            <Skeleton className="w-full h-[400px] rounded-md" />
           </div>
         </div>
-
-        <Skeleton className="w-[200px] h-[24px] rounded-md mb-2" />
-        <Skeleton className="w-full h-[100px] rounded-md mb-4" />
-
-        <Skeleton className="w-[200px] h-[24px] rounded-md mb-2" />
-        <Skeleton className="w-full h-[40px] rounded-md mb-4" />
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="container mx-auto p-4 text-center">
-        <h1 className="text-2xl font-bold text-red-500">{error}</h1>
-        <Button onClick={() => navigate('/')} className="mt-4">Voltar ao Início</Button>
+      <div className="min-h-screen bg-gradient-to-br from-rose-50 to-pink-50 flex items-center justify-center">
+        <div className="container mx-auto p-4 text-center">
+          <div className="bg-white rounded-2xl p-8 shadow-lg max-w-md mx-auto">
+            <h1 className="text-2xl font-bold text-red-500 mb-4">{error}</h1>
+            <p className="text-gray-600 mb-6">
+              {error === "Site não encontrado" ? 
+                "Este site de casamento não foi encontrado ou ainda não foi publicado." :
+                "Ocorreu um erro ao carregar o site. Por favor, tente novamente."
+              }
+            </p>
+            <Button onClick={() => navigate('/')} className="bg-rose-500 hover:bg-rose-600">
+              Voltar ao Início
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }
 
   if (!siteData) {
     return (
-      <div className="container mx-auto p-4 text-center">
-        <h1 className="text-2xl font-bold text-gray-500">Site não encontrado</h1>
-        <Button onClick={() => navigate('/')} className="mt-4">Voltar ao Início</Button>
+      <div className="min-h-screen bg-gradient-to-br from-rose-50 to-pink-50 flex items-center justify-center">
+        <div className="container mx-auto p-4 text-center">
+          <div className="bg-white rounded-2xl p-8 shadow-lg max-w-md mx-auto">
+            <h1 className="text-2xl font-bold text-gray-500 mb-4">Site não encontrado</h1>
+            <p className="text-gray-600 mb-6">
+              Este site de casamento não está disponível no momento.
+            </p>
+            <Button onClick={() => navigate('/')} className="bg-rose-500 hover:bg-rose-600">
+              Voltar ao Início
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }
 
+  // Prepare data for components
+  const previewData = {
+    coupleNames: siteData.couple_names,
+    weddingDate: siteData.wedding_date,
+    templateName: siteData.template_name,
+    welcomeMessage: siteData.ai_welcome_message || "Seja bem-vindo(a) à celebração do nosso amor!",
+    quizAnswers: siteData.quiz_answers
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-50 to-pink-50 py-12">
-      <div className="container mx-auto px-4">
-        {/* Header Section */}
-        <header className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-rose-700 mb-2">{siteData.couple_names}</h1>
-          <p className="text-gray-600">
-            {siteData.wedding_date && format(new Date(siteData.wedding_date), 'dd/MM/yyyy')}
-          </p>
-        </header>
-
-        {/* Event Details Section */}
-        <section className="bg-white/80 backdrop-blur-sm border border-rose-200 rounded-2xl p-6 shadow-lg mb-8">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Detalhes do Evento</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <div className="flex items-center text-gray-700 mb-2">
-                <CalendarDays className="h-5 w-5 mr-2 text-rose-500" />
-                <span>
-                  {siteData.wedding_date && format(new Date(siteData.wedding_date), 'EEEE, dd \'de\' MMMM \'de\' yyyy', { locale: ptBR })}
-                </span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* RSVP Section */}
-        <section className="bg-white/80 backdrop-blur-sm border border-rose-200 rounded-2xl p-6 shadow-lg mb-8">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Confirme sua Presença</h2>
-          <form onSubmit={handleRSVPSubmit} className="space-y-4">
-            <div>
-              <Label htmlFor="guestName" className="text-gray-800">Nome Completo</Label>
-              <Input
-                id="guestName"
-                type="text"
-                placeholder="Seu nome"
-                value={guestName}
-                onChange={(e) => setGuestName(e.target.value)}
-                className="border-rose-300 focus:border-rose-500"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="guestEmail" className="text-gray-800">Email</Label>
-              <Input
-                id="guestEmail"
-                type="email"
-                placeholder="seu@email.com"
-                value={guestEmail}
-                onChange={(e) => setGuestEmail(e.target.value)}
-                className="border-rose-300 focus:border-rose-500"
-                required
-              />
-            </div>
-            <div>
-              <Label htmlFor="guestPhone" className="text-gray-800">Telefone (Opcional)</Label>
-              <Input
-                id="guestPhone"
-                type="tel"
-                placeholder="(11) 99999-9999"
-                value={guestPhone}
-                onChange={(e) => setGuestPhone(e.target.value)}
-                className="border-rose-300 focus:border-rose-500"
-              />
-            </div>
-            <div>
-              <Label className="text-gray-800">Confirmação</Label>
-              <div className="flex items-center space-x-4">
-                <Button
-                  type="button"
-                  variant={willAttend ? "default" : "outline"}
-                  className={` ${willAttend
-                    ? "bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white"
-                    : "border-rose-300 text-rose-600 hover:bg-rose-50"
-                    }`}
-                  onClick={() => setWillAttend(true)}
-                >
-                  <CheckCircle className="h-4 w-4 mr-2" />
-                  Sim, estarei presente
-                </Button>
-                <Button
-                  type="button"
-                  variant={!willAttend ? "default" : "outline"}
-                  className={`${!willAttend
-                    ? "bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white"
-                    : "border-rose-300 text-rose-600 hover:bg-rose-50"
-                    }`}
-                  onClick={() => setWillAttend(false)}
-                >
-                  <XCircle className="h-4 w-4 mr-2" />
-                  Não poderei comparecer
-                </Button>
-              </div>
-            </div>
-            {willAttend && (
-              <div>
-                <Label htmlFor="companionCount" className="text-gray-800">Número de Acompanhantes</Label>
-                <Input
-                  id="companionCount"
-                  type="number"
-                  min="0"
-                  max="10"
-                  value={companionCount}
-                  onChange={(e) => setCompanionCount(parseInt(e.target.value) || 0)}
-                  className="border-rose-300 focus:border-rose-500"
-                />
-              </div>
-            )}
-            {willAttend && (
-              <div>
-                <Label htmlFor="dietaryRestrictions" className="text-gray-800">Restrições Alimentares (Opcional)</Label>
-                <Input
-                  id="dietaryRestrictions"
-                  type="text"
-                  placeholder="Ex: Vegetariano, alérgico a frutos do mar..."
-                  value={dietaryRestrictions}
-                  onChange={(e) => setDietaryRestrictions(e.target.value)}
-                  className="border-rose-300 focus:border-rose-500"
-                />
-              </div>
-            )}
-            <div>
-              <Label htmlFor="message" className="text-gray-800">Mensagem (Opcional)</Label>
-              <Textarea
-                id="message"
-                placeholder="Deixe uma mensagem para os noivos"
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                className="border-rose-300 focus:border-rose-500 resize-none"
-              />
-            </div>
-            <Button
-              type="submit"
-              disabled={submitting}
-              className="w-full bg-gradient-to-r from-rose-500 to-pink-500 hover:from-rose-600 hover:to-pink-600 text-white"
-            >
-              {submitting ? 'Enviando...' : 'Confirmar Presença'}
-            </Button>
-          </form>
-        </section>
+    <VisualTokensProvider>
+      <div className="min-h-screen bg-white">
+        <WeddingSiteNavigation coupleNames={previewData.coupleNames} />
+        
+        <HeroSection
+          coupleNames={previewData.coupleNames}
+          weddingDate={previewData.weddingDate}
+          welcomeMessage={previewData.welcomeMessage}
+          templateName={previewData.templateName}
+          quizAnswers={previewData.quizAnswers}
+        />
+        
+        <CountdownSection weddingDate={previewData.weddingDate} />
+        
+        <CoupleSection coupleNames={previewData.coupleNames} />
+        
+        <OurStorySection 
+          coupleNames={previewData.coupleNames}
+          templateName={previewData.templateName}
+          quizAnswers={previewData.quizAnswers}
+        />
+        
+        <GallerySection 
+          templateName={previewData.templateName}
+          quizAnswers={previewData.quizAnswers}
+        />
+        
+        <EventDetailsSection 
+          weddingDate={previewData.weddingDate}
+          templateName={previewData.templateName}
+          quizAnswers={previewData.quizAnswers}
+        />
+        
+        <GiftListSection />
+        
+        <RSVPSection 
+          weddingDate={previewData.weddingDate}
+          templateName={previewData.templateName}
+        />
+        
+        <MessagesSection />
+        
+        <FooterSection
+          coupleNames={previewData.coupleNames}
+          weddingDate={previewData.weddingDate}
+        />
       </div>
-    </div>
+    </VisualTokensProvider>
   );
 };
 
