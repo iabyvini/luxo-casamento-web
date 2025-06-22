@@ -1,16 +1,17 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Heart, Users, CheckCircle, Calendar } from "lucide-react";
+import { QuizAnswers } from "@/types/quiz";
 
 interface RSVPSectionProps {
   weddingDate: string;
   templateName: string;
+  quizAnswers: QuizAnswers;
 }
 
-const RSVPSection = ({ weddingDate, templateName }: RSVPSectionProps) => {
+const RSVPSection = ({ weddingDate, templateName, quizAnswers }: RSVPSectionProps) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',

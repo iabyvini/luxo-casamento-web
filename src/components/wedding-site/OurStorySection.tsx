@@ -1,12 +1,14 @@
 
 import { Heart, Users, Calendar, Sparkles } from "lucide-react";
+import { QuizAnswers } from "@/types/quiz";
 
 interface OurStorySectionProps {
   coupleNames: string;
   templateName: string;
+  quizAnswers: QuizAnswers;
 }
 
-const OurStorySection = ({ coupleNames, templateName }: OurStorySectionProps) => {
+const OurStorySection = ({ coupleNames, templateName, quizAnswers }: OurStorySectionProps) => {
   const [firstName, secondName] = coupleNames.split(' & ').map(name => name.trim());
 
   const getStoryByTemplate = (template: string) => {

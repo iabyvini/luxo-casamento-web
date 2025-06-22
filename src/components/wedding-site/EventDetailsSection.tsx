@@ -1,13 +1,14 @@
-
 import { MapPin, Clock, Heart, Car, Gift, Music } from "lucide-react";
 import { getTemplateColors } from "@/utils/templateMapping";
+import { QuizAnswers } from "@/types/quiz";
 
 interface EventDetailsSectionProps {
   weddingDate: string;
   templateName: string;
+  quizAnswers: QuizAnswers;
 }
 
-const EventDetailsSection = ({ weddingDate, templateName }: EventDetailsSectionProps) => {
+const EventDetailsSection = ({ weddingDate, templateName, quizAnswers }: EventDetailsSectionProps) => {
   const colors = getTemplateColors(templateName);
   const formattedDate = new Date(weddingDate).toLocaleDateString('pt-BR', {
     weekday: 'long',

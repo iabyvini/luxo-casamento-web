@@ -1,12 +1,14 @@
 
 import { Heart, Instagram, Facebook, Share2 } from "lucide-react";
+import { QuizAnswers } from "@/types/quiz";
 
 interface FooterSectionProps {
   coupleNames: string;
   templateName: string;
+  quizAnswers: QuizAnswers;
 }
 
-const FooterSection = ({ coupleNames, templateName }: FooterSectionProps) => {
+const FooterSection = ({ coupleNames, templateName, quizAnswers }: FooterSectionProps) => {
   const currentYear = new Date().getFullYear();
 
   const getFooterStyle = (template: string) => {

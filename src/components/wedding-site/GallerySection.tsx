@@ -1,11 +1,12 @@
-
 import { Camera, Heart, Sparkles } from "lucide-react";
+import { QuizAnswers } from "@/types/quiz";
 
 interface GallerySectionProps {
   templateName: string;
+  quizAnswers: QuizAnswers;
 }
 
-const GallerySection = ({ templateName }: GallerySectionProps) => {
+const GallerySection = ({ templateName, quizAnswers }: GallerySectionProps) => {
   // Usando placeholder images da lista disponível
   const galleryImages = [
     {
