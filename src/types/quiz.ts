@@ -1,4 +1,3 @@
-
 export interface QuizQuestion {
   id: string;
   label: string;
@@ -15,6 +14,9 @@ export interface QuizAnswers {
   cores: string;
   data_casamento: string;
   nomes: string;
+  personalidade?: string;
+  convidados?: string;
+  tema?: string;
 }
 
 export interface WeddingSite {

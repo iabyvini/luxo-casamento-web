@@ -59,7 +59,6 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
       height: size,
       x,
       y,
-      aspect: aspectRatio,
     });
   }, [aspectRatio]);
 
@@ -144,7 +143,6 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
         height: size,
         x,
         y,
-        aspect: aspectRatio,
       });
     }
   };
