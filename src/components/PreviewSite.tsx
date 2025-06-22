@@ -1,8 +1,7 @@
-
 import { useEffect } from "react";
 import { PreviewData } from "@/types/quiz";
 import { useVisualTokens } from "@/contexts/VisualTokensContext";
-import { ModernVisualTokensProvider } from "@/contexts/ModernVisualTokensContext";
+import { useModernVisualTokens } from "@/contexts/ModernVisualTokensContext";
 import ModernHeroSection from "./wedding-site/ModernHeroSection";
 import ModernNavigation from "./wedding-site/ModernNavigation";
 import CountdownSection from "./wedding-site/CountdownSection";
@@ -22,77 +21,82 @@ interface PreviewSiteProps {
 
 const PreviewSite = ({ data }: PreviewSiteProps) => {
   const { applyTokens } = useVisualTokens();
+  const { applyModernTokens } = useModernVisualTokens();
 
   useEffect(() => {
+    console.log('🔄 PreviewSite - Aplicando tokens para:', data.quizAnswers);
+    
     if (data.quizAnswers) {
+      // Aplicar os tokens modernos
+      applyModernTokens(data.quizAnswers);
+      
+      // Manter compatibilidade com sistema antigo
       applyTokens(data.quizAnswers);
     }
-  }, [data.quizAnswers, applyTokens]);
+  }, [data.quizAnswers, applyTokens, applyModernTokens]);
 
   return (
-    <ModernVisualTokensProvider>
-      <div className="min-h-screen bg-white modern-active">
-        {/* Navigation */}
-        <ModernNavigation coupleNames={data.coupleNames} />
+    <div className="min-h-screen bg-white modern-active">
+      {/* Navigation */}
+      <ModernNavigation coupleNames={data.coupleNames} />
 
-        {/* Hero Section */}
-        <ModernHeroSection
-          coupleNames={data.coupleNames}
-          weddingDate={data.weddingDate}
-          welcomeMessage={data.welcomeMessage}
-          templateName={data.templateName}
-          quizAnswers={data.quizAnswers}
-        />
+      {/* Hero Section */}
+      <ModernHeroSection
+        coupleNames={data.coupleNames}
+        weddingDate={data.weddingDate}
+        welcomeMessage={data.welcomeMessage}
+        templateName={data.templateName}
+        quizAnswers={data.quizAnswers}
+      />
 
-        {/* Countdown */}
-        <CountdownSection weddingDate={data.weddingDate} />
+      {/* Countdown */}
+      <CountdownSection weddingDate={data.weddingDate} />
 
-        {/* Couple Section */}
-        <CoupleSection coupleNames={data.coupleNames} />
+      {/* Couple Section */}
+      <CoupleSection coupleNames={data.coupleNames} />
 
-        {/* Our Story */}
-        <OurStorySection 
-          coupleNames={data.coupleNames}
-          templateName={data.templateName}
-        />
+      {/* Our Story */}
+      <OurStorySection 
+        coupleNames={data.coupleNames}
+        templateName={data.templateName}
+      />
 
-        {/* Gallery */}
-        <GallerySection
-          siteId="preview"
-          templateName={data.templateName}
-          quizAnswers={data.quizAnswers}
-        />
+      {/* Gallery */}
+      <GallerySection
+        siteId="preview"
+        templateName={data.templateName}
+        quizAnswers={data.quizAnswers}
+      />
 
-        {/* Event Details */}
-        <EventDetailsSection
-          weddingDate={data.weddingDate}
-          templateName={data.templateName}
-          quizAnswers={data.quizAnswers}
-        />
+      {/* Event Details */}
+      <EventDetailsSection
+        weddingDate={data.weddingDate}
+        templateName={data.templateName}
+        quizAnswers={data.quizAnswers}
+      />
 
-        {/* Bridesmaids */}
-        <BridesmaidsSection />
+      {/* Bridesmaids */}
+      <BridesmaidsSection />
 
-        {/* Gift List */}
-        <GiftListSection siteId="preview" />
+      {/* Gift List */}
+      <GiftListSection siteId="preview" />
 
-        {/* RSVP */}
-        <RSVPSection
-          siteId="preview"
-          weddingDate={data.weddingDate}
-          templateName={data.templateName}
-        />
+      {/* RSVP */}
+      <RSVPSection
+        siteId="preview"
+        weddingDate={data.weddingDate}
+        templateName={data.templateName}
+      />
 
-        {/* Messages */}
-        <MessagesSection siteId="preview" />
+      {/* Messages */}
+      <MessagesSection siteId="preview" />
 
-        {/* Footer */}
-        <FooterSection
-          coupleNames={data.coupleNames}
-          weddingDate={new Date(data.weddingDate).toLocaleDateString('pt-BR')}
-        />
-      </div>
-    </ModernVisualTokensProvider>
+      {/* Footer */}
+      <FooterSection
+        coupleNames={data.coupleNames}
+        weddingDate={new Date(data.weddingDate).toLocaleDateString('pt-BR')}
+      />
+    </div>
   );
 };
 

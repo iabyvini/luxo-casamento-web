@@ -8,6 +8,7 @@ interface ModernVisualTokensContextType {
   modernTokens: ModernVisualTokens | null;
   isModernThemeActive: boolean;
   couplePhotoUrl: string | null;
+  templateProfile: any | null;
   applyModernTokens: (quizAnswers: QuizAnswers) => void;
   resetModernTokens: () => void;
   setCouplePhotoUrl: (url: string | null) => void;
@@ -19,6 +20,7 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode }>
   const [modernTokens, setModernTokens] = useState<ModernVisualTokens | null>(null);
   const [isModernThemeActive, setIsModernThemeActive] = useState(false);
   const [couplePhotoUrl, setCouplePhotoUrlState] = useState<string | null>(null);
+  const [templateProfile, setTemplateProfile] = useState<any | null>(null);
 
   const setCouplePhotoUrl = (url: string | null) => {
     setCouplePhotoUrlState(url);
@@ -37,9 +39,15 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode }>
   }, []);
 
   const applyModernTokens = (quizAnswers: QuizAnswers) => {
-    const templateProfile = findBestModernTemplate(quizAnswers);
-    const tokens = generateModernVisualTokens(templateProfile);
+    console.log('🎨 Aplicando tokens modernos para:', quizAnswers);
     
+    const profile = findBestModernTemplate(quizAnswers);
+    const tokens = generateModernVisualTokens(profile);
+    
+    console.log('📋 Template selecionado:', profile.name, profile.id);
+    console.log('🎨 Tokens gerados:', tokens);
+    
+    setTemplateProfile(profile);
     setModernTokens(tokens);
     setIsModernThemeActive(true);
     
@@ -53,18 +61,31 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode }>
       document.head.appendChild(styleElement);
     }
     
-    styleElement.textContent = applyModernVisualTokensToCSS(tokens);
+    const cssContent = applyModernVisualTokensToCSS(tokens);
+    styleElement.textContent = cssContent;
+    
+    console.log('✅ CSS aplicado:', cssContent.substring(0, 200) + '...');
+    
+    // Aplicar classes no body
     document.body.classList.add('modern-theme-active');
+    document.body.classList.add(`template-${profile.id}`);
+    
+    // Definir variáveis CSS globais adicionais
+    document.documentElement.style.setProperty('--template-id', profile.id);
+    document.documentElement.style.setProperty('--template-name', profile.name);
   };
 
   const resetModernTokens = () => {
     setModernTokens(null);
+    setTemplateProfile(null);
     setIsModernThemeActive(false);
     const styleElement = document.getElementById('modern-visual-tokens');
     if (styleElement) {
       styleElement.remove();
     }
     document.body.classList.remove('modern-theme-active');
+    // Remove todas as classes de template
+    document.body.className = document.body.className.replace(/template-[\w-]+/g, '');
   };
 
   return (
@@ -72,6 +93,7 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode }>
       modernTokens, 
       isModernThemeActive,
       couplePhotoUrl,
+      templateProfile,
       applyModernTokens, 
       resetModernTokens,
       setCouplePhotoUrl
