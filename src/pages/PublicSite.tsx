@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -127,14 +128,13 @@ const PublicSite = () => {
         {/* Navigation */}
         <WeddingSiteNavigation 
           coupleNames={siteData.couple_names}
-          templateName={siteData.template_name}
         />
 
         {/* Hero Section */}
         <HeroSection
           coupleNames={siteData.couple_names}
           weddingDate={siteData.wedding_date}
-          aiWelcomeMessage={siteData.ai_welcome_message}
+          welcomeMessage={siteData.ai_welcome_message}
           templateName={siteData.template_name}
           quizAnswers={siteData.quiz_answers}
           customContent={siteData.custom_content?.hero}
@@ -143,21 +143,19 @@ const PublicSite = () => {
         {/* Countdown Section */}
         <CountdownSection
           weddingDate={siteData.wedding_date}
-          templateName={siteData.template_name}
           customContent={siteData.custom_content?.countdown}
         />
 
         {/* Couple Section */}
         <CoupleSection
           coupleNames={siteData.couple_names}
-          templateName={siteData.template_name}
           quizAnswers={siteData.quiz_answers}
           customContent={siteData.custom_content?.couple}
         />
 
         {/* Our Story Section */}
         <OurStorySection
-          templateName={siteData.template_name}
+          coupleNames={siteData.couple_names}
           quizAnswers={siteData.quiz_answers}
           customContent={siteData.custom_content?.our_story}
         />
@@ -180,7 +178,6 @@ const PublicSite = () => {
 
         {/* Bridesmaids Section */}
         <BridesmaidsSection
-          templateName={siteData.template_name}
           quizAnswers={siteData.quiz_answers}
           customContent={siteData.custom_content?.bridesmaids}
         />
@@ -194,14 +191,12 @@ const PublicSite = () => {
         {/* RSVP Section */}
         <RSVPSection
           siteId={siteData.id}
-          coupleNames={siteData.couple_names}
           customContent={siteData.custom_content?.rsvp}
         />
 
         {/* Messages Section */}
         <MessagesSection
           siteId={siteData.id}
-          coupleNames={siteData.couple_names}
           customContent={siteData.custom_content?.messages}
         />
 
@@ -209,7 +204,6 @@ const PublicSite = () => {
         <FooterSection
           coupleNames={siteData.couple_names}
           weddingDate={formattedDate}
-          templateName={siteData.template_name}
         />
       </div>
     </VisualTokensProvider>

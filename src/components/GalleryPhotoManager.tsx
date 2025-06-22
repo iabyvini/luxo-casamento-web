@@ -1,12 +1,13 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Plus, Trash2, Upload, X } from "lucide-react";
+import { Plus, Trash2, Upload, X, Image as ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { uploadImage, deleteImage, extractPathFromUrl, validateImageFile } from "@/utils/supabaseStorage";
 
 interface GalleryPhoto {
   id: string;
@@ -22,11 +23,14 @@ interface GalleryPhotoManagerProps {
 
 const GalleryPhotoManager = ({ siteId }: GalleryPhotoManagerProps) => {
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [photos, setPhotos] = useState<GalleryPhoto[]>([]);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [formData, setFormData] = useState({
-    photo_url: '',
     caption: '',
     category: 'Ensaio'
   });
@@ -56,24 +60,56 @@ const GalleryPhotoManager = ({ siteId }: GalleryPhotoManagerProps) => {
     }
   };
 
-  const handleAddPhoto = async () => {
-    if (!formData.photo_url) {
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const validation = validateImageFile(file);
+    if (!validation.valid) {
       toast({
-        title: "URL obrigatória",
-        description: "A URL da foto é obrigatória",
+        title: "Arquivo inválido",
+        description: validation.error,
         variant: "destructive",
       });
       return;
     }
 
+    setSelectedFile(file);
+    
+    // Criar preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setPreviewUrl(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleAddPhoto = async () => {
+    if (!selectedFile) {
+      toast({
+        title: "Selecione uma imagem",
+        description: "É necessário selecionar uma imagem para adicionar à galeria",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setUploading(true);
     try {
+      // Upload da imagem
+      const imageUrl = await uploadImage(selectedFile, 'gallery-photos', siteId);
+      
+      if (!imageUrl) {
+        throw new Error('Falha no upload da imagem');
+      }
+
       const nextOrder = Math.max(...photos.map(p => p.display_order), 0) + 1;
       
       const { error } = await supabase
         .from('gallery_photos')
         .insert([{
           site_id: siteId,
-          photo_url: formData.photo_url,
+          photo_url: imageUrl,
           caption: formData.caption || null,
           category: formData.category,
           display_order: nextOrder
@@ -86,8 +122,15 @@ const GalleryPhotoManager = ({ siteId }: GalleryPhotoManagerProps) => {
         description: "A foto foi adicionada à galeria.",
       });
 
-      setFormData({ photo_url: '', caption: '', category: 'Ensaio' });
+      // Reset form
+      setFormData({ caption: '', category: 'Ensaio' });
+      setSelectedFile(null);
+      setPreviewUrl(null);
       setShowAddForm(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+      
       fetchPhotos();
     } catch (error: any) {
       toast({
@@ -95,17 +138,26 @@ const GalleryPhotoManager = ({ siteId }: GalleryPhotoManagerProps) => {
         description: error.message,
         variant: "destructive",
       });
+    } finally {
+      setUploading(false);
     }
   };
 
-  const handleDeletePhoto = async (photoId: string) => {
+  const handleDeletePhoto = async (photo: GalleryPhoto) => {
     try {
+      // Deletar do banco
       const { error } = await supabase
         .from('gallery_photos')
         .delete()
-        .eq('id', photoId);
+        .eq('id', photo.id);
 
       if (error) throw error;
+
+      // Tentar deletar do storage
+      const imagePath = extractPathFromUrl(photo.photo_url, 'gallery-photos');
+      if (imagePath) {
+        await deleteImage('gallery-photos', imagePath);
+      }
 
       toast({
         title: "Foto removida!",
@@ -119,6 +171,16 @@ const GalleryPhotoManager = ({ siteId }: GalleryPhotoManagerProps) => {
         description: error.message,
         variant: "destructive",
       });
+    }
+  };
+
+  const handleCancelAdd = () => {
+    setFormData({ caption: '', category: 'Ensaio' });
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    setShowAddForm(false);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -144,16 +206,33 @@ const GalleryPhotoManager = ({ siteId }: GalleryPhotoManagerProps) => {
         <Card className="p-4 border-2 border-dashed">
           <div className="space-y-4">
             <div>
-              <Label>URL da Foto *</Label>
-              <Input
-                value={formData.photo_url}
-                onChange={(e) => setFormData(prev => ({ ...prev, photo_url: e.target.value }))}
-                placeholder="https://exemplo.com/foto.jpg"
-              />
-              <p className="text-xs text-gray-500 mt-1">
-                Cole aqui o link da foto (pode usar serviços como Imgur, Google Drive público, etc.)
-              </p>
+              <Label>Selecionar Imagem *</Label>
+              <div className="mt-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  onChange={handleFileSelect}
+                  className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  Formatos aceitos: JPEG, PNG, WebP. Máximo 5MB.
+                </p>
+              </div>
             </div>
+
+            {previewUrl && (
+              <div className="mt-4">
+                <Label>Preview</Label>
+                <div className="mt-2 relative w-full h-48 bg-gray-100 rounded-lg overflow-hidden">
+                  <img 
+                    src={previewUrl} 
+                    alt="Preview" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              </div>
+            )}
             
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -182,17 +261,19 @@ const GalleryPhotoManager = ({ siteId }: GalleryPhotoManagerProps) => {
             </div>
 
             <div className="flex space-x-2">
-              <Button onClick={handleAddPhoto} className="flex items-center gap-2">
+              <Button 
+                onClick={handleAddPhoto} 
+                className="flex items-center gap-2"
+                disabled={uploading || !selectedFile}
+              >
                 <Upload className="h-4 w-4" />
-                Adicionar Foto
+                {uploading ? 'Enviando...' : 'Adicionar Foto'}
               </Button>
               <Button 
                 variant="outline" 
-                onClick={() => {
-                  setFormData({ photo_url: '', caption: '', category: 'Ensaio' });
-                  setShowAddForm(false);
-                }}
+                onClick={handleCancelAdd}
                 className="flex items-center gap-2"
+                disabled={uploading}
               >
                 <X className="h-4 w-4" />
                 Cancelar
@@ -216,7 +297,7 @@ const GalleryPhotoManager = ({ siteId }: GalleryPhotoManagerProps) => {
                   size="sm"
                   variant="destructive"
                   className="absolute top-2 right-2"
-                  onClick={() => handleDeletePhoto(photo.id)}
+                  onClick={() => handleDeletePhoto(photo)}
                 >
                   <Trash2 className="h-3 w-3" />
                 </Button>
@@ -240,7 +321,7 @@ const GalleryPhotoManager = ({ siteId }: GalleryPhotoManagerProps) => {
 
       {photos.length === 0 && (
         <div className="text-center py-12 text-gray-500">
-          <Upload className="h-12 w-12 mx-auto mb-4 opacity-50" />
+          <ImageIcon className="h-12 w-12 mx-auto mb-4 opacity-50" />
           <p>Nenhuma foto adicionada ainda.</p>
           <p className="text-sm">Clique em "Adicionar Foto" para começar sua galeria.</p>
         </div>
