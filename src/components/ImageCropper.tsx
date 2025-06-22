@@ -1,8 +1,9 @@
+
 import React, { useState, useRef, useCallback } from 'react';
 import ReactCrop, { Crop, PixelCrop } from 'react-image-crop';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Check, X, RotateCcw, ZoomIn, ZoomOut } from 'lucide-react';
+import { Check, X, RotateCcw } from 'lucide-react';
 import 'react-image-crop/dist/ReactCrop.css';
 
 interface ImageCropperProps {
@@ -24,15 +25,14 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
 }) => {
   const [crop, setCrop] = useState<Crop>({
     unit: '%',
-    width: 80,
-    height: 80,
-    x: 10,
-    y: 10,
+    width: 70,
+    height: 70,
+    x: 15,
+    y: 15,
   });
   const [completedCrop, setCompletedCrop] = useState<PixelCrop>();
   const [imageSrc, setImageSrc] = useState<string>('');
   const [processing, setProcessing] = useState(false);
-  const [scale, setScale] = useState(1);
   const imgRef = useRef<HTMLImageElement>(null);
 
   React.useEffect(() => {
@@ -46,24 +46,18 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
   }, [imageFile, isOpen]);
 
   const onImageLoad = useCallback((e: React.SyntheticEvent<HTMLImageElement>) => {
-    const { naturalWidth, naturalHeight } = e.currentTarget;
-    
-    // Criar um crop quadrado centrado
-    const size = Math.min(naturalWidth, naturalHeight);
-    const x = (naturalWidth - size) / 2;
-    const y = (naturalHeight - size) / 2;
-    
+    // Definir um crop inicial flexível no centro da imagem
     setCrop({
-      unit: 'px',
-      width: size,
-      height: size,
-      x,
-      y,
+      unit: '%',
+      width: 70,
+      height: 70,
+      x: 15,
+      y: 15,
     });
-  }, [aspectRatio]);
+  }, []);
 
   const getCroppedImg = useCallback(
-    (image: HTMLImageElement, pixelCrop: PixelCrop, scale: number): Promise<Blob> => {
+    (image: HTMLImageElement, pixelCrop: PixelCrop): Promise<Blob> => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
 
@@ -71,15 +65,16 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
         throw new Error('No 2d context');
       }
 
-      // Define o tamanho final da imagem (sempre quadrada)
-      const targetSize = 800; // Tamanho final da imagem
+      // Tamanho final da imagem (sempre quadrada)
+      const targetSize = 800;
       canvas.width = targetSize;
       canvas.height = targetSize;
 
-      // Ajustar para o scale
+      // Calcular as proporções reais da imagem
       const scaleX = image.naturalWidth / image.width;
       const scaleY = image.naturalHeight / image.height;
 
+      // Desenhar a imagem recortada no canvas
       ctx.drawImage(
         image,
         pixelCrop.x * scaleX,
@@ -112,7 +107,7 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
 
     setProcessing(true);
     try {
-      const croppedImageBlob = await getCroppedImg(imgRef.current, completedCrop, scale);
+      const croppedImageBlob = await getCroppedImg(imgRef.current, completedCrop);
       onCropComplete(croppedImageBlob);
       onClose();
     } catch (error) {
@@ -122,90 +117,65 @@ const ImageCropper: React.FC<ImageCropperProps> = ({
     }
   };
 
-  const handleZoomIn = () => {
-    setScale(prev => Math.min(prev + 0.1, 3));
-  };
-
-  const handleZoomOut = () => {
-    setScale(prev => Math.max(prev - 0.1, 1));
-  };
-
   const handleReset = () => {
-    setScale(1);
-    if (imgRef.current) {
-      const { naturalWidth, naturalHeight } = imgRef.current;
-      const size = Math.min(naturalWidth, naturalHeight);
-      const x = (naturalWidth - size) / 2;
-      const y = (naturalHeight - size) / 2;
-      setCrop({
-        unit: 'px',
-        width: size,
-        height: size,
-        x,
-        y,
-      });
-    }
+    setCrop({
+      unit: '%',
+      width: 70,
+      height: 70,
+      x: 15,
+      y: 15,
+    });
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-3xl max-h-[90vh]">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4">
           <p className="text-sm text-gray-600">
-            Ajuste a área de recorte para criar uma imagem quadrada perfeita
+            Ajuste a área de recorte arrastando e redimensionando. O resultado será sempre uma imagem quadrada.
           </p>
           
           {imageSrc && (
             <div className="flex justify-center">
-              <ReactCrop
-                crop={crop}
-                onChange={(c) => setCrop(c)}
-                onComplete={(c) => setCompletedCrop(c)}
-                aspect={aspectRatio}
-                minWidth={100}
-                minHeight={100}
-                keepSelection
-              >
-                <img
-                  ref={imgRef}
-                  src={imageSrc}
-                  onLoad={onImageLoad}
-                  style={{ maxHeight: '400px', maxWidth: '100%', transform: `scale(${scale})` }}
-                  alt="Imagem para recorte"
-                />
-              </ReactCrop>
+              <div className="crop-container relative w-full max-w-2xl" style={{ height: '500px' }}>
+                <ReactCrop
+                  crop={crop}
+                  onChange={(c) => setCrop(c)}
+                  onComplete={(c) => setCompletedCrop(c)}
+                  aspect={aspectRatio}
+                  minWidth={50}
+                  minHeight={50}
+                  keepSelection
+                  className="w-full h-full"
+                >
+                  <img
+                    ref={imgRef}
+                    src={imageSrc}
+                    onLoad={onImageLoad}
+                    alt="Imagem para recorte"
+                    className="w-full h-full object-contain"
+                    style={{ maxHeight: '500px' }}
+                  />
+                </ReactCrop>
+              </div>
             </div>
           )}
 
-          <div className="flex justify-center space-x-4 mt-2">
-            <button
-              type="button"
-              onClick={handleZoomOut}
-              className="p-2 rounded-full bg-gray-200 hover:bg-gray-300"
-              aria-label="Zoom Out"
-            >
-              <ZoomOut className="h-5 w-5" />
-            </button>
-            <button
+          <div className="flex justify-center mt-4">
+            <Button
               type="button"
               onClick={handleReset}
-              className="p-2 rounded-full bg-gray-200 hover:bg-gray-300"
-              aria-label="Reset"
+              variant="outline"
+              className="flex items-center gap-2"
+              disabled={processing}
             >
-              <RotateCcw className="h-5 w-5" />
-            </button>
-            <button
-              type="button"
-              onClick={handleZoomIn}
-              className="p-2 rounded-full bg-gray-200 hover:bg-gray-300"
-              aria-label="Zoom In"
-            >
-              <ZoomIn className="h-5 w-5" />
-            </button>
+              <RotateCcw className="h-4 w-4" />
+              Resetar
+            </Button>
           </div>
           
           <div className="flex justify-end space-x-2 mt-6">
