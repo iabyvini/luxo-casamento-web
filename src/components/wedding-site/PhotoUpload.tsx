@@ -1,35 +1,28 @@
 
 import React, { useState, useRef } from 'react';
-import { Camera, Upload, X, Check } from 'lucide-react';
+import { Camera, Upload, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useModernVisualTokens } from '@/contexts/ModernVisualTokensContext';
-import ImageCropper from '../ImageCropper';
-import { uploadImage, validateImageFile } from '@/utils/supabaseStorage';
 import { useToast } from '@/hooks/use-toast';
+import { uploadImage, deleteImage, extractPathFromUrl, validateImageFile } from '@/utils/supabaseStorage';
+import { useModernVisualTokens } from '@/contexts/ModernVisualTokensContext';
 
 interface PhotoUploadProps {
-  onPhotoChange?: (photoUrl: string | null) => void;
-  frameStyle?: 'floral' | 'vintage' | 'modern' | 'geometric' | 'organic';
-  fallbackIllustration?: string;
+  frameStyle?: 'classic' | 'modern' | 'rustic';
   compact?: boolean;
-  siteId?: string;
+  siteId: string;
 }
 
 const PhotoUpload: React.FC<PhotoUploadProps> = ({ 
-  onPhotoChange, 
-  frameStyle = 'modern',
-  fallbackIllustration,
+  frameStyle = 'classic', 
   compact = false,
-  siteId
+  siteId 
 }) => {
-  const [isUploading, setIsUploading] = useState(false);
-  const [showCropper, setShowCropper] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const { modernTokens, isModernThemeActive, couplePhotoUrl, setCouplePhotoUrl } = useModernVisualTokens();
+  const { couplePhotoUrl, setCouplePhotoUrl } = useModernVisualTokens();
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
 
-  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
@@ -43,161 +36,69 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
       return;
     }
 
-    setSelectedFile(file);
-    setShowCropper(true);
-  };
-
-  const handleCropComplete = async (croppedBlob: Blob) => {
-    setIsUploading(true);
+    setUploading(true);
     try {
-      if (siteId) {
-        const imageUrl = await uploadImage(croppedBlob, 'couple-photos', siteId);
-        
-        if (!imageUrl) {
-          throw new Error('Falha no upload da imagem');
+      // Deletar foto anterior se existir
+      if (couplePhotoUrl) {
+        const oldPath = extractPathFromUrl(couplePhotoUrl, 'couple-photos');
+        if (oldPath) {
+          await deleteImage('couple-photos', oldPath);
         }
+      }
 
-        setCouplePhotoUrl(imageUrl);
-        onPhotoChange?.(imageUrl);
-        
+      // Upload nova foto
+      const photoUrl = await uploadImage(file, 'couple-photos', `${siteId}/couple`);
+      
+      if (photoUrl) {
+        setCouplePhotoUrl(photoUrl);
         toast({
-          title: "Foto carregada!",
-          description: "A foto do casal foi adicionada com sucesso.",
+          title: "Foto enviada!",
+          description: "A foto do casal foi atualizada com sucesso.",
         });
       } else {
-        // Para preview, usar URL local
-        const url = URL.createObjectURL(croppedBlob);
-        setCouplePhotoUrl(url);
-        onPhotoChange?.(url);
-        
-        toast({
-          title: "Foto adicionada!",
-          description: "A foto do casal foi adicionada ao preview.",
-        });
+        throw new Error('Falha no upload');
       }
-    } catch (error: any) {
+    } catch (error) {
+      console.error('Erro no upload:', error);
       toast({
         title: "Erro no upload",
-        description: error.message,
+        description: "Não foi possível enviar a foto. Tente novamente.",
         variant: "destructive",
       });
     } finally {
-      setIsUploading(false);
-      setShowCropper(false);
-      setSelectedFile(null);
+      setUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
-  const handleRemovePhoto = () => {
-    setCouplePhotoUrl(null);
-    onPhotoChange?.(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+  const handleRemovePhoto = async () => {
+    if (!couplePhotoUrl) return;
+
+    try {
+      const path = extractPathFromUrl(couplePhotoUrl, 'couple-photos');
+      if (path) {
+        await deleteImage('couple-photos', path);
+      }
+      setCouplePhotoUrl(null);
+      toast({
+        title: "Foto removida",
+        description: "A foto do casal foi removida com sucesso.",
+      });
+    } catch (error) {
+      console.error('Erro ao remover foto:', error);
+      toast({
+        title: "Erro ao remover",
+        description: "Não foi possível remover a foto.",
+        variant: "destructive",
+      });
     }
   };
 
-  const getFrameClasses = () => {
-    const primaryColor = modernTokens?.colors.primary || '#a67c52';
-    
-    switch (frameStyle) {
-      case 'floral':
-        return {
-          container: 'rounded-3xl shadow-2xl bg-gradient-to-br from-white to-pink-50',
-          border: `border-4`,
-          borderColor: isModernThemeActive ? primaryColor : '#f8bbd9',
-          shadow: 'shadow-pink-200/50'
-        };
-      case 'vintage':
-        return {
-          container: 'rounded-2xl shadow-2xl bg-gradient-to-br from-amber-50 to-yellow-100',
-          border: 'border-4',
-          borderColor: isModernThemeActive ? primaryColor : '#d97706',
-          shadow: 'shadow-amber-200/50'
-        };
-      case 'modern':
-        return {
-          container: 'rounded-lg shadow-xl bg-white',
-          border: 'border-2',
-          borderColor: isModernThemeActive ? primaryColor : '#374151',
-          shadow: 'shadow-gray-300/30'
-        };
-      case 'geometric':
-        return {
-          container: 'rounded-xl shadow-xl bg-gradient-to-br from-blue-50 to-indigo-100',
-          border: 'border-3',
-          borderColor: isModernThemeActive ? primaryColor : '#3b82f6',
-          shadow: 'shadow-blue-200/50'
-        };
-      case 'organic':
-        return {
-          container: 'rounded-full shadow-xl bg-gradient-to-br from-green-50 to-emerald-100',
-          border: 'border-4',
-          borderColor: isModernThemeActive ? primaryColor : '#10b981',
-          shadow: 'shadow-emerald-200/50'
-        };
-      default:
-        return {
-          container: 'rounded-2xl shadow-lg bg-gradient-to-br from-neutral-50 to-amber-100',
-          border: 'border-3',
-          borderColor: isModernThemeActive ? primaryColor : '#a67c52',
-          shadow: 'shadow-neutral-200/40'
-        };
-    }
-  };
-
-  const getFallbackContent = () => {
-    const frameConfig = getFrameClasses();
-    
+  if (compact) {
     return (
-      <div className="w-full h-full flex items-center justify-center text-current">
-        <div className="text-center">
-          <div className="text-4xl mb-3 opacity-40">💕</div>
-          <p className="text-xs font-medium" style={{ color: frameConfig.borderColor }}>
-            Sua foto aqui
-          </p>
-        </div>
-      </div>
-    );
-  };
-
-  const frameConfig = getFrameClasses();
-  const size = compact ? 'w-32 h-32 md:w-40 md:h-40' : 'w-48 h-48 md:w-64 md:h-64';
-
-  return (
-    <>
-      <div className="relative">
-        <div 
-          className={`${size} overflow-hidden cursor-pointer transition-all duration-300 hover:scale-105 ${frameConfig.container} ${frameConfig.border} ${frameConfig.shadow}`}
-          style={{ 
-            borderColor: frameConfig.borderColor
-          }}
-        >
-          {couplePhotoUrl ? (
-            <div className="relative w-full h-full">
-              <img 
-                src={couplePhotoUrl} 
-                alt="Foto do casal" 
-                className="w-full h-full object-cover"
-              />
-              <Button
-                onClick={handleRemovePhoto}
-                size="sm"
-                variant="destructive"
-                className="absolute top-2 right-2 h-6 w-6 p-0 rounded-full opacity-80 hover:opacity-100"
-              >
-                <X className="h-3 w-3" />
-              </Button>
-            </div>
-          ) : (
-            <div 
-              onClick={() => fileInputRef.current?.click()}
-              className="w-full h-full hover:bg-opacity-80 transition-all duration-300"
-            >
-              {getFallbackContent()}
-            </div>
-          )}
-        </div>
-
+      <div className="flex items-center space-x-2">
         <input
           ref={fileInputRef}
           type="file"
@@ -205,44 +106,94 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
           onChange={handleFileSelect}
           className="hidden"
         />
-
-        {!couplePhotoUrl && !compact && (
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => fileInputRef.current?.click()}
+          disabled={uploading}
+        >
+          {uploading ? (
+            <Loader2 className="h-4 w-4 animate-spin mr-2" />
+          ) : (
+            <Camera className="h-4 w-4 mr-2" />
+          )}
+          {couplePhotoUrl ? 'Trocar Foto' : 'Adicionar Foto'}
+        </Button>
+        
+        {couplePhotoUrl && (
           <Button
-            onClick={() => fileInputRef.current?.click()}
-            className="mt-3 w-full transition-all duration-300 hover:scale-105 text-sm"
-            style={{ 
-              background: isModernThemeActive ? modernTokens?.colors.primary : '#3C2B20',
-              color: 'white'
-            }}
-            disabled={isUploading}
+            variant="ghost"
+            size="sm"
+            onClick={handleRemovePhoto}
           >
-            <Upload className="h-4 w-4 mr-2" />
-            {isUploading ? 'Carregando...' : 'Adicionar Foto'}
+            <X className="h-4 w-4" />
           </Button>
         )}
-
-        {couplePhotoUrl && !compact && (
-          <div className="flex items-center justify-center mt-2">
-            <Check className="h-4 w-4 text-green-600 mr-1" />
-            <span className="text-xs text-green-600 font-medium">Foto adicionada</span>
-          </div>
-        )}
       </div>
+    );
+  }
 
-      {selectedFile && (
-        <ImageCropper
-          isOpen={showCropper}
-          onClose={() => {
-            setShowCropper(false);
-            setSelectedFile(null);
-          }}
-          onCropComplete={handleCropComplete}
-          imageFile={selectedFile}
-          title="Recortar Foto do Casal"
-          aspectRatio={1}
-        />
+  return (
+    <div className="space-y-4">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        onChange={handleFileSelect}
+        className="hidden"
+      />
+
+      {couplePhotoUrl ? (
+        <div className="relative">
+          <div className="aspect-[4/3] rounded-lg overflow-hidden bg-gray-100">
+            <img
+              src={couplePhotoUrl}
+              alt="Foto do casal"
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="flex justify-center space-x-2 mt-4">
+            <Button
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+            >
+              {uploading ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Camera className="h-4 w-4 mr-2" />
+              )}
+              Trocar Foto
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleRemovePhoto}
+            >
+              <X className="h-4 w-4 mr-2" />
+              Remover
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <div 
+          className="aspect-[4/3] border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:border-gray-400 transition-colors"
+          onClick={() => fileInputRef.current?.click()}
+        >
+          {uploading ? (
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 text-gray-400 mx-auto mb-2 animate-spin" />
+              <p className="text-sm text-gray-500">Enviando...</p>
+            </div>
+          ) : (
+            <div className="text-center">
+              <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
+              <p className="text-sm text-gray-600 font-medium">Clique para adicionar foto</p>
+              <p className="text-xs text-gray-500 mt-1">PNG, JPG ou WebP até 5MB</p>
+            </div>
+          )}
+        </div>
       )}
-    </>
+    </div>
   );
 };
 

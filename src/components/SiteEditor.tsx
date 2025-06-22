@@ -7,11 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Save, Eye, Settings, Camera, Users, Gift, MessageSquare, Calendar } from "lucide-react";
+import { Save, Eye, Settings, Camera, Users, Gift, MessageSquare, Clock, MapPin, Heart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import GalleryPhotoManager from "./GalleryPhotoManager";
 import GiftItemManager from "./GiftItemManager";
 import CouplePhotoEditor from "./CouplePhotoEditor";
+import OurStoryEditor from "./OurStoryEditor";
+import CountdownEditor from "./CountdownEditor";
+import EventDetailsEditor from "./EventDetailsEditor";
 
 interface SiteData {
   id: string;
@@ -77,10 +80,7 @@ const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorPro
       ...prev,
       custom_content: {
         ...prev.custom_content,
-        [section]: {
-          ...prev.custom_content[section],
-          ...updates
-        }
+        [section]: updates
       }
     }));
   };
@@ -109,26 +109,38 @@ const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorPro
 
       {/* Editor Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="general" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
+        <TabsList className="grid w-full grid-cols-8">
+          <TabsTrigger value="general" className="flex items-center gap-1">
+            <Settings className="h-3 w-3" />
             Geral
           </TabsTrigger>
-          <TabsTrigger value="couple" className="flex items-center gap-2">
-            <Camera className="h-4 w-4" />
+          <TabsTrigger value="couple" className="flex items-center gap-1">
+            <Camera className="h-3 w-3" />
             Casal
           </TabsTrigger>
-          <TabsTrigger value="gallery" className="flex items-center gap-2">
-            <Users className="h-4 w-4" />
+          <TabsTrigger value="countdown" className="flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            Contagem
+          </TabsTrigger>
+          <TabsTrigger value="story" className="flex items-center gap-1">
+            <Heart className="h-3 w-3" />
+            História
+          </TabsTrigger>
+          <TabsTrigger value="gallery" className="flex items-center gap-1">
+            <Users className="h-3 w-3" />
             Galeria
           </TabsTrigger>
-          <TabsTrigger value="gifts" className="flex items-center gap-2">
-            <Gift className="h-4 w-4" />
+          <TabsTrigger value="event" className="flex items-center gap-1">
+            <MapPin className="h-3 w-3" />
+            Evento
+          </TabsTrigger>
+          <TabsTrigger value="gifts" className="flex items-center gap-1">
+            <Gift className="h-3 w-3" />
             Presentes
           </TabsTrigger>
-          <TabsTrigger value="messages" className="flex items-center gap-2">
-            <MessageSquare className="h-4 w-4" />
-            Conteúdo
+          <TabsTrigger value="messages" className="flex items-center gap-1">
+            <MessageSquare className="h-3 w-3" />
+            Mensagens
           </TabsTrigger>
         </TabsList>
 
@@ -183,51 +195,131 @@ const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorPro
           <CouplePhotoEditor siteId={siteData.id} />
         </TabsContent>
 
+        {/* Countdown Tab */}
+        <TabsContent value="countdown" className="space-y-6">
+          <CountdownEditor 
+            customContent={localData.custom_content}
+            onUpdateContent={updateCustomContent}
+          />
+        </TabsContent>
+
+        {/* Our Story Tab */}
+        <TabsContent value="story" className="space-y-6">
+          <OurStoryEditor 
+            customContent={localData.custom_content}
+            onUpdateContent={updateCustomContent}
+          />
+        </TabsContent>
+
         {/* Gallery Tab */}
         <TabsContent value="gallery" className="space-y-6">
           <GalleryPhotoManager siteId={siteData.id} />
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Personalização da Galeria</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label>Título da Seção</Label>
+                <Input
+                  placeholder="Nossa Galeria"
+                  value={localData.custom_content?.gallery?.title || ''}
+                  onChange={(e) => updateCustomContent('gallery', { 
+                    ...localData.custom_content?.gallery, 
+                    title: e.target.value 
+                  })}
+                />
+              </div>
+              <div>
+                <Label>Descrição</Label>
+                <Textarea
+                  placeholder="Alguns momentos especiais..."
+                  value={localData.custom_content?.gallery?.description || ''}
+                  onChange={(e) => updateCustomContent('gallery', { 
+                    ...localData.custom_content?.gallery, 
+                    description: e.target.value 
+                  })}
+                  rows={2}
+                />
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Event Details Tab */}
+        <TabsContent value="event" className="space-y-6">
+          <EventDetailsEditor 
+            customContent={localData.custom_content}
+            onUpdateContent={updateCustomContent}
+          />
         </TabsContent>
 
         {/* Gifts Tab */}
         <TabsContent value="gifts" className="space-y-6">
           <GiftItemManager siteId={siteData.id} />
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Personalização da Lista de Presentes</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label>Título da Seção</Label>
+                <Input
+                  placeholder="Lista de Presentes"
+                  value={localData.custom_content?.gifts?.title || ''}
+                  onChange={(e) => updateCustomContent('gifts', { 
+                    ...localData.custom_content?.gifts, 
+                    title: e.target.value 
+                  })}
+                />
+              </div>
+              <div>
+                <Label>Mensagem</Label>
+                <Textarea
+                  placeholder="Sua presença é o nosso maior presente..."
+                  value={localData.custom_content?.gifts?.message || ''}
+                  onChange={(e) => updateCustomContent('gifts', { 
+                    ...localData.custom_content?.gifts, 
+                    message: e.target.value 
+                  })}
+                  rows={2}
+                />
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         {/* Messages Tab */}
         <TabsContent value="messages" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Personalização de Conteúdo</CardTitle>
+              <CardTitle>Seção de Mensagens</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 border rounded-lg">
-                  <h4 className="font-medium mb-2">Seção Galeria</h4>
-                  <div className="space-y-2">
-                    <Input
-                      placeholder="Título personalizado..."
-                      value={localData.custom_content?.gallery?.title || ''}
-                      onChange={(e) => updateCustomContent('gallery', { title: e.target.value })}
-                    />
-                  </div>
-                </div>
-                
-                <div className="p-4 border rounded-lg">
-                  <h4 className="font-medium mb-2">Lista de Presentes</h4>
-                  <div className="space-y-2">
-                    <Input
-                      placeholder="Título personalizado..."
-                      value={localData.custom_content?.gifts?.title || ''}
-                      onChange={(e) => updateCustomContent('gifts', { title: e.target.value })}
-                    />
-                    <Textarea
-                      placeholder="Mensagem personalizada..."
-                      value={localData.custom_content?.gifts?.message || ''}
-                      onChange={(e) => updateCustomContent('gifts', { message: e.target.value })}
-                      rows={2}
-                    />
-                  </div>
-                </div>
+              <div>
+                <Label>Título da Seção</Label>
+                <Input
+                  placeholder="Deixe sua Mensagem"
+                  value={localData.custom_content?.messages?.title || ''}
+                  onChange={(e) => updateCustomContent('messages', { 
+                    ...localData.custom_content?.messages, 
+                    title: e.target.value 
+                  })}
+                />
+              </div>
+              <div>
+                <Label>Descrição</Label>
+                <Textarea
+                  placeholder="Compartilhe seus votos de felicidade..."
+                  value={localData.custom_content?.messages?.description || ''}
+                  onChange={(e) => updateCustomContent('messages', { 
+                    ...localData.custom_content?.messages, 
+                    description: e.target.value 
+                  })}
+                  rows={2}
+                />
               </div>
             </CardContent>
           </Card>
