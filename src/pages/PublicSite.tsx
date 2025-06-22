@@ -1,7 +1,8 @@
-
-import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { supabase } from '@/integrations/supabase/client';
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +10,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { Heart, Calendar, MapPin, Gift, MessageCircle, Users, ArrowLeft } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { useToast } from '@/hooks/use-toast';
 
 interface SiteData {
   id: string;
@@ -106,7 +106,7 @@ const PublicSite = () => {
     
     try {
       const { error } = await supabase.rpc('increment_view_count', { 
-        site_slug: slug 
+        site_slug: slug as string
       });
       if (error) console.error('Erro ao incrementar visualizações:', error);
     } catch (error) {
