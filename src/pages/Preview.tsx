@@ -2,17 +2,19 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Edit, Save, Loader2 } from "lucide-react";
+import { ArrowLeft, Edit, Save } from "lucide-react";
 import PreviewSite from "@/components/PreviewSite";
 import { QuizAnswers, PreviewData } from "@/types/quiz";
 import { getTemplateFromStyle } from "@/utils/templateMapping";
 import { generateWelcomeMessage } from "@/utils/openaiService";
+import { LoadingSpinner } from "@/components/LoadingStates";
 
 const Preview = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [previewData, setPreviewData] = useState<PreviewData | null>(null);
   const [isGeneratingMessage, setIsGeneratingMessage] = useState(true);
+  const [isNavigating, setIsNavigating] = useState(false);
 
   useEffect(() => {
     const generatePreview = async () => {
@@ -74,38 +76,47 @@ const Preview = () => {
   }, [location.state, navigate]);
 
   const handleEditSite = () => {
+    setIsNavigating(true);
     navigate('/editor', { state: { previewData } });
   };
 
   const handleSaveAndAuth = () => {
+    setIsNavigating(true);
     navigate('/auth', { state: { previewData } });
+  };
+
+  const handleGoBack = () => {
+    setIsNavigating(true);
+    navigate(-1);
   };
 
   if (isGeneratingMessage || !previewData) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-brown-50 to-gold-50 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-brown-800 mb-2">
-            Gerando seu site personalizado...
-          </h2>
-          <p className="text-brown-600">
-            Nossa IA está criando a mensagem perfeita para vocês
-          </p>
-        </div>
-      </div>
+      <LoadingSpinner 
+        message="Gerando seu site personalizado..."
+        type="premium"
+      />
+    );
+  }
+
+  if (isNavigating) {
+    return (
+      <LoadingSpinner 
+        message="Redirecionando..."
+        type="default"
+      />
     );
   }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-brown-50 to-gold-50">
       <div className="container mx-auto px-4 py-6">
-        {/* Header */}
+        {/* Header with improved navigation */}
         <div className="flex items-center justify-between mb-8">
           <Button
             variant="ghost"
-            onClick={() => navigate(-1)}
-            className="text-brown-600 hover:text-primary"
+            onClick={handleGoBack}
+            className="text-brown-600 hover:text-primary transition-colors hover:bg-brown-50"
           >
             <ArrowLeft className="h-4 w-4 mr-2" />
             Voltar
@@ -128,13 +139,13 @@ const Preview = () => {
           <PreviewSite data={previewData} />
         </div>
 
-        {/* Action Buttons */}
+        {/* Enhanced Action Buttons */}
         <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
           <Button
             onClick={handleEditSite}
             variant="outline"
             size="lg"
-            className="border-brown-300 text-brown-700 hover:bg-brown-50 w-full sm:w-auto"
+            className="border-brown-300 text-brown-700 hover:bg-brown-50 w-full sm:w-auto transition-all duration-300 hover:scale-105"
           >
             <Edit className="h-5 w-5 mr-2" />
             Editar Meu Site
@@ -143,7 +154,7 @@ const Preview = () => {
           <Button
             onClick={handleSaveAndAuth}
             size="lg"
-            className="bg-gradient-luxury hover:opacity-90 text-white w-full sm:w-auto"
+            className="bg-gradient-luxury hover:opacity-90 text-white w-full sm:w-auto transition-all duration-300 hover:scale-105"
           >
             <Save className="h-5 w-5 mr-2" />
             Criar Conta para Salvar

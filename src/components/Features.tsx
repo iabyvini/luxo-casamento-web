@@ -1,4 +1,3 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { 
   Palette, 
@@ -14,8 +13,16 @@ import {
   Sparkles,
   Zap
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { ScrollToSection } from "./SmoothScroll";
 
 const Features = () => {
+  const navigate = useNavigate();
+
+  const handleStartQuiz = () => {
+    navigate('/quiz');
+  };
+
   const features = [
     {
       icon: Palette,
@@ -164,7 +171,7 @@ const Features = () => {
           ))}
         </div>
 
-        {/* Enhanced CTA Section */}
+        {/* Enhanced CTA Section with improved CTAs */}
         <div className="text-center elegant-entrance" style={{ animationDelay: '0.8s' }}>
           <div className="luxury-card rounded-3xl p-12 md:p-16 bg-gradient-to-br from-amber-50 via-rose-50 to-orange-50 border-2 border-amber-200/50 relative overflow-hidden">
             {/* Background decorative hearts */}
@@ -195,7 +202,10 @@ const Features = () => {
               </p>
               
               <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
-                <button className="btn-premium text-white px-10 py-4 text-lg font-medium group">
+                <button 
+                  onClick={handleStartQuiz}
+                  className="btn-premium text-white px-10 py-4 text-lg font-medium group transition-all duration-300 hover:scale-105"
+                >
                   <Sparkles className="mr-3 h-5 w-5" fill="currentColor" />
                   Criar Nosso Site Agora
                   <Heart className="ml-3 h-5 w-5 group-hover:scale-110 transition-transform" fill="currentColor" />

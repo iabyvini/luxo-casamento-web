@@ -1,7 +1,7 @@
-
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Star, Heart, Sparkles, Play, Camera, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { ScrollToSection } from "./SmoothScroll";
 
 const Hero = () => {
   const navigate = useNavigate();
@@ -66,34 +66,32 @@ const Hero = () => {
               </span>
             </h1>
 
-            {/* Emotional Subtitle */}
+            {/* Enhanced Emotional Subtitle */}
             <p className="text-xl md:text-2xl text-brown-600 mb-10 max-w-2xl mx-auto lg:mx-0 leading-relaxed font-light">
               Compartilhe seu amor com o mundo através de um site único, 
               <span className="font-medium text-amber-700"> personalizado pela IA</span> e 
               <span className="font-medium text-rose-700"> criado especialmente para vocês</span>.
             </p>
 
-            {/* Premium CTA Buttons */}
+            {/* Premium CTA Buttons with correct navigation */}
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start space-y-4 sm:space-y-0 sm:space-x-6 mb-12">
               <Button 
                 size="lg" 
                 onClick={handleStartQuiz}
-                className="btn-premium group text-lg px-10 py-6 shadow-2xl"
+                className="btn-premium group text-lg px-10 py-6 shadow-2xl transition-all duration-300 hover:scale-105"
               >
                 <Sparkles className="mr-3 h-5 w-5" fill="currentColor" />
                 Começar Gratuitamente
                 <ArrowRight className="ml-3 h-5 w-5 group-hover:translate-x-1 transition-transform" />
               </Button>
               
-              <Button 
-                variant="outline" 
-                size="lg" 
-                onClick={() => document.getElementById('templates')?.scrollIntoView({ behavior: 'smooth' })}
+              <ScrollToSection
+                sectionId="templates"
                 className="border-2 border-brown-300 text-brown-700 hover:bg-brown-50 px-8 py-6 text-lg rounded-2xl font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg bg-white/80 backdrop-blur-sm"
               >
                 <Play className="mr-2 h-5 w-5" />
                 Ver Templates
-              </Button>
+              </ScrollToSection>
             </div>
 
             {/* Enhanced Social Proof */}

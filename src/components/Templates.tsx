@@ -1,11 +1,14 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, Heart, Sparkles, Leaf, Crown, Zap, Flower2, Camera, Palette } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { InlineLoader } from "./LoadingStates";
+import { ScrollToSection } from "./SmoothScroll";
 
 const Templates = () => {
   const navigate = useNavigate();
+  const [loadingTemplate, setLoadingTemplate] = useState<string | null>(null);
 
   const templates = [
     {
@@ -78,11 +81,16 @@ const Templates = () => {
 
   const categories = ["Todos", "Clássico", "Moderno", "Romântico", "Minimalista", "Vintage", "Boho"];
 
-  const handleUseTemplate = (templateName: string) => {
+  const handleUseTemplate = async (templateName: string) => {
+    setLoadingTemplate(templateName);
+    
     const coupleNames = prompt("Digite o nome do casal (ex: Ana & João):");
     const weddingDate = prompt("Digite a data do casamento (YYYY-MM-DD):");
     
     if (coupleNames && weddingDate) {
+      // Simulate processing time for better UX
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
       navigate('/preview', { 
         state: { 
           selectedTemplate: templateName,
@@ -93,6 +101,12 @@ const Templates = () => {
         } 
       });
     }
+    
+    setLoadingTemplate(null);
+  };
+
+  const handleStartQuiz = () => {
+    navigate('/quiz');
   };
 
   const getTemplateStyle = (style: string) => {
@@ -259,17 +273,24 @@ const Templates = () => {
                 <Button 
                   size="sm" 
                   onClick={() => handleUseTemplate(template.name)}
-                  className="w-full btn-premium text-white font-medium py-3"
+                  disabled={loadingTemplate === template.name}
+                  className="w-full btn-premium text-white font-medium py-3 disabled:opacity-50"
                 >
-                  <Heart className="mr-2 h-4 w-4" fill="currentColor" />
-                  Usar Este Template
+                  {loadingTemplate === template.name ? (
+                    <InlineLoader size="sm" />
+                  ) : (
+                    <>
+                      <Heart className="mr-2 h-4 w-4" fill="currentColor" />
+                      Usar Este Template
+                    </>
+                  )}
                 </Button>
               </CardContent>
             </Card>
           ))}
         </div>
 
-        {/* Enhanced CTA */}
+        {/* Enhanced CTA with smooth scroll navigation */}
         <div className="text-center elegant-entrance" style={{ animationDelay: '0.6s' }}>
           <div className="luxury-card rounded-3xl p-12 bg-gradient-to-br from-white/95 to-amber-50/80 backdrop-blur-sm border-2 border-amber-200/50">
             <div className="max-w-2xl mx-auto">
@@ -291,7 +312,7 @@ const Templates = () => {
               <Button 
                 variant="outline" 
                 size="lg"
-                onClick={() => navigate('/quiz')}
+                onClick={handleStartQuiz}
                 className="border-2 border-brown-300 text-brown-700 hover:bg-brown-50 px-10 py-4 text-lg rounded-2xl font-semibold transition-all duration-300 hover:scale-105 hover:shadow-lg bg-white/80 backdrop-blur-sm"
               >
                 <Sparkles className="mr-2 h-5 w-5" fill="currentColor" />
