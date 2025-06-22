@@ -22,7 +22,7 @@
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
     --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foregroun: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
@@ -226,22 +226,6 @@ html {
   }
 }
 
-/* SISTEMA DE LIMITE ABSOLUTO - máximo 1 elemento decorativo por seção */
-.section-decoration-limit {
-  position: relative;
-}
-
-.section-decoration-limit::before {
-  content: '';
-  position: absolute;
-  top: 2rem;
-  right: 2rem;
-  width: 2rem;
-  height: 2rem;
-  opacity: 0.08;
-  pointer-events: none;
-}
-
 /* Sistema condicional para desativar dourado quando tema customizado está ativo */
 body.custom-theme-active .bg-gradient-luxury {
   background: var(--primary-color) !important;
@@ -289,14 +273,6 @@ body.custom-theme-active .luxury-shadow {
 .text-contrast-secondary {
   color: #5D4037 !important;
   font-weight: 500;
-}
-
-/* Remove all floating animations */
-.romantic-float,
-.boho-float,
-.floating-animation {
-  animation: none !important;
-  transform: none !important;
 }
 
 /* Animation utilities */

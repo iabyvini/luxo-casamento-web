@@ -13,11 +13,6 @@ const Hero = () => {
 
   return (
     <section id="home" className="relative pt-20 pb-24 min-h-screen overflow-hidden bg-gradient-to-br from-amber-50 via-rose-50 to-orange-50">
-      {/* Single minimal background element - no animation */}
-      <div className="absolute top-32 right-24 opacity-[0.08]">
-        <div className="w-8 h-8 rounded-full bg-gradient-luxury"></div>
-      </div>
-
       <div className="container mx-auto px-4">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-[80vh]">
           {/* Left Column - Content */}
@@ -95,11 +90,6 @@ const Hero = () => {
 
           {/* Right Column - Mockup simplificado */}
           <div className="relative">
-            {/* Single decorative element - static, minimal */}
-            <div className="absolute -top-6 -left-6 bg-white luxury-shadow rounded-2xl p-4 opacity-80">
-              <Heart className="h-8 w-8 text-rose-400" fill="currentColor" />
-            </div>
-
             {/* Premium Site Mockup */}
             <div className="relative luxury-card p-8 bg-white/98">
               <div className="bg-gradient-to-br from-rose-50 via-amber-50 to-orange-50 rounded-xl p-8 text-center relative overflow-hidden">

@@ -1,27 +1,9 @@
 
-import { Heart, Instagram, Facebook, Twitter, Mail, Phone, MapPin, Star, Sparkles, Shield, Award, Users } from "lucide-react";
+import { Heart, Instagram, Facebook, Twitter, Mail, Phone, MapPin, Star, Shield, Award, Users } from "lucide-react";
 
 const Footer = () => {
   return (
     <footer className="relative bg-gradient-to-br from-brown-900 via-brown-800 to-amber-900 text-white py-20 overflow-hidden">
-      {/* Background decorative pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-20 left-20 w-32 h-32 rounded-full bg-gradient-to-r from-amber-400 to-yellow-400"></div>
-        <div className="absolute bottom-20 right-20 w-48 h-48 rounded-full bg-gradient-to-r from-rose-400 to-pink-400"></div>
-        <div className="absolute top-1/2 left-1/3 w-24 h-24 rounded-full bg-gradient-to-r from-purple-400 to-indigo-400"></div>
-      </div>
-
-      {/* Floating romantic elements */}
-      <div className="absolute top-16 left-16 text-pink-300/30 romantic-float">
-        <Heart className="h-8 w-8" fill="currentColor" />
-      </div>
-      <div className="absolute top-32 right-24 text-amber-300/30 romantic-float" style={{ animationDelay: '2s' }}>
-        <Sparkles className="h-6 w-6" fill="currentColor" />
-      </div>
-      <div className="absolute bottom-24 left-32 text-rose-300/30 romantic-float" style={{ animationDelay: '4s' }}>
-        <Star className="h-7 w-7" fill="currentColor" />
-      </div>
-
       <div className="container mx-auto px-4 relative">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-16">
           {/* Enhanced Brand Section */}
@@ -76,33 +58,28 @@ const Footer = () => {
 
           {/* Enhanced Navigation Links */}
           <div>
-            <h4 className="font-playfair font-semibold mb-6 text-amber-300 text-lg flex items-center space-x-2">
-              <Sparkles className="h-5 w-5" fill="currentColor" />
-              <span>Produto</span>
+            <h4 className="font-playfair font-semibold mb-6 text-amber-300 text-lg">
+              Produto
             </h4>
             <ul className="space-y-3">
               <li>
-                <a href="#templates" className="text-brown-300 hover:text-white transition-colors duration-300 flex items-center space-x-2 group">
-                  <Heart className="h-4 w-4 group-hover:scale-110 transition-transform" fill="currentColor" />
-                  <span>Templates Luxuosos</span>
+                <a href="#templates" className="text-brown-300 hover:text-white transition-colors duration-300">
+                  Templates Luxuosos
                 </a>
               </li>
               <li>
-                <a href="#funcionalidades" className="text-brown-300 hover:text-white transition-colors duration-300 flex items-center space-x-2 group">
-                  <Star className="h-4 w-4 group-hover:scale-110 transition-transform" fill="currentColor" />
-                  <span>Funcionalidades IA</span>
+                <a href="#funcionalidades" className="text-brown-300 hover:text-white transition-colors duration-300">
+                  Funcionalidades IA
                 </a>
               </li>
               <li>
-                <a href="#precos" className="text-brown-300 hover:text-white transition-colors duration-300 flex items-center space-x-2 group">
-                  <Sparkles className="h-4 w-4 group-hover:scale-110 transition-transform" fill="currentColor" />
-                  <span>Planos & Preços</span>
+                <a href="#precos" className="text-brown-300 hover:text-white transition-colors duration-300">
+                  Planos & Preços
                 </a>
               </li>
               <li>
-                <a href="#" className="text-brown-300 hover:text-white transition-colors duration-300 flex items-center space-x-2 group">
-                  <Award className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                  <span>Galeria de Exemplos</span>
+                <a href="#" className="text-brown-300 hover:text-white transition-colors duration-300">
+                  Galeria de Exemplos
                 </a>
               </li>
             </ul>
@@ -110,33 +87,28 @@ const Footer = () => {
 
           {/* Enhanced Support Section */}
           <div>
-            <h4 className="font-playfair font-semibold mb-6 text-amber-300 text-lg flex items-center space-x-2">
-              <Heart className="h-5 w-5" fill="currentColor" />
-              <span>Suporte</span>
+            <h4 className="font-playfair font-semibold mb-6 text-amber-300 text-lg">
+              Suporte
             </h4>
             <ul className="space-y-3">
               <li>
-                <a href="#" className="text-brown-300 hover:text-white transition-colors duration-300 flex items-center space-x-2 group">
-                  <Shield className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                  <span>Central de Ajuda</span>
+                <a href="#" className="text-brown-300 hover:text-white transition-colors duration-300">
+                  Central de Ajuda
                 </a>
               </li>
               <li>
-                <a href="#" className="text-brown-300 hover:text-white transition-colors duration-300 flex items-center space-x-2 group">
-                  <Users className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                  <span>Comunidade</span>
+                <a href="#" className="text-brown-300 hover:text-white transition-colors duration-300">
+                  Comunidade
                 </a>
               </li>
               <li>
-                <a href="#" className="text-brown-300 hover:text-white transition-colors duration-300 flex items-center space-x-2 group">
-                  <Mail className="h-4 w-4 group-hover:scale-110 transition-transform" />
-                  <span>Fale com Especialistas</span>
+                <a href="#" className="text-brown-300 hover:text-white transition-colors duration-300">
+                  Fale com Especialistas
                 </a>
               </li>
               <li>
-                <a href="#" className="text-brown-300 hover:text-white transition-colors duration-300 flex items-center space-x-2 group">
-                  <Star className="h-4 w-4 group-hover:scale-110 transition-transform" fill="currentColor" />
-                  <span>Depoimentos</span>
+                <a href="#" className="text-brown-300 hover:text-white transition-colors duration-300">
+                  Depoimentos
                 </a>
               </li>
             </ul>
@@ -182,23 +154,20 @@ const Footer = () => {
               © 2024 Casamento Luxo Sites. Feito com 
             </p>
             <div className="flex items-center space-x-1">
-              <Heart className="h-4 w-4 text-rose-400 animate-pulse" fill="currentColor" />
+              <Heart className="h-4 w-4 text-rose-400" fill="currentColor" />
               <span className="text-brown-400 text-sm">para casais apaixonados</span>
             </div>
           </div>
           
           <div className="flex items-center space-x-6 text-sm">
-            <a href="#" className="text-brown-400 hover:text-white transition-colors duration-300 flex items-center space-x-1">
-              <Shield className="h-4 w-4" />
-              <span>Termos de Uso</span>
+            <a href="#" className="text-brown-400 hover:text-white transition-colors duration-300">
+              Termos de Uso
             </a>
-            <a href="#" className="text-brown-400 hover:text-white transition-colors duration-300 flex items-center space-x-1">
-              <Heart className="h-4 w-4" fill="currentColor" />
-              <span>Política de Privacidade</span>
+            <a href="#" className="text-brown-400 hover:text-white transition-colors duration-300">
+              Política de Privacidade
             </a>
-            <a href="#" className="text-brown-400 hover:text-white transition-colors duration-300 flex items-center space-x-1">
-              <Star className="h-4 w-4" fill="currentColor" />
-              <span>Certificações</span>
+            <a href="#" className="text-brown-400 hover:text-white transition-colors duration-300">
+              Certificações
             </a>
           </div>
         </div>

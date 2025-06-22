@@ -11,7 +11,6 @@ import {
   Share2,
   Star,
   Heart,
-  Sparkles,
   Zap
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -92,11 +91,6 @@ const Features = () => {
 
   return (
     <section id="funcionalidades" className="py-24 bg-white relative overflow-hidden">
-      {/* Single minimal decorative element */}
-      <div className="absolute top-32 right-24 opacity-[0.08]">
-        <div className="w-8 h-8 rounded-full bg-gradient-luxury"></div>
-      </div>
-
       <div className="container mx-auto px-4 relative">
         <div className="text-center mb-20 elegant-entrance">
           <div className="inline-flex items-center space-x-3 bg-gradient-to-r from-amber-50 to-rose-50 border border-amber-200 rounded-full px-6 py-3 mb-6 luxury-shadow">
@@ -158,11 +152,6 @@ const Features = () => {
         {/* Enhanced CTA Section */}
         <div className="text-center elegant-entrance" style={{ animationDelay: '0.8s' }}>
           <div className="luxury-card rounded-3xl p-12 md:p-16 bg-gradient-to-br from-amber-50 via-rose-50 to-orange-50 border-2 border-amber-200/50 relative overflow-hidden">
-            {/* Single minimal background decoration */}
-            <div className="absolute bottom-8 right-8 text-amber-200 opacity-[0.08]">
-              <Sparkles className="h-12 w-12" fill="currentColor" />
-            </div>
-            
             <div className="max-w-3xl mx-auto relative">
               <div className="flex justify-center mb-8">
                 <div className="bg-gradient-luxury p-6 rounded-3xl luxury-shadow">
@@ -184,7 +173,6 @@ const Features = () => {
                   onClick={handleStartQuiz}
                   className="btn-premium text-white px-10 py-4 text-lg font-medium group transition-all duration-300 hover:scale-105"
                 >
-                  <Sparkles className="mr-3 h-5 w-5" fill="currentColor" />
                   Criar Nosso Site Agora
                   <Heart className="ml-3 h-5 w-5 group-hover:scale-110 transition-transform" fill="currentColor" />
                 </button>
