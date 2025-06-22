@@ -92,26 +92,26 @@ const Features = () => {
   return (
     <section id="funcionalidades" className="py-24 bg-white relative overflow-hidden">
       <div className="container mx-auto px-4 relative">
-        <div className="text-center mb-20 elegant-entrance">
-          <div className="inline-flex items-center space-x-3 bg-gradient-to-r from-amber-50 to-rose-50 border border-amber-200 rounded-full px-6 py-3 mb-6 luxury-shadow">
-            <div className="bg-gradient-luxury p-2 rounded-full">
+        <div className="text-center mb-20 animate-fade-in">
+          <div className="inline-flex items-center space-x-3 bg-neutral-soft border border-neutral-200 rounded-full px-6 py-3 mb-6 luxury-shadow">
+            <div className="bg-neutral-800 p-2 rounded-full">
               <Zap className="h-4 w-4 text-white" />
             </div>
-            <span className="text-sm font-medium text-[#3C2B20]">
+            <span className="text-sm font-medium text-neutral-primary">
               Funcionalidades que Encantam
             </span>
           </div>
           
           <h2 className="text-4xl md:text-5xl lg:text-6xl font-playfair font-bold mb-8">
-            <span className="text-[#3C2B20]">Tudo que Vocês Precisam</span>
-            <span className="block gradient-text text-5xl md:text-6xl lg:text-7xl font-dancing mt-2">
+            <span className="text-neutral-primary">Tudo que Vocês Precisam</span>
+            <span className="block text-neutral-secondary text-5xl md:text-6xl lg:text-7xl font-dancing mt-2">
               para um Dia Perfeito
             </span>
           </h2>
           
-          <p className="text-xl md:text-2xl text-[#5D4037] max-w-3xl mx-auto leading-relaxed font-light">
+          <p className="text-xl md:text-2xl text-neutral-body max-w-3xl mx-auto leading-relaxed font-light">
             Ferramentas inteligentes que transformam a organização do seu casamento em uma 
-            <span className="font-medium text-[#3C2B20]"> experiência mágica e sem estresse</span>.
+            <span className="font-medium text-neutral-primary"> experiência mágica e sem estresse</span>.
           </p>
         </div>
 
@@ -120,26 +120,26 @@ const Features = () => {
           {features.map((feature, index) => (
             <Card 
               key={index} 
-              className="luxury-card hover:scale-105 transition-all duration-500 group cursor-pointer relative overflow-hidden elegant-entrance"
+              className="luxury-card hover:scale-105 transition-all duration-500 group cursor-pointer relative overflow-hidden animate-fade-in"
               style={{ animationDelay: feature.delay }}
             >
-              <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}></div>
+              <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}></div>
               
               <CardContent className="p-8 text-center relative">
                 <div className={`bg-gradient-to-br ${feature.color} p-4 rounded-2xl inline-flex mb-6 group-hover:scale-110 transition-all duration-300 shadow-lg`}>
                   <feature.icon className="h-8 w-8 text-white" />
                 </div>
                 
-                <h3 className="text-lg font-playfair font-semibold text-[#3C2B20] mb-3">
+                <h3 className="text-lg font-playfair font-semibold text-neutral-primary mb-3">
                   {feature.title}
                 </h3>
                 
-                <p className="text-[#5D4037] text-sm leading-relaxed mb-4 font-light">
+                <p className="text-neutral-body text-sm leading-relaxed mb-4 font-light">
                   {feature.description}
                 </p>
                 
-                <div className="bg-gradient-to-r from-amber-50 to-rose-50 rounded-full px-4 py-2 border border-amber-200/50">
-                  <span className="text-xs font-medium text-[#3C2B20] flex items-center justify-center space-x-1">
+                <div className="bg-neutral-soft rounded-full px-4 py-2 border border-neutral-200/50">
+                  <span className="text-xs font-medium text-neutral-primary flex items-center justify-center space-x-1">
                     <Heart className="h-3 w-3" fill="currentColor" />
                     <span>{feature.emotion}</span>
                   </span>
@@ -150,22 +150,22 @@ const Features = () => {
         </div>
 
         {/* Enhanced CTA Section */}
-        <div className="text-center elegant-entrance" style={{ animationDelay: '0.8s' }}>
-          <div className="luxury-card rounded-3xl p-12 md:p-16 bg-gradient-to-br from-amber-50 via-rose-50 to-orange-50 border-2 border-amber-200/50 relative overflow-hidden">
+        <div className="text-center animate-fade-in" style={{ animationDelay: '0.8s' }}>
+          <div className="luxury-card rounded-3xl p-12 md:p-16 bg-neutral-soft border-2 border-neutral-200/50 relative overflow-hidden">
             <div className="max-w-3xl mx-auto relative">
               <div className="flex justify-center mb-8">
-                <div className="bg-gradient-luxury p-6 rounded-3xl luxury-shadow">
+                <div className="bg-neutral-800 p-6 rounded-3xl luxury-shadow">
                   <Heart className="h-12 w-12 text-white" fill="currentColor" />
                 </div>
               </div>
               
-              <h3 className="text-4xl md:text-5xl font-playfair font-bold text-[#3C2B20] mb-6">
+              <h3 className="text-4xl md:text-5xl font-playfair font-bold text-neutral-primary mb-6">
                 Prontos para Começar esta Jornada?
               </h3>
               
-              <p className="text-[#5D4037] mb-10 text-xl leading-relaxed font-light">
-                Junte-se a mais de <span className="font-bold text-[#3C2B20]">10.000 casais apaixonados</span> que já criaram 
-                seus sites de casamento conosco. <span className="font-medium text-[#3C2B20]">O amor de vocês merece ser celebrado com estilo!</span>
+              <p className="text-neutral-body mb-10 text-xl leading-relaxed font-light">
+                Junte-se a mais de <span className="font-bold text-neutral-primary">10.000 casais apaixonados</span> que já criaram 
+                seus sites de casamento conosco. <span className="font-medium text-neutral-primary">O amor de vocês merece ser celebrado com estilo!</span>
               </p>
               
               <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6">
@@ -177,7 +177,7 @@ const Features = () => {
                   <Heart className="ml-3 h-5 w-5 group-hover:scale-110 transition-transform" fill="currentColor" />
                 </button>
                 
-                <div className="flex items-center space-x-2 text-[#5D4037]">
+                <div className="flex items-center space-x-2 text-neutral-body">
                   <div className="flex -space-x-1">
                     {[...Array(5)].map((_, i) => (
                       <Star key={i} className="h-5 w-5 text-amber-400" fill="currentColor" />

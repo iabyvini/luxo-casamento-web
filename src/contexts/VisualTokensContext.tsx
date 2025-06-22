@@ -26,7 +26,7 @@ export const VisualTokensProvider: React.FC<{ children: React.ReactNode }> = ({ 
     setVisualTokens(tokens);
     setIsCustomThemeActive(true);
     
-    // Apply CSS variables with background tokens
+    // Apply CSS variables with background tokens and COMPLETE gold override
     const styleId = 'global-visual-tokens';
     let styleElement = document.getElementById(styleId) as HTMLStyleElement;
     
@@ -40,21 +40,33 @@ export const VisualTokensProvider: React.FC<{ children: React.ReactNode }> = ({ 
       ${applyVisualTokensToCSS(tokens)}
       ${generateBackgroundCSS(backgroundToken)}
       
-      /* Disable gold theme when custom tokens are active */
-      body.custom-theme-active .bg-gradient-luxury {
+      /* ELIMINAÇÃO TOTAL do sistema dourado quando tokens personalizados estão ativos */
+      body.custom-theme-active .bg-gradient-luxury,
+      body.custom-theme-active .gradient-luxury,
+      body.custom-theme-active .btn-premium {
         background: var(--primary-color) !important;
       }
       
       body.custom-theme-active .gradient-text {
-        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%) !important;
-        -webkit-background-clip: text !important;
-        -webkit-text-fill-color: transparent !important;
-        background-clip: text !important;
+        background: none !important;
+        -webkit-background-clip: unset !important;
+        -webkit-text-fill-color: unset !important;
+        background-clip: unset !important;
+        color: var(--primary-color) !important;
       }
       
       body.custom-theme-active .luxury-shadow {
-        box-shadow: 0 25px 50px -12px color-mix(in srgb, var(--primary-color) 15%, transparent), 
-                    0 10px 20px -5px color-mix(in srgb, var(--primary-color) 8%, transparent) !important;
+        box-shadow: 0 25px 50px -12px color-mix(in srgb, var(--primary-color) 8%, transparent), 
+                    0 10px 20px -5px color-mix(in srgb, var(--primary-color) 4%, transparent) !important;
+      }
+      
+      /* Sobrescrever TODAS as referências de cores douradas */
+      body.custom-theme-active .text-accent,
+      body.custom-theme-active .border-accent,
+      body.custom-theme-active .bg-accent {
+        color: var(--primary-color) !important;
+        border-color: var(--primary-color) !important;
+        background-color: var(--secondary-color) !important;
       }
       
       /* Template-specific backgrounds */
@@ -68,7 +80,7 @@ export const VisualTokensProvider: React.FC<{ children: React.ReactNode }> = ({ 
         position: absolute;
         inset: 0;
         background-image: var(--template-bg-texture);
-        opacity: 0.05;
+        opacity: 0.03;
         pointer-events: none;
       }
       

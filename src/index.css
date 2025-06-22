@@ -78,74 +78,70 @@
   }
 }
 
-/* Enhanced luxury styles - ONLY for institutional pages */
-.gradient-text {
-  background: linear-gradient(135deg, #a67c52 0%, #d4af37 50%, #f4e4bc 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+/* Classes utilitárias de texto com contraste WCAG AA */
+.text-neutral-primary {
+  color: #2B1810 !important;
+  font-weight: 600;
 }
 
-.gradient-luxury {
-  background: linear-gradient(135deg, #a67c52 0%, #d4af37 50%, #c9a96e 100%);
+.text-neutral-secondary {
+  color: #3C2B20 !important;
+  font-weight: 500;
 }
 
+.text-neutral-body {
+  color: #5D4037 !important;
+  font-weight: 400;
+}
+
+.text-neutral-muted {
+  color: #6B5B4A !important;
+  font-weight: 400;
+}
+
+/* Background neutros condicionais */
+.bg-neutral-base {
+  background-color: #FAF8F6;
+}
+
+.bg-neutral-soft {
+  background-color: #F2EBE4;
+}
+
+.bg-neutral-card {
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+}
+
+/* Shadows neutras premium */
 .luxury-shadow {
-  box-shadow: 0 25px 50px -12px rgba(166, 124, 82, 0.15), 0 10px 20px -5px rgba(166, 124, 82, 0.08);
+  box-shadow: 0 25px 50px -12px rgba(60, 43, 32, 0.08), 0 10px 20px -5px rgba(60, 43, 32, 0.04);
 }
 
 .luxury-card {
-  @apply bg-white/95 backdrop-blur-md border border-brown-100/50 luxury-shadow rounded-2xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.02];
+  @apply bg-neutral-card border border-neutral-200/50 luxury-shadow rounded-2xl transition-all duration-300 hover:shadow-2xl hover:scale-[1.02];
 }
 
-.premium-glow {
-  box-shadow: 0 0 30px rgba(212, 175, 55, 0.3), 0 0 60px rgba(212, 175, 55, 0.1);
-}
-
-.elegant-entrance {
-  animation: elegantEntrance 1.2s ease-out;
-}
-
-@keyframes elegantEntrance {
-  0% {
-    opacity: 0;
-    transform: translateY(30px) scale(0.95);
-  }
-  50% {
-    opacity: 0.8;
-    transform: translateY(-5px) scale(1.02);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* Smooth scroll behavior */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Premium scrollbar */
+/* Scrollbar neutra premium */
 ::-webkit-scrollbar {
   width: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: linear-gradient(135deg, #f8f6f3 0%, #f1ede7 100%);
+  background: linear-gradient(135deg, #FAF8F6 0%, #F2EBE4 100%);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #a67c52 0%, #d4af37 100%);
+  background: linear-gradient(135deg, #B8A18E 0%, #8B7765 100%);
   border-radius: 8px;
-  border: 2px solid #f8f6f3;
+  border: 2px solid #FAF8F6;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #8b6638 0%, #b8941f 100%);
+  background: linear-gradient(135deg, #8B7765 0%, #6B5B4A 100%);
 }
 
-/* Premium font classes */
+/* Fonts premium */
 .font-playfair {
   font-family: 'Playfair Display', serif;
 }
@@ -162,25 +158,9 @@ html {
   font-family: 'Inter', sans-serif;
 }
 
-/* Minimal template-specific animations - only fade-in allowed */
-.fade-in-minimal {
-  animation: fadeInMinimal 1s ease-out;
-}
-
-@keyframes fadeInMinimal {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-/* Premium button enhancements - ONLY for institutional pages */
+/* Botões premium neutros com override condicional */
 .btn-premium {
-  @apply relative overflow-hidden bg-gradient-luxury text-white font-semibold px-8 py-4 rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-2xl;
+  @apply relative overflow-hidden bg-neutral-800 text-white font-semibold px-8 py-4 rounded-2xl transition-all duration-300 hover:scale-105 hover:shadow-2xl;
 }
 
 .btn-premium::before {
@@ -198,52 +178,30 @@ html {
   left: 100%;
 }
 
-/* Card hover effects */
-.template-card {
-  @apply relative overflow-hidden rounded-2xl transition-all duration-500 hover:scale-[1.03] hover:shadow-2xl;
-}
-
-.template-card::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(166, 124, 82, 0.1) 0%, rgba(212, 175, 55, 0.1) 100%);
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-/* Responsive utilities */
-@media (max-width: 768px) {
-  .luxury-card {
-    @apply mx-2;
-  }
-  
-  .btn-premium {
-    @apply px-6 py-3 text-base;
-  }
-}
-
-/* Sistema condicional para desativar dourado quando tema customizado está ativo */
+/* Sistema condicional robusto - desativa COMPLETAMENTE elementos dourados */
 body.custom-theme-active .bg-gradient-luxury {
   background: var(--primary-color) !important;
 }
 
-body.custom-theme-active .gradient-text {
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%) !important;
-  -webkit-background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-  background-clip: text !important;
+body.custom-theme-active .btn-premium {
+  background: var(--primary-color) !important;
 }
 
 body.custom-theme-active .luxury-shadow {
-  box-shadow: 0 25px 50px -12px color-mix(in srgb, var(--primary-color) 15%, transparent), 
-              0 10px 20px -5px color-mix(in srgb, var(--primary-color) 8%, transparent) !important;
+  box-shadow: 0 25px 50px -12px color-mix(in srgb, var(--primary-color) 8%, transparent), 
+              0 10px 20px -5px color-mix(in srgb, var(--primary-color) 4%, transparent) !important;
 }
 
-/* Background layer tokens para templates personalizados */
+/* ELIMINAÇÃO COMPLETA do gradient-text em modo personalizado */
+body.custom-theme-active .gradient-text {
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  -webkit-text-fill-color: unset !important;
+  background-clip: unset !important;
+  color: var(--primary-color) !important;
+}
+
+/* Background tokens para templates personalizados */
 .section-bg-dynamic {
   background: var(--template-bg-gradient);
   position: relative;
@@ -254,28 +212,21 @@ body.custom-theme-active .luxury-shadow {
   position: absolute;
   inset: 0;
   background-image: var(--template-bg-texture);
-  opacity: 0.05;
+  opacity: 0.03;
   pointer-events: none;
 }
 
-/* Hero template backgrounds */
 .hero-template-bg {
   background: var(--template-bg-gradient);
   background-image: var(--template-bg-texture);
 }
 
-/* High contrast typography fixes */
-.text-contrast-primary {
-  color: #3C2B20 !important;
-  font-weight: 600;
+/* Smooth scroll behavior */
+html {
+  scroll-behavior: smooth;
 }
 
-.text-contrast-secondary {
-  color: #5D4037 !important;
-  font-weight: 500;
-}
-
-/* Animation utilities */
+/* Animation utilities minimalistas */
 .animate-fade-in {
   animation: fadeIn 1s ease-in;
 }
@@ -292,4 +243,15 @@ body.custom-theme-active .luxury-shadow {
 @keyframes scaleIn {
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }
+}
+
+/* Responsive utilities */
+@media (max-width: 768px) {
+  .luxury-card {
+    @apply mx-2;
+  }
+  
+  .btn-premium {
+    @apply px-6 py-3 text-base;
+  }
 }

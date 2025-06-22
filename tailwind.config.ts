@@ -26,7 +26,7 @@ export default {
 				background: 'hsl(var(--background))',
 				foreground: 'hsl(var(--foreground))',
 				primary: {
-					DEFAULT: '#a67c52',
+					DEFAULT: '#3C2B20',
 					foreground: '#ffffff'
 				},
 				secondary: {
@@ -42,8 +42,8 @@ export default {
 					foreground: 'hsl(var(--muted-foreground))'
 				},
 				accent: {
-					DEFAULT: '#d4af37',
-					foreground: '#000000'
+					DEFAULT: '#5D4037',
+					foreground: '#ffffff'
 				},
 				popover: {
 					DEFAULT: 'hsl(var(--popover))',
@@ -53,29 +53,44 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				gold: {
-					50: '#fefce8',
-					100: '#fef3c7',
-					200: '#fed17a',
-					300: '#f5c842',
-					400: '#d4af37',
-					500: '#b8941f',
-					600: '#9c7a15',
-					700: '#7c5f14',
-					800: '#6b4e17',
-					900: '#5a3f18'
+				// Nova paleta neutra premium
+				neutral: {
+					50: '#FAF8F6',
+					100: '#F2EBE4',
+					200: '#E7DDD0',
+					300: '#D7C4B0',
+					400: '#B8A18E',
+					500: '#8B7765',
+					600: '#6B5B4A',
+					700: '#5D4037',
+					800: '#3C2B20',
+					900: '#2B1810'
 				},
+				// Manter gold apenas para compatibilidade, mas será sobrescrito
+				gold: {
+					50: '#FAF8F6',
+					100: '#F2EBE4',
+					200: '#E7DDD0',
+					300: '#D7C4B0',
+					400: '#B8A18E',
+					500: '#8B7765',
+					600: '#6B5B4A',
+					700: '#5D4037',
+					800: '#3C2B20',
+					900: '#2B1810'
+				},
+				// Redefinir brown para tons neutros
 				brown: {
-					50: '#faf8f5',
-					100: '#f0ebe0',
-					200: '#e1d4c1',
-					300: '#ccb895',
-					400: '#a67c52',
-					500: '#8b6638',
-					600: '#755429',
-					700: '#604420',
-					800: '#4f381d',
-					900: '#42301b'
+					50: '#FAF8F6',
+					100: '#F2EBE4',
+					200: '#E7DDD0',
+					300: '#D7C4B0',
+					400: '#B8A18E',
+					500: '#8B7765',
+					600: '#6B5B4A',
+					700: '#5D4037',
+					800: '#3C2B20',
+					900: '#2B1810'
 				}
 			},
 			borderRadius: {
@@ -129,9 +144,8 @@ export default {
 				'float': 'float 6s ease-in-out infinite'
 			},
 			backgroundImage: {
-				'gradient-gold': 'linear-gradient(135deg, #d4af37 0%, #b8941f 100%)',
-				'gradient-brown': 'linear-gradient(135deg, #a67c52 0%, #8b6638 100%)',
-				'gradient-luxury': 'linear-gradient(135deg, #a67c52 0%, #d4af37 50%, #a67c52 100%)'
+				'gradient-neutral': 'linear-gradient(135deg, #F2EBE4 0%, #E7DDD0 100%)',
+				'gradient-luxury': 'linear-gradient(135deg, #3C2B20 0%, #5D4037 50%, #3C2B20 100%)'
 			}
 		}
 	},
