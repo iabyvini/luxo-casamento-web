@@ -102,8 +102,12 @@ const PublicSite = () => {
   };
 
   const incrementViewCount = async () => {
+    if (!slug) return;
+    
     try {
-      const { error } = await supabase.rpc('increment_view_count', { site_slug: slug });
+      const { error } = await supabase.rpc('increment_view_count', { 
+        site_slug: slug 
+      });
       if (error) console.error('Erro ao incrementar visualizações:', error);
     } catch (error) {
       console.error('Erro ao incrementar visualizações:', error);

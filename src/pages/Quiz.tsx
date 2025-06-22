@@ -139,7 +139,7 @@ const Quiz = () => {
           couple_names: answers.nomes,
           wedding_date: answers.data_casamento,
           template_name: templateName,
-          quiz_answers: answers,
+          quiz_answers: answers as any, // Type assertion to handle Json type
           ai_welcome_message: welcomeMessage,
           custom_content: {
             hero: {

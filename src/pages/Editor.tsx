@@ -22,6 +22,21 @@ interface SiteData {
   slug: string;
 }
 
+interface CustomContent {
+  hero?: {
+    title?: string;
+    subtitle?: string;
+    message?: string;
+  };
+  our_story?: string;
+  wedding_details?: {
+    ceremony_location?: string;
+    reception_location?: string;
+    ceremony_time?: string;
+    reception_time?: string;
+  };
+}
+
 const Editor = () => {
   const { siteId } = useParams<{ siteId: string }>();
   const navigate = useNavigate();
@@ -62,17 +77,21 @@ const Editor = () => {
       if (error) throw error;
 
       setSiteData(data);
+      
+      // Safely parse custom_content
+      const customContent = (data.custom_content as CustomContent) || {};
+      
       setEditData({
         couple_names: data.couple_names,
         ai_welcome_message: data.ai_welcome_message || '',
-        hero_title: data.custom_content?.hero?.title || data.couple_names,
-        hero_subtitle: data.custom_content?.hero?.subtitle || '',
-        our_story: data.custom_content?.our_story || '',
+        hero_title: customContent.hero?.title || data.couple_names,
+        hero_subtitle: customContent.hero?.subtitle || '',
+        our_story: customContent.our_story || '',
         wedding_details: {
-          ceremony_location: data.custom_content?.wedding_details?.ceremony_location || '',
-          reception_location: data.custom_content?.wedding_details?.reception_location || '',
-          ceremony_time: data.custom_content?.wedding_details?.ceremony_time || '',
-          reception_time: data.custom_content?.wedding_details?.reception_time || ''
+          ceremony_location: customContent.wedding_details?.ceremony_location || '',
+          reception_location: customContent.wedding_details?.reception_location || '',
+          ceremony_time: customContent.wedding_details?.ceremony_time || '',
+          reception_time: customContent.wedding_details?.reception_time || ''
         }
       });
     } catch (error: any) {
@@ -94,7 +113,7 @@ const Editor = () => {
     setSaving(true);
     try {
       const updatedCustomContent = {
-        ...siteData.custom_content,
+        ...((siteData.custom_content as CustomContent) || {}),
         hero: {
           title: editData.hero_title,
           subtitle: editData.hero_subtitle,
