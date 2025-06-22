@@ -1,6 +1,7 @@
 
 import { Heart, Calendar, MapPin, Sparkles, Leaf, Waves, Church, Crown } from "lucide-react";
-import { findBestTemplateProfile, generateVisualTokens, applyVisualTokensToCSS } from "@/utils/templateProfiles";
+import { findBestTemplateProfile } from "@/utils/templateProfiles";
+import { generateVisualTokens, applyVisualTokensToCSS } from "@/utils/visualTokens";
 import { QuizAnswers } from "@/types/quiz";
 import { useEffect } from "react";
 

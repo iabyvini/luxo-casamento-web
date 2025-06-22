@@ -115,4 +115,5 @@ export const getTemplateColors = (template: string): string[] => {
   return colorMap[template] || colorMap['Elegance'];
 };
 
-export { findBestTemplateProfile, generateVisualTokens, applyVisualTokensToCSS } from './templateProfiles';
+export { findBestTemplateProfile } from './templateProfiles';
+export { generateVisualTokens, applyVisualTokensToCSS } from './visualTokens';
