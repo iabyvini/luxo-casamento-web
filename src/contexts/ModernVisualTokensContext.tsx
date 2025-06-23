@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { ModernVisualTokens, generateModernVisualTokens, applyModernVisualTokensToCSS } from '@/utils/modernVisualTokens';
 import { QuizAnswers } from '@/types/quiz';
@@ -23,64 +24,23 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode }>
   const [couplePhotoUrl, setCouplePhotoUrlState] = useState<string | null>(null);
   const [templateProfile, setTemplateProfile] = useState<any | null>(null);
   const [currentSiteId, setCurrentSiteId] = useState<string | null>(null);
-
-  // Detectar siteId automaticamente para URLs públicas
-  useEffect(() => {
-    const detectSiteId = async () => {
-      if (!currentSiteId) {
-        const path = window.location.pathname;
-        
-        // Para rotas do editor: /editor/[siteId]
-        const editorMatch = path.match(/^\/editor\/([^\/]+)$/);
-        if (editorMatch) {
-          const realSiteId = editorMatch[1];
-          console.log('🎯 Detectado siteId do editor:', realSiteId);
-          setSiteId(realSiteId);
-          return;
-        }
-        
-        // Para sites públicos: /site/[slug] - buscar o siteId real no banco
-        const publicMatch = path.match(/^\/site\/([^\/]+)$/);
-        if (publicMatch) {
-          const slug = publicMatch[1];
-          console.log('🔍 Buscando siteId para slug público:', slug);
-          
-          try {
-            const { data, error } = await supabase
-              .from('wedding_sites')
-              .select('id')
-              .eq('slug', slug)
-              .single();
-
-            if (error) {
-              console.error('❌ Erro ao buscar site:', error);
-              return;
-            }
-
-            if (data) {
-              console.log('✅ SiteId encontrado:', data.id);
-              setSiteId(data.id);
-            }
-          } catch (error) {
-            console.error('❌ Erro na consulta:', error);
-          }
-        }
-      }
-    };
-
-    detectSiteId();
-  }, [currentSiteId]);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Função para definir siteId e carregar foto do banco
   const setSiteId = (siteId: string) => {
-    console.log('📝 Definindo siteId:', siteId);
-    setCurrentSiteId(siteId);
-    loadCouplePhotoFromDatabase(siteId);
+    if (siteId && siteId !== currentSiteId && !isLoading) {
+      console.log('📝 Definindo siteId:', siteId);
+      setCurrentSiteId(siteId);
+      loadCouplePhotoFromDatabase(siteId);
+    }
   };
 
   // Carregar foto do banco de dados
   const loadCouplePhotoFromDatabase = async (siteId: string) => {
+    if (isLoading) return;
+    
     console.log('🗄️ Carregando foto do banco para siteId:', siteId);
+    setIsLoading(true);
     
     try {
       const { data, error } = await supabase
@@ -89,7 +49,7 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode }>
         .eq('id', siteId)
         .single();
 
-      if (error) {
+      if (error && error.code !== 'PGRST116') {
         console.error('❌ Erro ao buscar foto do banco:', error);
         setCouplePhotoUrlState(null);
         return;
@@ -105,21 +65,64 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode }>
     } catch (error) {
       console.error('❌ Erro na consulta da foto:', error);
       setCouplePhotoUrlState(null);
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  // Detectar siteId automaticamente para URLs públicas (apenas uma vez)
+  useEffect(() => {
+    const detectSiteId = async () => {
+      if (currentSiteId || isLoading) return;
+      
+      const path = window.location.pathname;
+      
+      // Para rotas do editor: /editor/[siteId]
+      const editorMatch = path.match(/^\/editor\/([^\/]+)$/);
+      if (editorMatch) {
+        const realSiteId = editorMatch[1];
+        console.log('🎯 Detectado siteId do editor:', realSiteId);
+        setSiteId(realSiteId);
+        return;
+      }
+      
+      // Para sites públicos: /site/[slug] - buscar o siteId real no banco
+      const publicMatch = path.match(/^\/site\/([^\/]+)$/);
+      if (publicMatch) {
+        const slug = publicMatch[1];
+        console.log('🔍 Buscando siteId para slug público:', slug);
+        
+        try {
+          const { data, error } = await supabase
+            .from('wedding_sites')
+            .select('id')
+            .eq('slug', slug)
+            .single();
+
+          if (error) {
+            console.error('❌ Erro ao buscar site:', error);
+            return;
+          }
+
+          if (data) {
+            console.log('✅ SiteId encontrado:', data.id);
+            setSiteId(data.id);
+          }
+        } catch (error) {
+          console.error('❌ Erro na consulta:', error);
+        }
+      }
+    };
+
+    // Apenas executar uma vez quando o componente monta
+    detectSiteId();
+  }, []); // Array vazio para executar apenas uma vez
 
   // Função para atualizar foto (usada pelo componente PhotoUpload)
   const setCouplePhotoUrl = (url: string | null) => {
     console.log('💾 Atualizando foto no contexto:', url);
     setCouplePhotoUrlState(url);
   };
-
-  // Limpar foto quando não há site ID definido
-  useEffect(() => {
-    if (!currentSiteId) {
-      setCouplePhotoUrlState(null);
-    }
-  }, [currentSiteId]);
 
   const applyModernTokens = (quizAnswers: QuizAnswers) => {
     console.log('🎨 Aplicando tokens modernos para:', quizAnswers);

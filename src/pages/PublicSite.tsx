@@ -38,11 +38,15 @@ interface SiteData {
 const ModernSiteContent = ({ siteData }: { siteData: SiteData }) => {
   const { setSiteId } = useModernVisualTokens();
 
-  // FASE 2: Passar o siteId real para o contexto
+  // Definir o siteId para gerenciar fotos específicas por site
   useEffect(() => {
-    console.log('🏗️ Inicializando contexto moderno com siteId:', siteData.id);
-    setSiteId(siteData.id);
-  }, [siteData.id, setSiteId]);
+    if (siteData?.id) {
+      console.log('🏗️ Inicializando contexto moderno com siteId:', siteData.id);
+      setSiteId(siteData.id);
+    }
+  }, [siteData?.id, setSiteId]);
+
+  if (!siteData) return null;
 
   const formattedDate = format(new Date(siteData.wedding_date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
 

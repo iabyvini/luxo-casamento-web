@@ -2,8 +2,6 @@
 import { Heart, Calendar, MapPin } from "lucide-react";
 import { QuizAnswers } from "@/types/quiz";
 import { useModernVisualTokens } from "@/contexts/ModernVisualTokensContext";
-import { findBestTemplateProfile } from "@/utils/templateProfiles";
-import { getFallbackImage } from "@/utils/coupleFallbacks";
 
 interface HeroSectionProps {
   coupleNames: string;
@@ -24,31 +22,12 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
     year: 'numeric'
   });
 
-  const getDisplayPhoto = () => {
-    // PRIORIDADE 1: Foto do casal sempre tem precedência
-    if (couplePhotoUrl) {
-      console.log('✅ Usando foto do casal no HeroSection:', couplePhotoUrl);
-      return couplePhotoUrl;
-    }
-    
-    console.log('ℹ️ Usando fallback baseado no template');
-    // PRIORIDADE 2: Fallback baseado no template
-    const templateProfile = quizAnswers ? findBestTemplateProfile(quizAnswers) : null;
-    if (templateProfile) {
-      return getFallbackImage(templateProfile);
-    }
-    
-    return null;
-  };
-
   const handleConfirmPresence = () => {
     const rsvpSection = document.getElementById('rsvp');
     if (rsvpSection) {
       rsvpSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
-
-  const displayPhoto = getDisplayPhoto();
 
   return (
     <section id="home" className="relative min-h-screen bg-gradient-to-br from-green-50 to-white">
@@ -57,23 +36,20 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
           
           {/* Left Column - Couple Photo */}
           <div className="order-2 lg:order-1 flex justify-center">
-            {displayPhoto ? (
+            {couplePhotoUrl ? (
               <div className="relative">
                 <div className="w-80 h-96 md:w-96 md:h-[480px] overflow-hidden rounded-2xl shadow-2xl transition-all duration-300 border-4 border-green-200">
                   <img 
-                    src={displayPhoto} 
+                    src={couplePhotoUrl} 
                     alt="Foto do casal" 
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      console.error('❌ Erro ao carregar foto do casal:', couplePhotoUrl);
+                      // Fallback para placeholder se a imagem não carregar
+                      e.currentTarget.style.display = 'none';
+                    }}
                   />
                 </div>
-                
-                {!couplePhotoUrl && (
-                  <div className="absolute -bottom-6 left-1/2 transform -translate-x-1/2">
-                    <span className="text-xs font-medium px-3 py-1 rounded-full bg-white/80 backdrop-blur-sm text-gray-600">
-                      Imagem ilustrativa
-                    </span>
-                  </div>
-                )}
               </div>
             ) : (
               <div className="w-80 h-96 md:w-96 md:h-[480px] bg-gradient-to-br from-green-100 to-green-200 rounded-2xl shadow-2xl flex items-center justify-center border-4 border-green-200">
