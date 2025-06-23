@@ -8,7 +8,6 @@ import { QuizAnswers, PreviewData } from "@/types/quiz";
 import { getTemplateFromStyle } from "@/utils/templateMapping";
 import { generateWelcomeMessage } from "@/utils/openaiService";
 import { LoadingSpinner } from "@/components/LoadingStates";
-import { ModernVisualTokensProvider } from "@/contexts/ModernVisualTokensContext";
 
 const Preview = () => {
   const location = useLocation();
@@ -56,8 +55,7 @@ const Preview = () => {
           weddingDate: answers.data_casamento,
           templateName,
           welcomeMessage,
-          quizAnswers: answers,
-          customContent: null
+          quizAnswers: answers
         });
       } catch (error) {
         console.error('Erro ao gerar preview:', error);
@@ -67,8 +65,7 @@ const Preview = () => {
           weddingDate: answers.data_casamento,
           templateName,
           welcomeMessage: 'Junte-se a nós para celebrar nosso amor eterno neste dia especial.',
-          quizAnswers: answers,
-          customContent: null
+          quizAnswers: answers
         });
       } finally {
         setIsGeneratingMessage(false);
@@ -112,61 +109,59 @@ const Preview = () => {
   }
 
   return (
-    <ModernVisualTokensProvider>
-      <div className="min-h-screen bg-gradient-to-br from-brown-50 to-gold-50">
-        <div className="container mx-auto px-4 py-6">
-          {/* Header with improved navigation */}
-          <div className="flex items-center justify-between mb-8">
-            <Button
-              variant="ghost"
-              onClick={handleGoBack}
-              className="text-brown-600 hover:text-primary transition-colors hover:bg-brown-50"
-            >
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Voltar
-            </Button>
-            
-            <div className="text-center">
-              <h1 className="text-2xl font-bold gradient-text">
-                Preview do Seu Site
-              </h1>
-              <p className="text-brown-600">
-                Template: {previewData.templateName}
-              </p>
-            </div>
-            
-            <div></div>
+    <div className="min-h-screen bg-gradient-to-br from-brown-50 to-gold-50">
+      <div className="container mx-auto px-4 py-6">
+        {/* Header with improved navigation */}
+        <div className="flex items-center justify-between mb-8">
+          <Button
+            variant="ghost"
+            onClick={handleGoBack}
+            className="text-brown-600 hover:text-primary transition-colors hover:bg-brown-50"
+          >
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar
+          </Button>
+          
+          <div className="text-center">
+            <h1 className="text-2xl font-bold gradient-text">
+              Preview do Seu Site
+            </h1>
+            <p className="text-brown-600">
+              Template: {previewData.templateName}
+            </p>
           </div>
+          
+          <div></div>
+        </div>
 
-          {/* Preview */}
-          <div className="mb-8">
-            <PreviewSite data={previewData} />
-          </div>
+        {/* Preview */}
+        <div className="mb-8">
+          <PreviewSite data={previewData} />
+        </div>
 
-          {/* Enhanced Action Buttons */}
-          <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-            <Button
-              onClick={handleEditSite}
-              variant="outline"
-              size="lg"
-              className="border-brown-300 text-brown-700 hover:bg-brown-50 w-full sm:w-auto transition-all duration-300 hover:scale-105"
-            >
-              <Edit className="h-5 w-5 mr-2" />
-              Editar Meu Site
-            </Button>
-            
-            <Button
-              onClick={handleSaveAndAuth}
-              size="lg"
-              className="bg-gradient-luxury hover:opacity-90 text-white w-full sm:w-auto transition-all duration-300 hover:scale-105"
-            >
-              <Save className="h-5 w-5 mr-2" />
-              Criar Conta para Salvar
-            </Button>
-          </div>
+        {/* Enhanced Action Buttons */}
+        <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+          <Button
+            onClick={handleEditSite}
+            variant="outline"
+            size="lg"
+            className="border-brown-300 text-brown-700 hover:bg-brown-50 w-full sm:w-auto transition-all duration-300 hover:scale-105"
+          >
+            <Edit className="h-5 w-5 mr-2" />
+            Editar Meu Site
+          </Button>
+          
+          <Button
+            onClick={handleSaveAndAuth}
+            size="lg"
+            className="bg-gradient-luxury hover:opacity-90 text-white w-full sm:w-auto transition-all duration-300 hover:scale-105"
+          >
+            <Save className="h-5 w-5 mr-2" />
+            Criar Conta para Salvar
+          </Button>
         </div>
       </div>
-    </ModernVisualTokensProvider>
+    </div>
   );
 };
 

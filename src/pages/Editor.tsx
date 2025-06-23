@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -78,11 +77,6 @@ const Editor = () => {
 
       // Atualizar dados locais
       setSiteData(prev => prev ? { ...prev, ...updates } : null);
-
-      toast({
-        title: "Alterações salvas!",
-        description: "Suas mudanças foram salvas com sucesso.",
-      });
 
     } catch (error: any) {
       toast({
@@ -177,7 +171,6 @@ const Editor = () => {
               <Button
                 onClick={handlePublishToggle}
                 variant={siteData.is_published ? "destructive" : "default"}
-                disabled={saving}
               >
                 {siteData.is_published ? "Despublicar" : "Publicar"}
               </Button>
@@ -254,9 +247,9 @@ const Editor = () => {
                     <Eye className="h-4 w-4 mr-2" />
                     Visualizar Site
                   </Button>
-                  <Button variant="outline" className="w-full" disabled={saving}>
+                  <Button variant="outline" className="w-full">
                     <Save className="h-4 w-4 mr-2" />
-                    {saving ? 'Salvando...' : 'Exportar Configurações'}
+                    Exportar Configurações
                   </Button>
                 </CardContent>
               </Card>

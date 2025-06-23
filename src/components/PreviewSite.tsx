@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { PreviewData } from "@/types/quiz";
 import { useVisualTokens } from "@/contexts/VisualTokensContext";
@@ -50,14 +49,16 @@ const PreviewSite = ({ data }: PreviewSiteProps) => {
         quizAnswers={data.quizAnswers}
       />
 
-      {/* Countdown - AUTOMATIZADO (removido do editor) */}
+      {/* Countdown */}
       <CountdownSection weddingDate={data.weddingDate} />
 
-      {/* Our Story - SEÇÃO ÚNICA */}
+      {/* Couple Section */}
+      <CoupleSection coupleNames={data.coupleNames} />
+
+      {/* Our Story */}
       <OurStorySection 
         coupleNames={data.coupleNames}
         templateName={data.templateName}
-        customContent={data.customContent}
       />
 
       {/* Gallery */}
@@ -67,7 +68,7 @@ const PreviewSite = ({ data }: PreviewSiteProps) => {
         quizAnswers={data.quizAnswers}
       />
 
-      {/* Event Details - MELHORADO */}
+      {/* Event Details */}
       <EventDetailsSection
         weddingDate={data.weddingDate}
         templateName={data.templateName}

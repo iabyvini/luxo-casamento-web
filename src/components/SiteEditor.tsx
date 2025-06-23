@@ -1,195 +1,325 @@
 
-import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Eye } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import { Save, Eye, Settings, Camera, Users, Gift, MessageSquare, Clock, MapPin, Heart } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import GalleryPhotoManager from "./GalleryPhotoManager";
+import GiftItemManager from "./GiftItemManager";
 import CouplePhotoEditor from "./CouplePhotoEditor";
 import OurStoryEditor from "./OurStoryEditor";
 import CountdownEditor from "./CountdownEditor";
 import EventDetailsEditor from "./EventDetailsEditor";
-import GalleryPhotoManager from "./GalleryPhotoManager";
-import GiftItemManager from "./GiftItemManager";
+
+interface SiteData {
+  id: string;
+  couple_names: string;
+  wedding_date: string;
+  template_name: string;
+  ai_welcome_message: string;
+  custom_content: any;
+  quiz_answers: any;
+  is_published: boolean;
+  slug: string;
+  views_count?: number;
+}
 
 interface SiteEditorProps {
-  siteData: any;
+  siteData: SiteData;
   onUpdateSite: (updates: any) => Promise<void>;
   onPreview: () => void;
   saving: boolean;
 }
 
 const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorProps) => {
-  const [activeTab, setActiveTab] = useState("geral");
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState("general");
+  const [localData, setLocalData] = useState({
+    couple_names: siteData.couple_names,
+    wedding_date: siteData.wedding_date,
+    ai_welcome_message: siteData.ai_welcome_message,
+    custom_content: siteData.custom_content || {}
+  });
 
-  const handleUpdateContent = async (section: string, updates: any) => {
-    const currentContent = siteData.custom_content || {};
-    const newCustomContent = {
-      ...currentContent,
-      [section]: updates
-    };
+  useEffect(() => {
+    setLocalData({
+      couple_names: siteData.couple_names,
+      wedding_date: siteData.wedding_date,
+      ai_welcome_message: siteData.ai_welcome_message,
+      custom_content: siteData.custom_content || {}
+    });
+  }, [siteData]);
 
-    await onUpdateSite({ custom_content: newCustomContent });
+  const handleSave = async () => {
+    try {
+      await onUpdateSite(localData);
+      toast({
+        title: "Alterações salvas!",
+        description: "As alterações foram salvas com sucesso.",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Erro ao salvar",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const updateLocalData = (field: string, value: any) => {
+    setLocalData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const updateCustomContent = (section: string, updates: any) => {
+    setLocalData(prev => ({
+      ...prev,
+      custom_content: {
+        ...prev.custom_content,
+        [section]: updates
+      }
+    }));
   };
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle>Editor Visual</CardTitle>
-            <div className="flex space-x-2">
-              <Button
-                variant="outline"
-                onClick={onPreview}
-                className="flex items-center gap-2"
-              >
-                <Eye className="h-4 w-4" />
-                Preview
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Editor do Site</h2>
           <p className="text-gray-600">
-            Personalize cada seção do seu site de casamento usando as abas abaixo.
+            Personalize o conteúdo e aparência do seu site
           </p>
-        </CardContent>
-      </Card>
+        </div>
+        <div className="flex space-x-2">
+          <Button variant="outline" onClick={onPreview}>
+            <Eye className="h-4 w-4 mr-2" />
+            Preview
+          </Button>
+          <Button onClick={handleSave} disabled={saving}>
+            <Save className="h-4 w-4 mr-2" />
+            {saving ? 'Salvando...' : 'Salvar'}
+          </Button>
+        </div>
+      </div>
 
       {/* Editor Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-9">
-          <TabsTrigger value="geral">Geral</TabsTrigger>
-          <TabsTrigger value="casal">Casal</TabsTrigger>
-          <TabsTrigger value="historia">História</TabsTrigger>
-          <TabsTrigger value="contagem">Contagem</TabsTrigger>
-          <TabsTrigger value="galeria">Galeria</TabsTrigger>
-          <TabsTrigger value="evento">Evento</TabsTrigger>
-          <TabsTrigger value="presentes">Presentes</TabsTrigger>
-          <TabsTrigger value="rsvp">RSVP</TabsTrigger>
-          <TabsTrigger value="mensagens">Mensagens</TabsTrigger>
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid w-full grid-cols-8">
+          <TabsTrigger value="general" className="flex items-center gap-1">
+            <Settings className="h-3 w-3" />
+            Geral
+          </TabsTrigger>
+          <TabsTrigger value="couple" className="flex items-center gap-1">
+            <Camera className="h-3 w-3" />
+            Casal
+          </TabsTrigger>
+          <TabsTrigger value="countdown" className="flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            Contagem
+          </TabsTrigger>
+          <TabsTrigger value="story" className="flex items-center gap-1">
+            <Heart className="h-3 w-3" />
+            História
+          </TabsTrigger>
+          <TabsTrigger value="gallery" className="flex items-center gap-1">
+            <Users className="h-3 w-3" />
+            Galeria
+          </TabsTrigger>
+          <TabsTrigger value="event" className="flex items-center gap-1">
+            <MapPin className="h-3 w-3" />
+            Evento
+          </TabsTrigger>
+          <TabsTrigger value="gifts" className="flex items-center gap-1">
+            <Gift className="h-3 w-3" />
+            Presentes
+          </TabsTrigger>
+          <TabsTrigger value="messages" className="flex items-center gap-1">
+            <MessageSquare className="h-3 w-3" />
+            Mensagens
+          </TabsTrigger>
         </TabsList>
 
-        {/* Aba Geral - Foto do Casal */}
-        <TabsContent value="geral" className="mt-6">
-          <CouplePhotoEditor siteId={siteData.id} />
-        </TabsContent>
-
-        {/* Aba Casal */}
-        <TabsContent value="casal" className="mt-6">
+        {/* General Tab */}
+        <TabsContent value="general" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Informações do Casal</CardTitle>
+              <CardTitle>Informações Básicas</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Nomes do Casal
-                </label>
-                <p className="text-gray-700 bg-gray-50 p-3 rounded">
-                  {siteData.couple_names}
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  Para alterar os nomes, entre em contato com o suporte
-                </p>
+                <Label>Nomes do Casal</Label>
+                <Input
+                  value={localData.couple_names}
+                  onChange={(e) => updateLocalData('couple_names', e.target.value)}
+                  placeholder="Ana & João"
+                />
+              </div>
+              
+              <div>
+                <Label>Data do Casamento</Label>
+                <Input
+                  type="date"
+                  value={localData.wedding_date}
+                  onChange={(e) => updateLocalData('wedding_date', e.target.value)}
+                />
+              </div>
+              
+              <div>
+                <Label>Mensagem de Boas-vindas</Label>
+                <Textarea
+                  value={localData.ai_welcome_message}
+                  onChange={(e) => updateLocalData('ai_welcome_message', e.target.value)}
+                  placeholder="Mensagem de boas-vindas personalizada..."
+                  rows={3}
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                <div>
+                  <p className="font-medium">Template</p>
+                  <p className="text-sm text-gray-600">{siteData.template_name}</p>
+                </div>
+                <Badge variant="outline">{siteData.template_name}</Badge>
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Couple Tab */}
+        <TabsContent value="couple" className="space-y-6">
+          <CouplePhotoEditor siteId={siteData.id} />
+        </TabsContent>
+
+        {/* Countdown Tab */}
+        <TabsContent value="countdown" className="space-y-6">
+          <CountdownEditor 
+            customContent={localData.custom_content}
+            onUpdateContent={updateCustomContent}
+          />
+        </TabsContent>
+
+        {/* Our Story Tab */}
+        <TabsContent value="story" className="space-y-6">
+          <OurStoryEditor 
+            customContent={localData.custom_content}
+            onUpdateContent={updateCustomContent}
+          />
+        </TabsContent>
+
+        {/* Gallery Tab */}
+        <TabsContent value="gallery" className="space-y-6">
+          <GalleryPhotoManager siteId={siteData.id} />
+          
+          <Card>
+            <CardHeader>
+              <CardTitle>Personalização da Galeria</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label>Título da Seção</Label>
+                <Input
+                  placeholder="Nossa Galeria"
+                  value={localData.custom_content?.gallery?.title || ''}
+                  onChange={(e) => updateCustomContent('gallery', { 
+                    ...localData.custom_content?.gallery, 
+                    title: e.target.value 
+                  })}
+                />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Data do Casamento
-                </label>
-                <p className="text-gray-700 bg-gray-50 p-3 rounded">
-                  {new Date(siteData.wedding_date).toLocaleDateString('pt-BR')}
-                </p>
-                <p className="text-xs text-gray-500 mt-1">
-                  Para alterar a data, entre em contato com o suporte
-                </p>
+                <Label>Descrição</Label>
+                <Textarea
+                  placeholder="Alguns momentos especiais..."
+                  value={localData.custom_content?.gallery?.description || ''}
+                  onChange={(e) => updateCustomContent('gallery', { 
+                    ...localData.custom_content?.gallery, 
+                    description: e.target.value 
+                  })}
+                  rows={2}
+                />
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* Aba História */}
-        <TabsContent value="historia" className="mt-6">
-          <OurStoryEditor
-            customContent={siteData.custom_content}
-            onUpdateContent={handleUpdateContent}
+        {/* Event Details Tab */}
+        <TabsContent value="event" className="space-y-6">
+          <EventDetailsEditor 
+            customContent={localData.custom_content}
+            onUpdateContent={updateCustomContent}
           />
         </TabsContent>
 
-        {/* Aba Contagem Regressiva */}
-        <TabsContent value="contagem" className="mt-6">
-          <CountdownEditor
-            customContent={siteData.custom_content}
-            onUpdateContent={handleUpdateContent}
-          />
-        </TabsContent>
-
-        {/* Aba Galeria */}
-        <TabsContent value="galeria" className="mt-6">
+        {/* Gifts Tab */}
+        <TabsContent value="gifts" className="space-y-6">
+          <GiftItemManager siteId={siteData.id} />
+          
           <Card>
             <CardHeader>
-              <CardTitle>Galeria de Fotos</CardTitle>
+              <CardTitle>Personalização da Lista de Presentes</CardTitle>
             </CardHeader>
-            <CardContent>
-              <GalleryPhotoManager siteId={siteData.id} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Aba Evento */}
-        <TabsContent value="evento" className="mt-6">
-          <EventDetailsEditor
-            customContent={siteData.custom_content}
-            onUpdateContent={handleUpdateContent}
-          />
-        </TabsContent>
-
-        {/* Aba Presentes */}
-        <TabsContent value="presentes" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Lista de Presentes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <GiftItemManager siteId={siteData.id} />
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Aba RSVP */}
-        <TabsContent value="rsvp" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Confirmação de Presença</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 mb-4">
-                Acompanhe as confirmações de presença dos seus convidados.
-              </p>
-              <div className="bg-blue-50 p-4 rounded-lg">
-                <p className="text-sm text-blue-700">
-                  📊 Para ver o dashboard completo de RSVPs, acesse o menu principal do dashboard.
-                </p>
+            <CardContent className="space-y-4">
+              <div>
+                <Label>Título da Seção</Label>
+                <Input
+                  placeholder="Lista de Presentes"
+                  value={localData.custom_content?.gifts?.title || ''}
+                  onChange={(e) => updateCustomContent('gifts', { 
+                    ...localData.custom_content?.gifts, 
+                    title: e.target.value 
+                  })}
+                />
+              </div>
+              <div>
+                <Label>Mensagem</Label>
+                <Textarea
+                  placeholder="Sua presença é o nosso maior presente..."
+                  value={localData.custom_content?.gifts?.message || ''}
+                  onChange={(e) => updateCustomContent('gifts', { 
+                    ...localData.custom_content?.gifts, 
+                    message: e.target.value 
+                  })}
+                  rows={2}
+                />
               </div>
             </CardContent>
           </Card>
         </TabsContent>
 
-        {/* Aba Mensagens */}
-        <TabsContent value="mensagens" className="mt-6">
+        {/* Messages Tab */}
+        <TabsContent value="messages" className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Mensagens dos Convidados</CardTitle>
+              <CardTitle>Seção de Mensagens</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 mb-4">
-                Visualize as mensagens carinhosas enviadas pelos seus convidados.
-              </p>
-              <div className="bg-green-50 p-4 rounded-lg">
-                <p className="text-sm text-green-700">
-                  💌 As mensagens aparecem automaticamente conforme são enviadas no site público.
-                </p>
+            <CardContent className="space-y-4">
+              <div>
+                <Label>Título da Seção</Label>
+                <Input
+                  placeholder="Deixe sua Mensagem"
+                  value={localData.custom_content?.messages?.title || ''}
+                  onChange={(e) => updateCustomContent('messages', { 
+                    ...localData.custom_content?.messages, 
+                    title: e.target.value 
+                  })}
+                />
+              </div>
+              <div>
+                <Label>Descrição</Label>
+                <Textarea
+                  placeholder="Compartilhe seus votos de felicidade..."
+                  value={localData.custom_content?.messages?.description || ''}
+                  onChange={(e) => updateCustomContent('messages', { 
+                    ...localData.custom_content?.messages, 
+                    description: e.target.value 
+                  })}
+                  rows={2}
+                />
               </div>
             </CardContent>
           </Card>

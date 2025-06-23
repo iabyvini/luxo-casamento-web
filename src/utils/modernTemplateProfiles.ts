@@ -42,7 +42,7 @@ export interface ModernTemplateProfile {
 }
 
 export const MODERN_TEMPLATE_PROFILES: ModernTemplateProfile[] = [
-  // 1. Editorial Romântico - Baseado na imagem de referência
+  // Editorial Romântico
   {
     id: 'editorial-romantic',
     name: 'Editorial Romance',
@@ -54,7 +54,7 @@ export const MODERN_TEMPLATE_PROFILES: ModernTemplateProfile[] = [
       accentColor: '#d4af37',
       backgroundColor: '#ffffff',
       textColor: '#2c2c2c',
-      overlayColor: 'rgba(0, 0, 0, 0.4)'
+      overlayColor: 'rgba(0, 0, 0, 0.3)'
     },
     typography: {
       headingFont: 'Playfair Display',
@@ -70,13 +70,13 @@ export const MODERN_TEMPLATE_PROFILES: ModernTemplateProfile[] = [
       shadows: 'none'
     },
     aesthetics: {
-      photoTreatment: 'dramatic',
+      photoTreatment: 'natural',
       decorativeElements: ['fine-lines', 'minimal-ornaments'],
       backgroundTexture: 'subtle-grain'
     }
   },
 
-  // 2. Minimalista Luxo - Baseado na imagem preta/branca
+  // Minimalista Luxo
   {
     id: 'minimal-luxury',
     name: 'Minimal Luxury',
@@ -88,79 +88,79 @@ export const MODERN_TEMPLATE_PROFILES: ModernTemplateProfile[] = [
       accentColor: '#c9a96e',
       backgroundColor: '#ffffff',
       textColor: '#333333',
-      overlayColor: 'rgba(0, 0, 0, 0.5)'
+      overlayColor: 'rgba(0, 0, 0, 0.4)'
     },
     typography: {
-      headingFont: 'Inter',
+      headingFont: 'Cormorant Garamond',
       bodyFont: 'Inter',
       scriptFont: 'Allura',
-      headingWeight: 200,
+      headingWeight: 300,
       bodyWeight: 300
     },
     layout: {
-      heroStyle: 'split',
+      heroStyle: 'fullscreen',
       spacing: 'generous',
       borderRadius: 'none',
       shadows: 'none'
     },
     aesthetics: {
       photoTreatment: 'dramatic',
-      decorativeElements: ['geometric-lines', 'negative-space'],
+      decorativeElements: ['geometric-lines', 'spacing'],
     }
   },
 
-  // 3. Boho Refinado - Baseado nas imagens com elementos decorativos
+  // Neutro Sofisticado
   {
-    id: 'boho-refined',
-    name: 'Refined Bohemian',
-    archetype: 'Boho Refinado',
-    mood: { romantic: 8, elegant: 6, playful: 7, natural: 8, classic: 3, modern: 5 },
+    id: 'neutral-sophisticated',
+    name: 'Neutral Sophistication',
+    archetype: 'Neutro Sofisticado',
+    mood: { romantic: 7, elegant: 9, playful: 2, natural: 5, classic: 8, modern: 7 },
     visual: {
-      primaryColor: '#8B4513',
-      secondaryColor: '#F5E6D3',
-      accentColor: '#D2691E',
-      backgroundColor: '#FDF5E6',
-      textColor: '#5D4037',
-      overlayColor: 'rgba(139, 69, 19, 0.3)'
+      primaryColor: '#2c2c2c',
+      secondaryColor: '#f8f6f2',
+      accentColor: '#a67c52',
+      backgroundColor: '#fafafa',
+      textColor: '#4a4a4a',
+      overlayColor: 'rgba(44, 44, 44, 0.3)'
     },
     typography: {
-      headingFont: 'Dancing Script',
+      headingFont: 'Crimson Text',
       bodyFont: 'Inter',
-      scriptFont: 'Dancing Script',
-      headingWeight: 700,
+      scriptFont: 'Great Vibes',
+      headingWeight: 400,
       bodyWeight: 300
     },
     layout: {
-      heroStyle: 'overlay',
-      spacing: 'normal',
-      borderRadius: 'soft',
+      heroStyle: 'split',
+      spacing: 'generous',
+      borderRadius: 'subtle',
       shadows: 'subtle'
     },
     aesthetics: {
       photoTreatment: 'soft',
-      decorativeElements: ['boho-elements', 'floral-ornaments'],
+      decorativeElements: ['botanical-simple', 'thin-borders'],
     }
   },
 
-  // 4. Clássico Contemporâneo - Baseado na imagem com monograma
+  // Clássico Contemporâneo
   {
     id: 'classic-contemporary',
     name: 'Classic Contemporary',
     archetype: 'Clássico Contemporâneo',
-    mood: { romantic: 8, elegant: 10, playful: 2, natural: 4, classic: 10, modern: 6 },
+    mood: { romantic: 8, elegant: 10, playful: 2, natural: 4, classic: 9, modern: 6 },
     visual: {
-      primaryColor: '#8B4513',
-      secondaryColor: '#F5DEB3',
-      accentColor: '#DAA520',
-      backgroundColor: '#FFFAF0',
-      textColor: '#654321',
-      overlayColor: 'rgba(139, 69, 19, 0.4)'
+      primaryColor: '#1e1e1e',
+      secondaryColor: '#f9f7f4',
+      accentColor: '#b8860b',
+      backgroundColor: '#ffffff',
+      textColor: '#333333',
+      overlayColor: 'rgba(30, 30, 30, 0.35)'
     },
     typography: {
       headingFont: 'Playfair Display',
-      bodyFont: 'Inter',  
-      scriptFont: 'Great Vibes',
-      headingWeight: 600,
+      bodyFont: 'Source Sans Pro',
+      scriptFont: 'Pinyon Script',
+      headingWeight: 400,
       bodyWeight: 300
     },
     layout: {
@@ -171,26 +171,26 @@ export const MODERN_TEMPLATE_PROFILES: ModernTemplateProfile[] = [
     },
     aesthetics: {
       photoTreatment: 'film',
-      decorativeElements: ['classic-ornaments', 'monogram'],
+      decorativeElements: ['classic-ornaments', 'serif-details'],
     }
   },
 
-  // 5. Natural Moderno - Baseado na imagem verde/natural
+  // Natural Moderno
   {
     id: 'natural-modern',
     name: 'Natural Modern',
     archetype: 'Natural Moderno',
-    mood: { romantic: 6, elegant: 7, playful: 4, natural: 10, classic: 4, modern: 8 },
+    mood: { romantic: 6, elegant: 7, playful: 4, natural: 9, classic: 4, modern: 8 },
     visual: {
-      primaryColor: '#2E7D32',
-      secondaryColor: '#E8F5E8',
-      accentColor: '#66BB6A',
-      backgroundColor: '#F1F8E9',
-      textColor: '#1B5E20',
-      overlayColor: 'rgba(46, 125, 50, 0.3)'
+      primaryColor: '#2d3436',
+      secondaryColor: '#f1f2f6',
+      accentColor: '#6c5ce7',
+      backgroundColor: '#ffffff',
+      textColor: '#2d3436',
+      overlayColor: 'rgba(45, 52, 54, 0.25)'
     },
     typography: {
-      headingFont: 'Inter',
+      headingFont: 'Lora',
       bodyFont: 'Inter',
       scriptFont: 'Sacramento',
       headingWeight: 400,
@@ -208,43 +208,41 @@ export const MODERN_TEMPLATE_PROFILES: ModernTemplateProfile[] = [
     }
   },
 
-  // 6. Neutro Sofisticado - Baseado na imagem neutra/elegante
+  // Boho Refinado
   {
-    id: 'neutral-sophisticated',
-    name: 'Neutral Sophistication',
-    archetype: 'Neutro Sofisticado',
-    mood: { romantic: 7, elegant: 9, playful: 2, natural: 5, classic: 8, modern: 7 },
+    id: 'boho-refined',
+    name: 'Refined Bohemian',
+    archetype: 'Boho Refinado',
+    mood: { romantic: 8, elegant: 6, playful: 7, natural: 8, classic: 3, modern: 5 },
     visual: {
-      primaryColor: '#6D4C41',
-      secondaryColor: '#F5F5F5',
-      accentColor: '#8D6E63',
-      backgroundColor: '#FAFAFA',
-      textColor: '#5D4037',
-      overlayColor: 'rgba(109, 76, 65, 0.3)'
+      primaryColor: '#3d2914',
+      secondaryColor: '#f6f1eb',
+      accentColor: '#d4a574',
+      backgroundColor: '#fefcf9',
+      textColor: '#5d4e37',
+      overlayColor: 'rgba(61, 41, 20, 0.3)'
     },
     typography: {
-      headingFont: 'Inter',
+      headingFont: 'Libre Baskerville',
       bodyFont: 'Inter',
-      scriptFont: 'Great Vibes',
-      headingWeight: 300,
+      scriptFont: 'Satisfy',
+      headingWeight: 400,
       bodyWeight: 300
     },
     layout: {
-      heroStyle: 'split',
-      spacing: 'generous',
-      borderRadius: 'subtle',
+      heroStyle: 'overlay',
+      spacing: 'normal',
+      borderRadius: 'soft',
       shadows: 'subtle'
     },
     aesthetics: {
       photoTreatment: 'soft',
-      decorativeElements: ['minimal-lines', 'subtle-textures'],
+      decorativeElements: ['boho-elements', 'watercolor-touches'],
     }
   }
 ];
 
 export const findBestModernTemplate = (answers: QuizAnswers): ModernTemplateProfile => {
-  console.log('🎯 Selecionando template para:', answers);
-  
   const moodScores = calculateMoodScore(answers);
   
   let bestMatch = MODERN_TEMPLATE_PROFILES[0];
@@ -261,49 +259,16 @@ export const findBestModernTemplate = (answers: QuizAnswers): ModernTemplateProf
       score += Math.max(0, similarity);
     });
 
-    // Bônus específicos por combinações
-    
-    // Romântico + qualquer local = Editorial Romântico
-    if (answers.estilo === 'Romântico' && profile.id === 'editorial-romantic') {
-      score += 30;
-    }
-    
-    // Minimalista = Minimal Luxury
-    if (answers.estilo === 'Minimalista' && profile.id === 'minimal-luxury') {
-      score += 30;
-    }
-    
-    // Boho = Boho Refinado
-    if (answers.estilo === 'Boho' && profile.id === 'boho-refined') {
-      score += 30;
-    }
-    
-    // Clássico + Igreja = Clássico Contemporâneo
-    if (answers.estilo === 'Clássico' && profile.id === 'classic-contemporary') {
-      score += 30;
-    }
-    
-    // Moderno + qualquer = Natural Moderno ou Neutro
-    if (answers.estilo === 'Moderno') {
-      if (answers.local === 'Fazenda' && profile.id === 'natural-modern') {
-        score += 25;
-      } else if (profile.id === 'neutral-sophisticated') {
-        score += 20;
-      }
-    }
-
-    // Vintage = Neutro Sofisticado
-    if (answers.estilo === 'Vintage' && profile.id === 'neutral-sophisticated') {
+    // Bônus por estilo específico
+    if (profile.archetype.toLowerCase().includes(answers.estilo.toLowerCase())) {
       score += 25;
     }
 
     // Bônus por local
     if (answers.local === 'Igreja' && profile.id === 'classic-contemporary') score += 15;
     if (answers.local === 'Praia' && profile.id === 'natural-modern') score += 15;
-    if (answers.local === 'Fazenda' && (profile.id === 'boho-refined' || profile.id === 'natural-modern')) score += 15;
+    if (answers.local === 'Fazenda' && profile.id === 'boho-refined') score += 15;
     if (answers.local === 'Salão de Festas' && profile.id === 'minimal-luxury') score += 15;
-
-    console.log(`📊 Template ${profile.name}: ${score} pontos`);
 
     if (score > bestScore) {
       bestScore = score;
@@ -311,7 +276,6 @@ export const findBestModernTemplate = (answers: QuizAnswers): ModernTemplateProf
     }
   });
 
-  console.log(`🏆 Template selecionado: ${bestMatch.name} (${bestScore} pontos)`);
   return bestMatch;
 };
 

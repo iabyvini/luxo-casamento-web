@@ -1,245 +1,248 @@
-
-import { Calendar, MapPin, Clock, Users, Car, Music, Utensils } from "lucide-react";
+import { Calendar, Clock, MapPin, Users, Camera, Music, Utensils } from "lucide-react";
 import { QuizAnswers } from "@/types/quiz";
-import { useModernVisualTokens } from "@/contexts/ModernVisualTokensContext";
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 interface EventDetailsSectionProps {
   weddingDate: string;
   templateName: string;
-  quizAnswers?: QuizAnswers;
+  quizAnswers: QuizAnswers;
+  customContent?: {
+    enabled?: boolean;
+    title?: string;
+    ceremony_time?: string;
+    ceremony_location?: string;
+    reception_time?: string;
+    dress_code?: {
+      title?: string;
+      description?: string;
+      suggestions?: string[];
+    };
+    special_notes?: string[];
+  };
 }
 
-const EventDetailsSection = ({ weddingDate, templateName, quizAnswers }: EventDetailsSectionProps) => {
-  const { templateProfile } = useModernVisualTokens();
-  
-  const formattedDate = new Date(weddingDate).toLocaleDateString('pt-BR', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  });
+const EventDetailsSection = ({ weddingDate, templateName, quizAnswers, customContent }: EventDetailsSectionProps) => {
+  // Se a seção está desabilitada, não renderizar
+  if (customContent?.enabled === false) {
+    return null;
+  }
 
-  const formattedTime = "15:00";
+  const formattedDate = format(new Date(weddingDate), 'EEEE, dd \'de\' MMMM \'de\' yyyy', { locale: ptBR });
+  const formattedTime = format(new Date(weddingDate), 'HH:mm', { locale: ptBR });
 
-  // Informações baseadas no quiz
-  const location = quizAnswers?.local || "Local a ser definido";
-  const style = quizAnswers?.estilo || "Clássico";
-  const tone = quizAnswers?.tom || "Elegante e formal";
+  const getEventDetails = (template: string, quiz: QuizAnswers) => {
+    const baseDetails = {
+      ceremony: {
+        time: customContent?.ceremony_time || "16:00",
+        duration: "45 minutos",
+        location: customContent?.ceremony_location || quiz.local || "Local a ser confirmado"
+      },
+      reception: {
+        time: customContent?.reception_time || "17:00", 
+        duration: "Até 01:00",
+        location: "Mesmo local da cerimônia"
+      },
+      dressCode: customContent?.dress_code || getDressCode(template, quiz),
+      specialNotes: customContent?.special_notes || getSpecialNotes(template, quiz)
+    };
 
-  // Informações importantes melhoradas com base no template
-  const getImportantInfo = () => {
-    const baseInfo = [
-      {
-        icon: Clock,
-        title: "Horário",
-        description: "Cerimônia às 15:00\nRecepção às 17:00",
-        color: "text-blue-600"
-      },
-      {
-        icon: MapPin,
-        title: "Local",
-        description: location,
-        color: "text-green-600"
-      },
-      {
-        icon: Users,
-        title: "Dress Code",
-        description: tone === "Elegante e formal" ? "Traje social" : "Traje esporte fino",
-        color: "text-purple-600"
-      },
-      {
-        icon: Car,
-        title: "Estacionamento",
-        description: "Disponível no local\nGratuito para convidados",
-        color: "text-orange-600"
-      },
-      {
-        icon: Music,
-        title: "Música",
-        description: "Cerimônia: Clássica\nRecepção: Variada",
-        color: "text-pink-600"
-      },
-      {
-        icon: Utensils,
-        title: "Alimentação",
-        description: "Jantar completo\nBar aberto",
-        color: "text-red-600"
-      }
-    ];
-
-    return baseInfo;
+    return baseDetails;
   };
 
-  const importantInfo = getImportantInfo();
-
-  // Estilos baseados no template selecionado
-  const getTemplateStyles = () => {
-    if (!templateProfile) {
+  const getDressCode = (template: string, quiz: QuizAnswers) => {
+    if (quiz.local === "Igreja") {
       return {
-        bgClass: "bg-white",
-        textClass: "text-gray-800",
-        badgeClass: "bg-green-100 text-green-800",
-        cardClass: "bg-gradient-to-br from-white to-gray-50 border-gray-200 shadow-lg",
-        mainCardClass: "bg-gradient-to-br from-green-50 to-green-100 border-green-200",
-        accentClass: "text-green-600"
+        title: "Traje Social Elegante",
+        description: "Cores neutras ou pastéis. Evitar decotes e ombros descobertos na cerimônia.",
+        suggestions: ["Homens: terno ou blazer", "Mulheres: vestido midi ou longo", "Evitar: branco, bege claro"]
       };
     }
 
-    switch (templateProfile.id) {
-      case 'editorial-romantic':
-        return {
-          bgClass: "bg-gray-50",
-          textClass: "text-gray-900",
-          badgeClass: "bg-gray-100 text-gray-800",
-          cardClass: "bg-gradient-to-br from-white to-gray-50 border-gray-200 shadow-xl",
-          mainCardClass: "bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300",
-          accentClass: "text-gray-700"
-        };
-      
-      case 'minimal-luxury':
-        return {
-          bgClass: "bg-black",
-          textClass: "text-white",
-          badgeClass: "bg-gray-800 text-white border border-gray-700",
-          cardClass: "bg-gradient-to-br from-gray-900 to-black border-gray-800 shadow-2xl",
-          mainCardClass: "bg-gradient-to-br from-gray-800 to-gray-900 border-gray-700",
-          accentClass: "text-gray-300"
-        };
-      
-      case 'boho-refined':
-        return {
-          bgClass: "bg-amber-50",
-          textClass: "text-amber-900",
-          badgeClass: "bg-amber-100 text-amber-800",
-          cardClass: "bg-gradient-to-br from-white to-amber-50 border-amber-200 shadow-lg",
-          mainCardClass: "bg-gradient-to-br from-amber-100 to-orange-100 border-amber-300",
-          accentClass: "text-amber-700"
-        };
-      
-      case 'classic-contemporary':
-        return {
-          bgClass: "bg-amber-50",
-          textClass: "text-amber-900",
-          badgeClass: "bg-amber-100 text-amber-800",
-          cardClass: "bg-gradient-to-br from-white to-amber-50 border-amber-200 shadow-lg",
-          mainCardClass: "bg-gradient-to-br from-amber-100 to-yellow-100 border-amber-300",
-          accentClass: "text-amber-700"
-        };
-      
-      case 'natural-modern':
-        return {
-          bgClass: "bg-green-50",
-          textClass: "text-green-900",
-          badgeClass: "bg-green-100 text-green-800",
-          cardClass: "bg-gradient-to-br from-white to-green-50 border-green-200 shadow-lg",
-          mainCardClass: "bg-gradient-to-br from-green-100 to-emerald-100 border-green-300",
-          accentClass: "text-green-700"
-        };
-      
-      case 'neutral-sophisticated':
-        return {
-          bgClass: "bg-gray-50",
-          textClass: "text-gray-900",
-          badgeClass: "bg-gray-100 text-gray-800",
-          cardClass: "bg-gradient-to-br from-white to-gray-50 border-gray-200 shadow-lg",
-          mainCardClass: "bg-gradient-to-br from-gray-100 to-slate-100 border-gray-300",
-          accentClass: "text-gray-700"
-        };
-      
-      default:
-        return {
-          bgClass: "bg-white",
-          textClass: "text-gray-800",
-          badgeClass: "bg-green-100 text-green-800",
-          cardClass: "bg-gradient-to-br from-white to-gray-50 border-gray-200 shadow-lg",
-          mainCardClass: "bg-gradient-to-br from-green-50 to-green-100 border-green-200",
-          accentClass: "text-green-600"
-        };
+    if (quiz.local === "Praia") {
+      return {
+        title: "Traje Esporte Fino",
+        description: "Roupas leves e confortáveis para ambiente ao ar livre.",
+        suggestions: ["Homens: camisa social e calça", "Mulheres: vestido leve", "Sapatos baixos recomendados"]
+      };
     }
+
+    return {
+      title: "Traje Passeio Completo",
+      description: "Elegante mas confortável para celebrar conosco.",
+      suggestions: ["Cores permitidas: todas exceto branco", "Traje festivo bem-vindo", "Conforto é essencial"]
+    };
   };
 
-  const styles = getTemplateStyles();
+  const getSpecialNotes = (template: string, quiz: QuizAnswers) => {
+    const notes = [];
+    
+    if (quiz.local === "Fazenda") {
+      notes.push("Evento ao ar livre - traga um casaquinho para a noite");
+    }
+    
+    if (quiz.local === "Praia") {
+      notes.push("Cerimônia na areia - evite saltos muito altos");
+    }
+
+    if (template === "Bohemian Dream") {
+      notes.push("Celebração livre e descontraída - venha com o coração aberto");
+    }
+
+    notes.push("Confirmação de presença até 30 dias antes do evento");
+    
+    return notes;
+  };
+
+  const eventDetails = getEventDetails(templateName, quizAnswers);
+  const sectionTitle = customContent?.title || "Informações Importantes";
 
   return (
-    <section id="details" className={`py-20 ${styles.bgClass}`}>
+    <section id="details" className="py-20 bg-gradient-to-br from-brown-50 to-gold-50">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <div className={`inline-flex items-center space-x-2 ${styles.badgeClass} px-4 py-2 rounded-full text-sm font-medium mb-6`}>
-            <Calendar className="h-4 w-4" />
-            <span>Detalhes do Evento</span>
+          <div className="inline-flex items-center space-x-2 bg-white/80 backdrop-blur-sm border border-brown-200 rounded-full px-6 py-3 mb-6">
+            <Calendar className="h-5 w-5 text-primary" />
+            <span className="font-medium text-brown-700">Detalhes do Evento</span>
           </div>
           
-          <h2 className={`text-4xl md:text-5xl font-serif ${styles.textClass} mb-6`}>
-            Informações do Casamento
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">
+            {sectionTitle}
           </h2>
           
-          <p className={`text-lg ${styles.textClass} opacity-70 max-w-3xl mx-auto`}>
-            Tudo que você precisa saber para celebrar conosco este dia especial
+          <p className="text-lg text-brown-600 max-w-2xl mx-auto">
+            Tudo que você precisa saber para celebrar conosco este momento especial.
           </p>
         </div>
 
         {/* Data e Local Principal */}
         <div className="max-w-4xl mx-auto mb-16">
-          <div className={`${styles.mainCardClass} rounded-2xl p-8 text-center border`}>
-            <div className="mb-6">
-              <Calendar className={`h-12 w-12 ${styles.accentClass} mx-auto mb-4`} />
-              <h3 className={`text-3xl font-serif ${styles.textClass} mb-2`}>
-                {formattedDate}
+          <div className="luxury-card rounded-2xl p-8 text-center">
+            <div className="flex flex-col md:flex-row items-center justify-center space-y-6 md:space-y-0 md:space-x-12">
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-gradient-luxury rounded-full flex items-center justify-center luxury-shadow">
+                  <Calendar className="h-6 w-6 text-white" />
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-medium text-brown-600 uppercase tracking-wider">Data</p>
+                  <p className="text-lg font-bold text-brown-800 capitalize">{formattedDate}</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center space-x-3">
+                <div className="w-12 h-12 bg-gradient-luxury rounded-full flex items-center justify-center luxury-shadow">
+                  <MapPin className="h-6 w-6 text-white" />
+                </div>
+                <div className="text-left">
+                  <p className="text-sm font-medium text-brown-600 uppercase tracking-wider">Local</p>
+                  <p className="text-lg font-bold text-brown-800">{eventDetails.ceremony.location}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Timeline do Evento */}
+        <div className="max-w-6xl mx-auto mb-16">
+          <h3 className="text-2xl font-bold text-brown-800 text-center mb-8">
+            Programação do Dia
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Cerimônia */}
+            <div className="luxury-card rounded-xl p-6">
+              <div className="flex items-center mb-4">
+                <div className="w-10 h-10 bg-gradient-luxury rounded-full flex items-center justify-center mr-4">
+                  <Users className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold text-brown-800">Cerimônia</h4>
+                  <p className="text-brown-600">{eventDetails.ceremony.time}</p>
+                </div>
+              </div>
+              
+              <div className="space-y-2 text-brown-600">
+                <div className="flex items-center space-x-2">
+                  <Clock className="h-4 w-4" />
+                  <span>Duração: {eventDetails.ceremony.duration}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <MapPin className="h-4 w-4" />
+                  <span>{eventDetails.ceremony.location}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Recepção */}
+            <div className="luxury-card rounded-xl p-6">
+              <div className="flex items-center mb-4">
+                <div className="w-10 h-10 bg-gradient-luxury rounded-full flex items-center justify-center mr-4">
+                  <Music className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <h4 className="text-xl font-bold text-brown-800">Recepção</h4>
+                  <p className="text-brown-600">{eventDetails.reception.time}</p>
+                </div>
+              </div>
+              
+              <div className="space-y-2 text-brown-600">
+                <div className="flex items-center space-x-2">
+                  <Clock className="h-4 w-4" />
+                  <span>Duração: {eventDetails.reception.duration}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Utensils className="h-4 w-4" />
+                  <span>Jantar + Festa</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Dress Code */}
+        <div className="max-w-4xl mx-auto mb-16">
+          <div className="luxury-card rounded-xl p-8">
+            <div className="text-center mb-6">
+              <div className="w-12 h-12 bg-gradient-luxury rounded-full flex items-center justify-center mx-auto mb-4">
+                <Camera className="h-6 w-6 text-white" />
+              </div>
+              <h3 className="text-2xl font-bold text-brown-800 mb-2">
+                {eventDetails.dressCode.title}
               </h3>
-              <p className={`text-xl ${styles.textClass} opacity-80`}>
-                às {formattedTime}
+              <p className="text-brown-600">
+                {eventDetails.dressCode.description}
               </p>
             </div>
             
-            <div className="mb-6">
-              <MapPin className={`h-8 w-8 ${styles.accentClass} mx-auto mb-2`} />
-              <p className={`text-lg ${styles.textClass} font-medium`}>
-                {location}
-              </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {eventDetails.dressCode.suggestions.map((suggestion, index) => (
+                <div key={index} className="bg-brown-50 rounded-lg p-4 text-center">
+                  <p className="text-brown-700 font-medium">{suggestion}</p>
+                </div>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* Informações Importantes - Layout melhorado */}
-        <div className="max-w-6xl mx-auto">
-          <h3 className={`text-2xl font-serif ${styles.textClass} text-center mb-12`}>
-            Informações Importantes
-          </h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {importantInfo.map((info, index) => {
-              const IconComponent = info.icon;
-              return (
-                <div 
-                  key={index} 
-                  className={`${styles.cardClass} rounded-xl p-6 text-center border transition-transform hover:scale-105`}
-                >
-                  <div className="mb-4">
-                    <IconComponent className={`h-8 w-8 ${info.color} mx-auto mb-3`} />
-                    <h4 className={`text-lg font-semibold ${styles.textClass} mb-2`}>
-                      {info.title}
-                    </h4>
+        {/* Observações Especiais */}
+        {eventDetails.specialNotes.length > 0 && (
+          <div className="max-w-4xl mx-auto">
+            <div className="luxury-card rounded-xl p-8">
+              <h3 className="text-xl font-bold text-brown-800 mb-4 text-center">
+                Observações Importantes
+              </h3>
+              
+              <div className="space-y-3">
+                {eventDetails.specialNotes.map((note, index) => (
+                  <div key={index} className="flex items-start space-x-3">
+                    <div className="w-2 h-2 bg-accent rounded-full mt-2 flex-shrink-0"></div>
+                    <p className="text-brown-600">{note}</p>
                   </div>
-                  
-                  <p className={`${styles.textClass} opacity-80 whitespace-pre-line text-sm leading-relaxed`}>
-                    {info.description}
-                  </p>
-                </div>
-              );
-            })}
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
-
-        {/* Mensagem adicional */}
-        <div className="max-w-3xl mx-auto mt-16 text-center">
-          <div className={`${styles.cardClass} rounded-xl p-6 border`}>
-            <p className={`${styles.textClass} opacity-80 leading-relaxed`}>
-              <strong>Importante:</strong> Para confirmar sua presença e nos ajudar com a organização, 
-              por favor responda nosso RSVP até 30 dias antes do evento. 
-              Sua presença é muito importante para nós!
-            </p>
-          </div>
-        </div>
+        )}
       </div>
     </section>
   );
