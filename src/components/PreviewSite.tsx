@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { PreviewData } from "@/types/quiz";
 import { useVisualTokens } from "@/contexts/VisualTokensContext";
@@ -17,14 +18,18 @@ import FooterSection from "./wedding-site/FooterSection";
 
 interface PreviewSiteProps {
   data: PreviewData;
+  siteId?: string;
 }
 
-const PreviewSite = ({ data }: PreviewSiteProps) => {
+const PreviewSite = ({ data, siteId = "preview" }: PreviewSiteProps) => {
   const { applyTokens } = useVisualTokens();
-  const { applyModernTokens } = useModernVisualTokens();
+  const { applyModernTokens, setSiteId } = useModernVisualTokens();
 
   useEffect(() => {
     console.log('🔄 PreviewSite - Aplicando tokens para:', data.quizAnswers);
+    
+    // Definir o site ID para gerenciar fotos específicas
+    setSiteId(siteId);
     
     if (data.quizAnswers) {
       // Aplicar os tokens modernos
@@ -33,7 +38,7 @@ const PreviewSite = ({ data }: PreviewSiteProps) => {
       // Manter compatibilidade com sistema antigo
       applyTokens(data.quizAnswers);
     }
-  }, [data.quizAnswers, applyTokens, applyModernTokens]);
+  }, [data.quizAnswers, applyTokens, applyModernTokens, setSiteId, siteId]);
 
   return (
     <div className="min-h-screen bg-white modern-active">
@@ -63,7 +68,7 @@ const PreviewSite = ({ data }: PreviewSiteProps) => {
 
       {/* Gallery */}
       <GallerySection
-        siteId="preview"
+        siteId={siteId}
         templateName={data.templateName}
         quizAnswers={data.quizAnswers}
       />
@@ -79,17 +84,17 @@ const PreviewSite = ({ data }: PreviewSiteProps) => {
       <BridesmaidsSection />
 
       {/* Gift List */}
-      <GiftListSection siteId="preview" />
+      <GiftListSection siteId={siteId} />
 
       {/* RSVP */}
       <RSVPSection
-        siteId="preview"
+        siteId={siteId}
         weddingDate={data.weddingDate}
         templateName={data.templateName}
       />
 
       {/* Messages */}
-      <MessagesSection siteId="preview" />
+      <MessagesSection siteId={siteId} />
 
       {/* Footer */}
       <FooterSection

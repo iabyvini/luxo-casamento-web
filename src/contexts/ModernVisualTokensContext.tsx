@@ -12,6 +12,7 @@ interface ModernVisualTokensContextType {
   applyModernTokens: (quizAnswers: QuizAnswers) => void;
   resetModernTokens: () => void;
   setCouplePhotoUrl: (url: string | null) => void;
+  setSiteId: (siteId: string) => void;
 }
 
 const ModernVisualTokensContext = createContext<ModernVisualTokensContextType | undefined>(undefined);
@@ -21,22 +22,32 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode }>
   const [isModernThemeActive, setIsModernThemeActive] = useState(false);
   const [couplePhotoUrl, setCouplePhotoUrlState] = useState<string | null>(null);
   const [templateProfile, setTemplateProfile] = useState<any | null>(null);
+  const [currentSiteId, setCurrentSiteId] = useState<string | null>(null);
+
+  const setSiteId = (siteId: string) => {
+    setCurrentSiteId(siteId);
+    // Carregar a foto específica deste site
+    const savedPhotoUrl = localStorage.getItem(`couplePhotoUrl_${siteId}`);
+    setCouplePhotoUrlState(savedPhotoUrl);
+  };
 
   const setCouplePhotoUrl = (url: string | null) => {
     setCouplePhotoUrlState(url);
-    if (url) {
-      localStorage.setItem('couplePhotoUrl', url);
-    } else {
-      localStorage.removeItem('couplePhotoUrl');
+    if (currentSiteId) {
+      if (url) {
+        localStorage.setItem(`couplePhotoUrl_${currentSiteId}`, url);
+      } else {
+        localStorage.removeItem(`couplePhotoUrl_${currentSiteId}`);
+      }
     }
   };
 
+  // Limpar foto quando não há site ID definido (para evitar foto órfã)
   useEffect(() => {
-    const savedPhotoUrl = localStorage.getItem('couplePhotoUrl');
-    if (savedPhotoUrl) {
-      setCouplePhotoUrlState(savedPhotoUrl);
+    if (!currentSiteId) {
+      setCouplePhotoUrlState(null);
     }
-  }, []);
+  }, [currentSiteId]);
 
   const applyModernTokens = (quizAnswers: QuizAnswers) => {
     console.log('🎨 Aplicando tokens modernos para:', quizAnswers);
@@ -96,7 +107,8 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode }>
       templateProfile,
       applyModernTokens, 
       resetModernTokens,
-      setCouplePhotoUrl
+      setCouplePhotoUrl,
+      setSiteId
     }}>
       {children}
     </ModernVisualTokensContext.Provider>
