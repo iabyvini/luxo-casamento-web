@@ -4,45 +4,60 @@ import { supabase } from "@/integrations/supabase/client";
 // Função para fazer upload de imagem
 export const uploadImage = async (file: File | Blob, bucket: string, path: string): Promise<string | null> => {
   try {
+    console.log('📤 Iniciando upload para bucket:', bucket, 'path:', path);
+    
     const fileExt = file instanceof File ? file.name.split('.').pop() : 'jpg';
-    const fileName = `${path}/${Date.now()}.${fileExt}`;
+    const fileName = `${path}.${fileExt}`;
 
-    const { error: uploadError } = await supabase.storage
+    console.log('📁 Nome do arquivo final:', fileName);
+
+    // Fazer upload do arquivo
+    const { data, error: uploadError } = await supabase.storage
       .from(bucket)
-      .upload(fileName, file);
+      .upload(fileName, file, {
+        cacheControl: '3600',
+        upsert: true // Permite substituir arquivo existente
+      });
 
     if (uploadError) {
-      console.error('Erro no upload:', uploadError);
-      return null;
+      console.error('❌ Erro no upload:', uploadError);
+      throw new Error(`Erro no upload: ${uploadError.message}`);
     }
 
+    console.log('✅ Upload realizado:', data);
+
     // Obter URL pública do arquivo
-    const { data } = supabase.storage
+    const { data: urlData } = supabase.storage
       .from(bucket)
       .getPublicUrl(fileName);
 
-    return data.publicUrl;
-  } catch (error) {
-    console.error('Erro ao fazer upload:', error);
-    return null;
+    console.log('🔗 URL pública gerada:', urlData.publicUrl);
+
+    return urlData.publicUrl;
+  } catch (error: any) {
+    console.error('❌ Erro ao fazer upload:', error);
+    throw error;
   }
 };
 
 // Função para deletar imagem
 export const deleteImage = async (bucket: string, path: string): Promise<boolean> => {
   try {
+    console.log('🗑️ Deletando arquivo:', bucket, path);
+    
     const { error } = await supabase.storage
       .from(bucket)
       .remove([path]);
 
     if (error) {
-      console.error('Erro ao deletar:', error);
+      console.error('❌ Erro ao deletar:', error);
       return false;
     }
 
+    console.log('✅ Arquivo deletado com sucesso');
     return true;
   } catch (error) {
-    console.error('Erro ao deletar imagem:', error);
+    console.error('❌ Erro ao deletar imagem:', error);
     return false;
   }
 };
@@ -57,7 +72,7 @@ export const extractPathFromUrl = (url: string, bucket: string): string | null =
     
     return url.substring(pathIndex + bucketPath.length);
   } catch (error) {
-    console.error('Erro ao extrair path:', error);
+    console.error('❌ Erro ao extrair path:', error);
     return null;
   }
 };

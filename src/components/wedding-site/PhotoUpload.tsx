@@ -1,3 +1,4 @@
+
 import React, { useState, useRef } from 'react';
 import { Camera, Upload, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -38,44 +39,54 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
 
     setUploading(true);
     try {
+      console.log('🔄 Iniciando upload para siteId:', siteId);
+      console.log('📁 Arquivo:', file.name, file.size, file.type);
+
       // Deletar foto anterior se existir
       if (couplePhotoUrl) {
         const oldPath = extractPathFromUrl(couplePhotoUrl, 'couple-photos');
         if (oldPath) {
+          console.log('🗑️ Deletando foto anterior:', oldPath);
           await deleteImage('couple-photos', oldPath);
         }
       }
 
-      // Upload nova foto para Supabase Storage
-      const photoUrl = await uploadImage(file, 'couple-photos', `${siteId}/couple`);
+      // Upload nova foto para Supabase Storage com path mais simples
+      const fileName = `couple_${siteId}_${Date.now()}`;
+      console.log('📤 Fazendo upload com nome:', fileName);
+      
+      const photoUrl = await uploadImage(file, 'couple-photos', fileName);
+      console.log('📸 URL da foto gerada:', photoUrl);
       
       if (photoUrl) {
-        // Salvar URL no banco de dados usando raw SQL para evitar problema de tipagem
+        // Salvar URL no banco de dados
+        console.log('💾 Salvando URL no banco...');
         const { error } = await supabase
           .from('wedding_sites')
           .update({ couple_photo_url: photoUrl } as any)
           .eq('id', siteId);
 
         if (error) {
-          console.error('Erro ao salvar URL no banco:', error);
-          throw new Error('Falha ao salvar no banco de dados');
+          console.error('❌ Erro ao salvar URL no banco:', error);
+          throw new Error('Falha ao salvar no banco de dados: ' + error.message);
         }
 
         // Atualizar contexto
         setCouplePhotoUrl(photoUrl);
         
+        console.log('✅ Upload concluído com sucesso!');
         toast({
           title: "Foto enviada!",
           description: "A foto do casal foi atualizada com sucesso.",
         });
       } else {
-        throw new Error('Falha no upload');
+        throw new Error('URL da foto não foi gerada');
       }
-    } catch (error) {
-      console.error('Erro no upload:', error);
+    } catch (error: any) {
+      console.error('❌ Erro completo no upload:', error);
       toast({
         title: "Erro no upload",
-        description: "Não foi possível enviar a foto. Tente novamente.",
+        description: error.message || "Não foi possível enviar a foto. Tente novamente.",
         variant: "destructive",
       });
     } finally {
@@ -90,33 +101,36 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
     if (!couplePhotoUrl) return;
 
     try {
+      console.log('🗑️ Removendo foto:', couplePhotoUrl);
+
       // Remover do storage
       const path = extractPathFromUrl(couplePhotoUrl, 'couple-photos');
       if (path) {
         await deleteImage('couple-photos', path);
       }
 
-      // Remover do banco de dados usando raw SQL para evitar problema de tipagem
+      // Remover do banco de dados
       const { error } = await supabase
         .from('wedding_sites')
         .update({ couple_photo_url: null } as any)
         .eq('id', siteId);
 
       if (error) {
-        console.error('Erro ao remover URL do banco:', error);
-        throw new Error('Falha ao remover do banco de dados');
+        console.error('❌ Erro ao remover URL do banco:', error);
+        throw new Error('Falha ao remover do banco de dados: ' + error.message);
       }
 
       setCouplePhotoUrl(null);
+      console.log('✅ Foto removida com sucesso!');
       toast({
         title: "Foto removida",
         description: "A foto do casal foi removida com sucesso.",
       });
-    } catch (error) {
-      console.error('Erro ao remover foto:', error);
+    } catch (error: any) {
+      console.error('❌ Erro ao remover foto:', error);
       toast({
         title: "Erro ao remover",
-        description: "Não foi possível remover a foto.",
+        description: error.message || "Não foi possível remover a foto.",
         variant: "destructive",
       });
     }
