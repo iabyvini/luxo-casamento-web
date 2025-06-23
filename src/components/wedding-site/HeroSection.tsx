@@ -1,7 +1,7 @@
 
 import { Heart, Calendar, MapPin } from "lucide-react";
 import { QuizAnswers } from "@/types/quiz";
-import { useVisualTokens } from "@/contexts/VisualTokensContext";
+import { useModernVisualTokens } from "@/contexts/ModernVisualTokensContext";
 import { findBestTemplateProfile } from "@/utils/templateProfiles";
 import { getFallbackImage } from "@/utils/coupleFallbacks";
 
@@ -14,7 +14,7 @@ interface HeroSectionProps {
 }
 
 const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, quizAnswers }: HeroSectionProps) => {
-  const { visualTokens, isCustomThemeActive, couplePhotoUrl } = useVisualTokens();
+  const { couplePhotoUrl } = useModernVisualTokens();
 
   const formattedDate = new Date(weddingDate).toLocaleDateString('pt-BR', {
     day: 'numeric',
@@ -51,21 +51,12 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
           <div className="order-2 lg:order-1 flex justify-center">
             {displayPhoto ? (
               <div className="relative">
-                <div 
-                  className="w-80 h-96 md:w-96 md:h-[480px] overflow-hidden rounded-2xl shadow-2xl transition-all duration-300"
-                  style={{
-                    borderColor: isCustomThemeActive ? visualTokens?.colors.primary : '#84A98C'
-                  }}
-                >
+                <div className="w-80 h-96 md:w-96 md:h-[480px] overflow-hidden rounded-2xl shadow-2xl transition-all duration-300 border-4 border-green-200">
                   <img 
                     src={displayPhoto} 
                     alt="Foto do casal" 
                     className="w-full h-full object-cover"
                   />
-                  
-                  {!couplePhotoUrl && (
-                    <div className="absolute inset-0 bg-green-50/20" />
-                  )}
                 </div>
                 
                 {!couplePhotoUrl && (
@@ -77,9 +68,9 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
                 )}
               </div>
             ) : (
-              <div className="w-80 h-96 md:w-96 md:h-[480px] bg-gradient-to-br from-green-100 to-green-200 rounded-2xl shadow-2xl flex items-center justify-center">
+              <div className="w-80 h-96 md:w-96 md:h-[480px] bg-gradient-to-br from-green-100 to-green-200 rounded-2xl shadow-2xl flex items-center justify-center border-4 border-green-200">
                 <div className="text-center">
-                  <div className="text-6xl mb-4 opacity-40">💕</div>
+                  <Heart className="h-16 w-16 mx-auto mb-4 text-green-600" />
                   <p className="text-green-700 font-medium">
                     Foto do casal
                   </p>

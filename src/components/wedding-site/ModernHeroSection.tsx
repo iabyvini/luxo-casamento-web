@@ -1,3 +1,4 @@
+
 import { Heart, Calendar, MapPin, ChevronDown } from "lucide-react";
 import { QuizAnswers } from "@/types/quiz";
 import { useModernVisualTokens } from "@/contexts/ModernVisualTokensContext";
@@ -42,7 +43,7 @@ const ModernHeroSection = ({
   const templateProfile = quizAnswers ? findBestModernTemplate(quizAnswers) : null;
   const heroStyle = templateProfile?.layout.heroStyle || 'fullscreen';
 
-  // Definir foto de fundo baseada no template
+  // Definir foto de fundo baseada no template ou foto do casal
   const getBackgroundImage = () => {
     if (couplePhotoUrl) return couplePhotoUrl;
     
@@ -132,6 +133,15 @@ const ModernHeroSection = ({
                   {welcomeMessage}
                 </p>
               </div>
+
+              {/* Indicador se é foto do casal ou placeholder */}
+              {!couplePhotoUrl && (
+                <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2">
+                  <span className="text-xs font-light px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-white/70">
+                    Imagem ilustrativa
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -171,6 +181,14 @@ const ModernHeroSection = ({
                       <Heart className="h-16 w-16 mx-auto mb-4" />
                       <p className="text-lg font-light">Foto do casal</p>
                     </div>
+                  </div>
+                )}
+                
+                {!couplePhotoUrl && (
+                  <div className="absolute bottom-6 left-6">
+                    <span className="text-xs font-light px-3 py-1 rounded-full bg-white/80 backdrop-blur-sm text-gray-600">
+                      Imagem ilustrativa
+                    </span>
                   </div>
                 )}
               </div>
@@ -292,6 +310,15 @@ const ModernHeroSection = ({
                 <div className="text-2xl">✧</div>
                 <div className="text-xl">❋</div>
                 <div className="text-2xl">✧</div>
+              </div>
+            )}
+
+            {/* Indicador se é foto do casal ou placeholder */}
+            {!couplePhotoUrl && (
+              <div className="absolute bottom-24 left-1/2 transform -translate-x-1/2">
+                <span className="text-xs font-light px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm text-white/70">
+                  Imagem ilustrativa
+                </span>
               </div>
             )}
           </div>

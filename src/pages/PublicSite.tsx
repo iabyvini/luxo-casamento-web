@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -190,6 +189,7 @@ const PublicSite = () => {
           weddingDate={siteData.wedding_date}
           welcomeMessage={siteData.ai_welcome_message}
           templateName={siteData.template_name}
+          quizAnswers={siteData.quiz_answers}
         />
 
         <CountdownSection weddingDate={siteData.wedding_date} />

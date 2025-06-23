@@ -24,6 +24,27 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode }>
   const [templateProfile, setTemplateProfile] = useState<any | null>(null);
   const [currentSiteId, setCurrentSiteId] = useState<string | null>(null);
 
+  // Auto-detectar siteId da URL quando não está definido
+  useEffect(() => {
+    if (!currentSiteId) {
+      const path = window.location.pathname;
+      
+      // Para rotas do editor: /editor/[siteId]
+      const editorMatch = path.match(/^\/editor\/([^\/]+)$/);
+      if (editorMatch) {
+        setSiteId(editorMatch[1]);
+        return;
+      }
+      
+      // Para sites públicos: /site/[slug] - vamos usar o slug como identificador
+      const publicMatch = path.match(/^\/site\/([^\/]+)$/);
+      if (publicMatch) {
+        setSiteId(`public_${publicMatch[1]}`);
+        return;
+      }
+    }
+  }, [currentSiteId]);
+
   const setSiteId = (siteId: string) => {
     setCurrentSiteId(siteId);
     // Carregar a foto específica deste site
