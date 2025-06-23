@@ -1,4 +1,3 @@
-
 import { Heart, Calendar, MapPin, ChevronDown } from "lucide-react";
 import { QuizAnswers } from "@/types/quiz";
 import { useModernVisualTokens } from "@/contexts/ModernVisualTokensContext";
@@ -21,11 +20,23 @@ const ModernHeroSection = ({
 }: ModernHeroSectionProps) => {
   const { modernTokens, isModernThemeActive, couplePhotoUrl } = useModernVisualTokens();
 
-  const formattedDate = new Date(weddingDate).toLocaleDateString('pt-BR', {
-    day: 'numeric',
-    month: 'long',
-    year: 'numeric'
-  });
+  // Corrigir formatação da data para evitar problemas de timezone
+  const formatDate = (dateString: string) => {
+    const dateParts = dateString.split('-');
+    const date = new Date(
+      parseInt(dateParts[0]), 
+      parseInt(dateParts[1]) - 1, // mês é 0-indexado
+      parseInt(dateParts[2])
+    );
+    
+    return date.toLocaleDateString('pt-BR', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
+  const formattedDate = formatDate(weddingDate);
 
   // Obter template profile para styling específico
   const templateProfile = quizAnswers ? findBestModernTemplate(quizAnswers) : null;

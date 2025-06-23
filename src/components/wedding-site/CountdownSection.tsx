@@ -16,7 +16,16 @@ const CountdownSection = ({ weddingDate }: CountdownSectionProps) => {
 
   useEffect(() => {
     const calculateTimeLeft = () => {
-      const wedding = new Date(weddingDate).getTime();
+      // Tratar a data corretamente para evitar problemas de timezone
+      // Assumir que a data está no formato YYYY-MM-DD e criar no timezone local
+      const dateParts = weddingDate.split('-');
+      const wedding = new Date(
+        parseInt(dateParts[0]), 
+        parseInt(dateParts[1]) - 1, // mês é 0-indexado
+        parseInt(dateParts[2]),
+        23, 59, 59 // definir para o final do dia
+      ).getTime();
+      
       const now = new Date().getTime();
       const difference = wedding - now;
 
@@ -26,6 +35,13 @@ const CountdownSection = ({ weddingDate }: CountdownSectionProps) => {
           hours: Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
           minutes: Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60)),
           seconds: Math.floor((difference % (1000 * 60)) / 1000)
+        });
+      } else {
+        setTimeLeft({
+          days: 0,
+          hours: 0,
+          minutes: 0,
+          seconds: 0
         });
       }
     };
@@ -37,7 +53,7 @@ const CountdownSection = ({ weddingDate }: CountdownSectionProps) => {
   }, [weddingDate]);
 
   return (
-    <section className="py-20 bg-white">
+    <section id="countdown" className="py-20 bg-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <div className="inline-flex items-center space-x-2 bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-medium mb-6">

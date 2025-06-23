@@ -7,13 +7,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { Save, Eye, Settings, Camera, Users, Gift, MessageSquare, Clock, MapPin, Heart } from "lucide-react";
+import { Save, Eye, Settings, Camera, Users, Gift, MessageSquare, MapPin, Heart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import GalleryPhotoManager from "./GalleryPhotoManager";
 import GiftItemManager from "./GiftItemManager";
 import CouplePhotoEditor from "./CouplePhotoEditor";
 import OurStoryEditor from "./OurStoryEditor";
-import CountdownEditor from "./CountdownEditor";
 import EventDetailsEditor from "./EventDetailsEditor";
 
 interface SiteData {
@@ -109,7 +108,7 @@ const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorPro
 
       {/* Editor Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-8">
+        <TabsList className="grid w-full grid-cols-7">
           <TabsTrigger value="general" className="flex items-center gap-1">
             <Settings className="h-3 w-3" />
             Geral
@@ -117,10 +116,6 @@ const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorPro
           <TabsTrigger value="couple" className="flex items-center gap-1">
             <Camera className="h-3 w-3" />
             Casal
-          </TabsTrigger>
-          <TabsTrigger value="countdown" className="flex items-center gap-1">
-            <Clock className="h-3 w-3" />
-            Contagem
           </TabsTrigger>
           <TabsTrigger value="story" className="flex items-center gap-1">
             <Heart className="h-3 w-3" />
@@ -193,14 +188,6 @@ const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorPro
         {/* Couple Tab */}
         <TabsContent value="couple" className="space-y-6">
           <CouplePhotoEditor siteId={siteData.id} />
-        </TabsContent>
-
-        {/* Countdown Tab */}
-        <TabsContent value="countdown" className="space-y-6">
-          <CountdownEditor 
-            customContent={localData.custom_content}
-            onUpdateContent={updateCustomContent}
-          />
         </TabsContent>
 
         {/* Our Story Tab */}
