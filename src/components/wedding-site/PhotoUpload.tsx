@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { uploadImage, deleteImage, extractPathFromUrl, validateImageFile } from '@/utils/supabaseStorage';
 import { useModernVisualTokens } from '@/contexts/ModernVisualTokensContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PhotoUploadProps {
   frameStyle?: 'classic' | 'modern' | 'rustic';
@@ -46,11 +47,24 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
         }
       }
 
-      // Upload nova foto
+      // Upload nova foto para Supabase Storage
       const photoUrl = await uploadImage(file, 'couple-photos', `${siteId}/couple`);
       
       if (photoUrl) {
+        // Salvar URL no banco de dados
+        const { error } = await supabase
+          .from('wedding_sites')
+          .update({ couple_photo_url: photoUrl })
+          .eq('id', siteId);
+
+        if (error) {
+          console.error('Erro ao salvar URL no banco:', error);
+          throw new Error('Falha ao salvar no banco de dados');
+        }
+
+        // Atualizar contexto
         setCouplePhotoUrl(photoUrl);
+        
         toast({
           title: "Foto enviada!",
           description: "A foto do casal foi atualizada com sucesso.",
@@ -77,10 +91,23 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
     if (!couplePhotoUrl) return;
 
     try {
+      // Remover do storage
       const path = extractPathFromUrl(couplePhotoUrl, 'couple-photos');
       if (path) {
         await deleteImage('couple-photos', path);
       }
+
+      // Remover do banco de dados
+      const { error } = await supabase
+        .from('wedding_sites')
+        .update({ couple_photo_url: null })
+        .eq('id', siteId);
+
+      if (error) {
+        console.error('Erro ao remover URL do banco:', error);
+        throw new Error('Falha ao remover do banco de dados');
+      }
+
       setCouplePhotoUrl(null);
       toast({
         title: "Foto removida",

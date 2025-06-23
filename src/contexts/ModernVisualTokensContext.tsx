@@ -25,13 +25,13 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode }>
   const [templateProfile, setTemplateProfile] = useState<any | null>(null);
   const [currentSiteId, setCurrentSiteId] = useState<string | null>(null);
 
-  // FASE 1: Detectar siteId corretamente para URLs públicas
+  // Detectar siteId automaticamente para URLs públicas
   useEffect(() => {
     const detectSiteId = async () => {
       if (!currentSiteId) {
         const path = window.location.pathname;
         
-        // Para rotas do editor: /editor/[siteId] - usar o siteId diretamente
+        // Para rotas do editor: /editor/[siteId]
         const editorMatch = path.match(/^\/editor\/([^\/]+)$/);
         if (editorMatch) {
           const realSiteId = editorMatch[1];
@@ -72,47 +72,47 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode }>
     detectSiteId();
   }, [currentSiteId]);
 
-  // FASE 2: Função para definir siteId e carregar foto
+  // Função para definir siteId e carregar foto do banco
   const setSiteId = (siteId: string) => {
     console.log('📝 Definindo siteId:', siteId);
     setCurrentSiteId(siteId);
-    
-    // FASE 3: Carregar foto com fallback inteligente
-    loadCouplePhoto(siteId);
+    loadCouplePhotoFromDatabase(siteId);
   };
 
-  // FASE 3: Sistema de fallback inteligente para carregamento da foto
-  const loadCouplePhoto = async (siteId: string) => {
-    console.log('📸 Carregando foto para siteId:', siteId);
+  // Carregar foto do banco de dados
+  const loadCouplePhotoFromDatabase = async (siteId: string) => {
+    console.log('🗄️ Carregando foto do banco para siteId:', siteId);
     
-    // Prioridade 1: Foto salva no localStorage
-    const savedPhotoUrl = localStorage.getItem(`couplePhotoUrl_${siteId}`);
-    if (savedPhotoUrl) {
-      console.log('✅ Foto encontrada no localStorage:', savedPhotoUrl);
-      setCouplePhotoUrlState(savedPhotoUrl);
-      return;
-    }
+    try {
+      const { data, error } = await supabase
+        .from('wedding_sites')
+        .select('couple_photo_url')
+        .eq('id', siteId)
+        .single();
 
-    // Prioridade 2: Verificar se há foto no banco (implementação futura)
-    // Por enquanto, mantemos null para usar o sistema de placeholder existente
-    console.log('ℹ️ Nenhuma foto encontrada, usando placeholder');
-    setCouplePhotoUrlState(null);
-  };
-
-  // FASE 4: Função para salvar foto com sincronização
-  const setCouplePhotoUrl = (url: string | null) => {
-    console.log('💾 Salvando foto:', url);
-    setCouplePhotoUrlState(url);
-    
-    if (currentSiteId) {
-      if (url) {
-        localStorage.setItem(`couplePhotoUrl_${currentSiteId}`, url);
-        console.log('✅ Foto salva no localStorage para siteId:', currentSiteId);
-      } else {
-        localStorage.removeItem(`couplePhotoUrl_${currentSiteId}`);
-        console.log('🗑️ Foto removida do localStorage para siteId:', currentSiteId);
+      if (error) {
+        console.error('❌ Erro ao buscar foto do banco:', error);
+        setCouplePhotoUrlState(null);
+        return;
       }
+
+      if (data?.couple_photo_url) {
+        console.log('✅ Foto encontrada no banco:', data.couple_photo_url);
+        setCouplePhotoUrlState(data.couple_photo_url);
+      } else {
+        console.log('ℹ️ Nenhuma foto encontrada no banco');
+        setCouplePhotoUrlState(null);
+      }
+    } catch (error) {
+      console.error('❌ Erro na consulta da foto:', error);
+      setCouplePhotoUrlState(null);
     }
+  };
+
+  // Função para atualizar foto (usada pelo componente PhotoUpload)
+  const setCouplePhotoUrl = (url: string | null) => {
+    console.log('💾 Atualizando foto no contexto:', url);
+    setCouplePhotoUrlState(url);
   };
 
   // Limpar foto quando não há site ID definido
