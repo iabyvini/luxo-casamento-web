@@ -4,7 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
-import PhotoUpload from "./wedding-site/PhotoUpload";
+import CouplePhotoEditor from "./CouplePhotoEditor";
+import OurStoryEditor from "./OurStoryEditor";
+import CountdownEditor from "./CountdownEditor";
+import EventDetailsEditor from "./EventDetailsEditor";
+import GalleryPhotoManager from "./GalleryPhotoManager";
+import GiftItemManager from "./GiftItemManager";
 
 interface SiteEditorProps {
   siteData: any;
@@ -15,6 +20,16 @@ interface SiteEditorProps {
 
 const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorProps) => {
   const [activeTab, setActiveTab] = useState("geral");
+
+  const handleUpdateContent = async (section: string, updates: any) => {
+    const currentContent = siteData.custom_content || {};
+    const newCustomContent = {
+      ...currentContent,
+      [section]: updates
+    };
+
+    await onUpdateSite({ custom_content: newCustomContent });
+  };
 
   return (
     <div className="space-y-6">
@@ -44,10 +59,11 @@ const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorPro
 
       {/* Editor Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
+        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-9">
           <TabsTrigger value="geral">Geral</TabsTrigger>
           <TabsTrigger value="casal">Casal</TabsTrigger>
           <TabsTrigger value="historia">História</TabsTrigger>
+          <TabsTrigger value="contagem">Contagem</TabsTrigger>
           <TabsTrigger value="galeria">Galeria</TabsTrigger>
           <TabsTrigger value="evento">Evento</TabsTrigger>
           <TabsTrigger value="presentes">Presentes</TabsTrigger>
@@ -55,28 +71,9 @@ const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorPro
           <TabsTrigger value="mensagens">Mensagens</TabsTrigger>
         </TabsList>
 
-        {/* Aba Geral */}
+        {/* Aba Geral - Foto do Casal */}
         <TabsContent value="geral" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Configurações Gerais</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-2">
-                  Foto do Casal (Hero Section)
-                </label>
-                <PhotoUpload
-                  onPhotoUploaded={(url) => {
-                    console.log('📸 Foto do casal atualizada:', url);
-                  }}
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Esta foto aparecerá na página inicial do seu site
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+          <CouplePhotoEditor siteId={siteData.id} />
         </TabsContent>
 
         {/* Aba Casal */}
@@ -85,28 +82,47 @@ const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorPro
             <CardHeader>
               <CardTitle>Informações do Casal</CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">
-                As informações do casal são geradas automaticamente com base no quiz inicial.
-                Para alterações, entre em contato com o suporte.
-              </p>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Nomes do Casal
+                </label>
+                <p className="text-gray-700 bg-gray-50 p-3 rounded">
+                  {siteData.couple_names}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Para alterar os nomes, entre em contato com o suporte
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Data do Casamento
+                </label>
+                <p className="text-gray-700 bg-gray-50 p-3 rounded">
+                  {new Date(siteData.wedding_date).toLocaleDateString('pt-BR')}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  Para alterar a data, entre em contato com o suporte
+                </p>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
 
         {/* Aba História */}
         <TabsContent value="historia" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Nossa História</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">
-                A seção "Nossa História" é gerada automaticamente com base nas suas respostas.
-                Personalizações avançadas estarão disponíveis em breve.
-              </p>
-            </CardContent>
-          </Card>
+          <OurStoryEditor
+            customContent={siteData.custom_content}
+            onUpdateContent={handleUpdateContent}
+          />
+        </TabsContent>
+
+        {/* Aba Contagem Regressiva */}
+        <TabsContent value="contagem" className="mt-6">
+          <CountdownEditor
+            customContent={siteData.custom_content}
+            onUpdateContent={handleUpdateContent}
+          />
         </TabsContent>
 
         {/* Aba Galeria */}
@@ -116,26 +132,17 @@ const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorPro
               <CardTitle>Galeria de Fotos</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600">
-                Funcionalidade de galeria será implementada em breve.
-              </p>
+              <GalleryPhotoManager siteId={siteData.id} />
             </CardContent>
           </Card>
         </TabsContent>
 
         {/* Aba Evento */}
         <TabsContent value="evento" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Detalhes do Evento</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">
-                Os detalhes do evento são configurados automaticamente com base na data e local informados.
-                Personalizações estarão disponíveis em breve.
-              </p>
-            </CardContent>
-          </Card>
+          <EventDetailsEditor
+            customContent={siteData.custom_content}
+            onUpdateContent={handleUpdateContent}
+          />
         </TabsContent>
 
         {/* Aba Presentes */}
@@ -145,9 +152,7 @@ const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorPro
               <CardTitle>Lista de Presentes</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600">
-                Configuração da lista de presentes será implementada em breve.
-              </p>
+              <GiftItemManager siteId={siteData.id} />
             </CardContent>
           </Card>
         </TabsContent>
@@ -159,9 +164,14 @@ const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorPro
               <CardTitle>Confirmação de Presença</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600">
-                O sistema de RSVP é automático. Você pode acompanhar as respostas no dashboard principal.
+              <p className="text-gray-600 mb-4">
+                Acompanhe as confirmações de presença dos seus convidados.
               </p>
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <p className="text-sm text-blue-700">
+                  📊 Para ver o dashboard completo de RSVPs, acesse o menu principal do dashboard.
+                </p>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -173,9 +183,14 @@ const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorPro
               <CardTitle>Mensagens dos Convidados</CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-gray-600">
-                As mensagens dos convidados aparecem automaticamente conforme são enviadas.
+              <p className="text-gray-600 mb-4">
+                Visualize as mensagens carinhosas enviadas pelos seus convidados.
               </p>
+              <div className="bg-green-50 p-4 rounded-lg">
+                <p className="text-sm text-green-700">
+                  💌 As mensagens aparecem automaticamente conforme são enviadas no site público.
+                </p>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
