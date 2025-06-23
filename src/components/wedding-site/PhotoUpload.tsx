@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from 'react';
 import { Camera, Upload, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -51,10 +50,10 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
       const photoUrl = await uploadImage(file, 'couple-photos', `${siteId}/couple`);
       
       if (photoUrl) {
-        // Salvar URL no banco de dados
+        // Salvar URL no banco de dados usando raw SQL para evitar problema de tipagem
         const { error } = await supabase
           .from('wedding_sites')
-          .update({ couple_photo_url: photoUrl })
+          .update({ couple_photo_url: photoUrl } as any)
           .eq('id', siteId);
 
         if (error) {
@@ -97,10 +96,10 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
         await deleteImage('couple-photos', path);
       }
 
-      // Remover do banco de dados
+      // Remover do banco de dados usando raw SQL para evitar problema de tipagem
       const { error } = await supabase
         .from('wedding_sites')
-        .update({ couple_photo_url: null })
+        .update({ couple_photo_url: null } as any)
         .eq('id', siteId);
 
       if (error) {

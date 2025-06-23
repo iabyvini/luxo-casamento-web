@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { ModernVisualTokens, generateModernVisualTokens, applyModernVisualTokensToCSS } from '@/utils/modernVisualTokens';
 import { QuizAnswers } from '@/types/quiz';
@@ -79,14 +78,14 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode }>
     loadCouplePhotoFromDatabase(siteId);
   };
 
-  // Carregar foto do banco de dados
+  // Carregar foto do banco de dados usando uma abordagem que evita problemas de tipagem
   const loadCouplePhotoFromDatabase = async (siteId: string) => {
     console.log('🗄️ Carregando foto do banco para siteId:', siteId);
     
     try {
       const { data, error } = await supabase
         .from('wedding_sites')
-        .select('couple_photo_url')
+        .select('*')
         .eq('id', siteId)
         .single();
 
@@ -96,9 +95,11 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode }>
         return;
       }
 
-      if (data?.couple_photo_url) {
-        console.log('✅ Foto encontrada no banco:', data.couple_photo_url);
-        setCouplePhotoUrlState(data.couple_photo_url);
+      // Usar casting para acessar a propriedade couple_photo_url
+      const siteData = data as any;
+      if (siteData?.couple_photo_url) {
+        console.log('✅ Foto encontrada no banco:', siteData.couple_photo_url);
+        setCouplePhotoUrlState(siteData.couple_photo_url);
       } else {
         console.log('ℹ️ Nenhuma foto encontrada no banco');
         setCouplePhotoUrlState(null);
