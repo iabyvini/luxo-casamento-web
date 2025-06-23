@@ -3,6 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { ModernVisualTokens, generateModernVisualTokens, applyModernVisualTokensToCSS } from '@/utils/modernVisualTokens';
 import { QuizAnswers } from '@/types/quiz';
 import { findBestModernTemplate } from '@/utils/modernTemplateProfiles';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ModernVisualTokensContextType {
   modernTokens: ModernVisualTokens | null;
@@ -24,46 +25,97 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode }>
   const [templateProfile, setTemplateProfile] = useState<any | null>(null);
   const [currentSiteId, setCurrentSiteId] = useState<string | null>(null);
 
-  // Auto-detectar siteId da URL quando não está definido
+  // FASE 1: Detectar siteId corretamente para URLs públicas
   useEffect(() => {
-    if (!currentSiteId) {
-      const path = window.location.pathname;
-      
-      // Para rotas do editor: /editor/[siteId]
-      const editorMatch = path.match(/^\/editor\/([^\/]+)$/);
-      if (editorMatch) {
-        setSiteId(editorMatch[1]);
-        return;
+    const detectSiteId = async () => {
+      if (!currentSiteId) {
+        const path = window.location.pathname;
+        
+        // Para rotas do editor: /editor/[siteId] - usar o siteId diretamente
+        const editorMatch = path.match(/^\/editor\/([^\/]+)$/);
+        if (editorMatch) {
+          const realSiteId = editorMatch[1];
+          console.log('🎯 Detectado siteId do editor:', realSiteId);
+          setSiteId(realSiteId);
+          return;
+        }
+        
+        // Para sites públicos: /site/[slug] - buscar o siteId real no banco
+        const publicMatch = path.match(/^\/site\/([^\/]+)$/);
+        if (publicMatch) {
+          const slug = publicMatch[1];
+          console.log('🔍 Buscando siteId para slug público:', slug);
+          
+          try {
+            const { data, error } = await supabase
+              .from('wedding_sites')
+              .select('id')
+              .eq('slug', slug)
+              .single();
+
+            if (error) {
+              console.error('❌ Erro ao buscar site:', error);
+              return;
+            }
+
+            if (data) {
+              console.log('✅ SiteId encontrado:', data.id);
+              setSiteId(data.id);
+            }
+          } catch (error) {
+            console.error('❌ Erro na consulta:', error);
+          }
+        }
       }
-      
-      // Para sites públicos: /site/[slug] - vamos usar o slug como identificador
-      const publicMatch = path.match(/^\/site\/([^\/]+)$/);
-      if (publicMatch) {
-        setSiteId(`public_${publicMatch[1]}`);
-        return;
-      }
-    }
+    };
+
+    detectSiteId();
   }, [currentSiteId]);
 
+  // FASE 2: Função para definir siteId e carregar foto
   const setSiteId = (siteId: string) => {
+    console.log('📝 Definindo siteId:', siteId);
     setCurrentSiteId(siteId);
-    // Carregar a foto específica deste site
-    const savedPhotoUrl = localStorage.getItem(`couplePhotoUrl_${siteId}`);
-    setCouplePhotoUrlState(savedPhotoUrl);
+    
+    // FASE 3: Carregar foto com fallback inteligente
+    loadCouplePhoto(siteId);
   };
 
+  // FASE 3: Sistema de fallback inteligente para carregamento da foto
+  const loadCouplePhoto = async (siteId: string) => {
+    console.log('📸 Carregando foto para siteId:', siteId);
+    
+    // Prioridade 1: Foto salva no localStorage
+    const savedPhotoUrl = localStorage.getItem(`couplePhotoUrl_${siteId}`);
+    if (savedPhotoUrl) {
+      console.log('✅ Foto encontrada no localStorage:', savedPhotoUrl);
+      setCouplePhotoUrlState(savedPhotoUrl);
+      return;
+    }
+
+    // Prioridade 2: Verificar se há foto no banco (implementação futura)
+    // Por enquanto, mantemos null para usar o sistema de placeholder existente
+    console.log('ℹ️ Nenhuma foto encontrada, usando placeholder');
+    setCouplePhotoUrlState(null);
+  };
+
+  // FASE 4: Função para salvar foto com sincronização
   const setCouplePhotoUrl = (url: string | null) => {
+    console.log('💾 Salvando foto:', url);
     setCouplePhotoUrlState(url);
+    
     if (currentSiteId) {
       if (url) {
         localStorage.setItem(`couplePhotoUrl_${currentSiteId}`, url);
+        console.log('✅ Foto salva no localStorage para siteId:', currentSiteId);
       } else {
         localStorage.removeItem(`couplePhotoUrl_${currentSiteId}`);
+        console.log('🗑️ Foto removida do localStorage para siteId:', currentSiteId);
       }
     }
   };
 
-  // Limpar foto quando não há site ID definido (para evitar foto órfã)
+  // Limpar foto quando não há site ID definido
   useEffect(() => {
     if (!currentSiteId) {
       setCouplePhotoUrlState(null);

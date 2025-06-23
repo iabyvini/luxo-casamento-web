@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -5,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { VisualTokensProvider } from "@/contexts/VisualTokensContext";
-import { ModernVisualTokensProvider } from "@/contexts/ModernVisualTokensContext";
+import { ModernVisualTokensProvider, useModernVisualTokens } from "@/contexts/ModernVisualTokensContext";
 import WeddingSiteNavigation from "@/components/wedding-site/WeddingSiteNavigation";
 import ModernNavigation from "@/components/wedding-site/ModernNavigation";
 import HeroSection from "@/components/wedding-site/HeroSection";
@@ -32,6 +33,70 @@ interface SiteData {
   slug: string;
   views_count?: number;
 }
+
+// Componente interno que usa o contexto
+const ModernSiteContent = ({ siteData }: { siteData: SiteData }) => {
+  const { setSiteId } = useModernVisualTokens();
+
+  // FASE 2: Passar o siteId real para o contexto
+  useEffect(() => {
+    console.log('🏗️ Inicializando contexto moderno com siteId:', siteData.id);
+    setSiteId(siteData.id);
+  }, [siteData.id, setSiteId]);
+
+  const formattedDate = format(new Date(siteData.wedding_date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
+
+  return (
+    <div className="min-h-screen bg-white">
+      <ModernNavigation coupleNames={siteData.couple_names} />
+
+      <ModernHeroSection
+        coupleNames={siteData.couple_names}
+        weddingDate={siteData.wedding_date}
+        welcomeMessage={siteData.ai_welcome_message}
+        templateName={siteData.template_name}
+        quizAnswers={siteData.quiz_answers}
+      />
+
+      <CountdownSection weddingDate={siteData.wedding_date} />
+
+      <OurStorySection
+        coupleNames={siteData.couple_names}
+        templateName={siteData.template_name}
+        customContent={siteData.custom_content}
+      />
+
+      <GallerySection
+        siteId={siteData.id}
+        templateName={siteData.template_name}
+        quizAnswers={siteData.quiz_answers}
+      />
+
+      <EventDetailsSection
+        weddingDate={siteData.wedding_date}
+        templateName={siteData.template_name}
+        quizAnswers={siteData.quiz_answers}
+      />
+
+      <BridesmaidsSection />
+
+      <GiftListSection siteId={siteData.id} />
+
+      <RSVPSection
+        siteId={siteData.id}
+        weddingDate={siteData.wedding_date}
+        templateName={siteData.template_name}
+      />
+
+      <MessagesSection siteId={siteData.id} />
+
+      <FooterSection
+        coupleNames={siteData.couple_names}
+        weddingDate={formattedDate}
+      />
+    </div>
+  );
+};
 
 const PublicSite = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -65,6 +130,7 @@ const PublicSite = () => {
         return;
       }
 
+      console.log('🎯 Site carregado:', data.id, data.couple_names);
       setSiteData(data);
       
       // Increment view count
@@ -127,54 +193,7 @@ const PublicSite = () => {
   if (isModernTemplate) {
     return (
       <ModernVisualTokensProvider>
-        <div className="min-h-screen bg-white">
-          <ModernNavigation coupleNames={siteData.couple_names} />
-
-          <ModernHeroSection
-            coupleNames={siteData.couple_names}
-            weddingDate={siteData.wedding_date}
-            welcomeMessage={siteData.ai_welcome_message}
-            templateName={siteData.template_name}
-            quizAnswers={siteData.quiz_answers}
-          />
-
-          <CountdownSection weddingDate={siteData.wedding_date} />
-
-          <OurStorySection
-            coupleNames={siteData.couple_names}
-            templateName={siteData.template_name}
-            customContent={siteData.custom_content}
-          />
-
-          <GallerySection
-            siteId={siteData.id}
-            templateName={siteData.template_name}
-            quizAnswers={siteData.quiz_answers}
-          />
-
-          <EventDetailsSection
-            weddingDate={siteData.wedding_date}
-            templateName={siteData.template_name}
-            quizAnswers={siteData.quiz_answers}
-          />
-
-          <BridesmaidsSection />
-
-          <GiftListSection siteId={siteData.id} />
-
-          <RSVPSection
-            siteId={siteData.id}
-            weddingDate={siteData.wedding_date}
-            templateName={siteData.template_name}
-          />
-
-          <MessagesSection siteId={siteData.id} />
-
-          <FooterSection
-            coupleNames={siteData.couple_names}
-            weddingDate={formattedDate}
-          />
-        </div>
+        <ModernSiteContent siteData={siteData} />
       </ModernVisualTokensProvider>
     );
   }

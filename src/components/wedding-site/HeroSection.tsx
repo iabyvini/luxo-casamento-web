@@ -16,6 +16,8 @@ interface HeroSectionProps {
 const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, quizAnswers }: HeroSectionProps) => {
   const { couplePhotoUrl } = useModernVisualTokens();
 
+  console.log('🖼️ HeroSection - Foto do casal:', couplePhotoUrl);
+
   const formattedDate = new Date(weddingDate).toLocaleDateString('pt-BR', {
     day: 'numeric',
     month: 'long',
@@ -23,8 +25,14 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
   });
 
   const getDisplayPhoto = () => {
-    if (couplePhotoUrl) return couplePhotoUrl;
+    // PRIORIDADE 1: Foto do casal sempre tem precedência
+    if (couplePhotoUrl) {
+      console.log('✅ Usando foto do casal no HeroSection:', couplePhotoUrl);
+      return couplePhotoUrl;
+    }
     
+    console.log('ℹ️ Usando fallback baseado no template');
+    // PRIORIDADE 2: Fallback baseado no template
     const templateProfile = quizAnswers ? findBestTemplateProfile(quizAnswers) : null;
     if (templateProfile) {
       return getFallbackImage(templateProfile);

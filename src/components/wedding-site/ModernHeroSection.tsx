@@ -21,6 +21,8 @@ const ModernHeroSection = ({
 }: ModernHeroSectionProps) => {
   const { modernTokens, isModernThemeActive, couplePhotoUrl } = useModernVisualTokens();
 
+  console.log('🖼️ ModernHeroSection - Foto do casal:', couplePhotoUrl);
+
   // Corrigir formatação da data para evitar problemas de timezone
   const formatDate = (dateString: string) => {
     const dateParts = dateString.split('-');
@@ -43,11 +45,16 @@ const ModernHeroSection = ({
   const templateProfile = quizAnswers ? findBestModernTemplate(quizAnswers) : null;
   const heroStyle = templateProfile?.layout.heroStyle || 'fullscreen';
 
-  // Definir foto de fundo baseada no template ou foto do casal
+  // FASE 3: Sistema inteligente de definição da imagem
   const getBackgroundImage = () => {
-    if (couplePhotoUrl) return couplePhotoUrl;
+    // PRIORIDADE 1: Foto do casal (sempre tem precedência)
+    if (couplePhotoUrl) {
+      console.log('✅ Usando foto do casal:', couplePhotoUrl);
+      return couplePhotoUrl;
+    }
     
-    // Diferentes backgrounds baseados no template
+    console.log('ℹ️ Usando imagem de placeholder baseada no template');
+    // PRIORIDADE 2: Imagens de placeholder baseadas no template
     const backgroundMap: Record<string, string> = {
       'editorial-romantic': 'https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80',
       'minimal-luxury': 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=2000&q=80',
@@ -176,15 +183,6 @@ const ModernHeroSection = ({
                 style={{ backgroundImage: `url(${backgroundImage})` }}
               >
                 {!couplePhotoUrl && (
-                  <div className="absolute inset-0 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                    <div className="text-center text-gray-400">
-                      <Heart className="h-16 w-16 mx-auto mb-4" />
-                      <p className="text-lg font-light">Foto do casal</p>
-                    </div>
-                  </div>
-                )}
-                
-                {!couplePhotoUrl && (
                   <div className="absolute bottom-6 left-6">
                     <span className="text-xs font-light px-3 py-1 rounded-full bg-white/80 backdrop-blur-sm text-gray-600">
                       Imagem ilustrativa
@@ -260,7 +258,7 @@ const ModernHeroSection = ({
              style={{ 
                background: templateProfile?.id === 'boho-refined' 
                  ? 'linear-gradient(135deg, rgba(61, 41, 20, 0.4) 0%, rgba(212, 165, 116, 0.2) 100%)'
-                 : 'linear-gradient(135deg, rgba(30, 30, 30, 0.5) 0%, rgba(184, 134, 11, 0.2) 100%)'
+                 : 'linear-gradient(135deg, rgba(30, 30, 30,  0.5) 0%, rgba(184, 134, 11, 0.2) 100%)'
              }}>
         </div>
       </div>

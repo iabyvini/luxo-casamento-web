@@ -27,8 +27,9 @@ const PreviewSite = ({ data, siteId = "preview" }: PreviewSiteProps) => {
 
   useEffect(() => {
     console.log('🔄 PreviewSite - Aplicando tokens para:', data.quizAnswers);
+    console.log('🆔 PreviewSite - SiteId:', siteId);
     
-    // Definir o site ID para gerenciar fotos específicas
+    // FASE 2: Definir o site ID para gerenciar fotos específicas
     setSiteId(siteId);
     
     if (data.quizAnswers) {
