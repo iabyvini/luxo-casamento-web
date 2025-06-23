@@ -31,7 +31,26 @@ interface ClassicSiteRendererProps {
 }
 
 const ClassicSiteRenderer = ({ siteData }: ClassicSiteRendererProps) => {
-  const formattedDate = format(new Date(siteData.wedding_date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
+  console.log('🎨 ClassicSiteRenderer iniciado com siteData:', {
+    id: siteData?.id,
+    couple_names: siteData?.couple_names,
+    template_name: siteData?.template_name
+  });
+
+  if (!siteData) {
+    console.log('❌ ClassicSiteRenderer: siteData não fornecido');
+    return null;
+  }
+
+  let formattedDate = '';
+  try {
+    formattedDate = format(new Date(siteData.wedding_date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
+  } catch (error) {
+    console.error('❌ Erro ao formatar data:', error);
+    formattedDate = siteData.wedding_date;
+  }
+
+  console.log('✅ ClassicSiteRenderer: Renderizando componentes');
 
   return (
     <div className="min-h-screen bg-white">
@@ -40,7 +59,7 @@ const ClassicSiteRenderer = ({ siteData }: ClassicSiteRendererProps) => {
       <HeroSection
         coupleNames={siteData.couple_names}
         weddingDate={siteData.wedding_date}
-        welcomeMessage={siteData.ai_welcome_message}
+        welcomeMessage={siteData.ai_welcome_message || "Bem-vindos ao nosso site de casamento!"}
         templateName={siteData.template_name}
         quizAnswers={siteData.quiz_answers}
       />

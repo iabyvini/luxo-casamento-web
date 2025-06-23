@@ -35,16 +35,33 @@ interface ModernSiteRendererProps {
 const ModernSiteRenderer = ({ siteData }: ModernSiteRendererProps) => {
   const { setSiteId } = useModernVisualTokens();
 
+  console.log('🏗️ ModernSiteRenderer iniciado com siteData:', {
+    id: siteData?.id,
+    couple_names: siteData?.couple_names,
+    template_name: siteData?.template_name
+  });
+
   useEffect(() => {
     if (siteData?.id) {
-      console.log('🏗️ Inicializando contexto moderno com siteId:', siteData.id);
+      console.log('🏗️ Configurando contexto moderno com siteId:', siteData.id);
       setSiteId(siteData.id);
     }
   }, [siteData?.id, setSiteId]);
 
-  if (!siteData) return null;
+  if (!siteData) {
+    console.log('❌ ModernSiteRenderer: siteData não fornecido');
+    return null;
+  }
 
-  const formattedDate = format(new Date(siteData.wedding_date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
+  let formattedDate = '';
+  try {
+    formattedDate = format(new Date(siteData.wedding_date), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
+  } catch (error) {
+    console.error('❌ Erro ao formatar data:', error);
+    formattedDate = siteData.wedding_date;
+  }
+
+  console.log('✅ ModernSiteRenderer: Renderizando componentes');
 
   return (
     <div className="min-h-screen bg-white">
@@ -53,7 +70,7 @@ const ModernSiteRenderer = ({ siteData }: ModernSiteRendererProps) => {
       <ModernHeroSection
         coupleNames={siteData.couple_names}
         weddingDate={siteData.wedding_date}
-        welcomeMessage={siteData.ai_welcome_message}
+        welcomeMessage={siteData.ai_welcome_message || "Bem-vindos ao nosso site de casamento!"}
         templateName={siteData.template_name}
         quizAnswers={siteData.quiz_answers}
       />

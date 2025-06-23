@@ -10,28 +10,46 @@ import ClassicSiteRenderer from "@/components/PublicSite/ClassicSiteRenderer";
 
 const PublicSite = () => {
   const { slug } = useParams<{ slug: string }>();
-  console.log('🌐 PublicSite carregado com slug:', slug);
+  console.log('🌐 PublicSite renderizado com slug:', slug);
   
   const { siteData, loading, notFound } = useSiteData(slug);
 
-  console.log('📊 Estado atual:', { siteData: !!siteData, loading, notFound, slug });
+  console.log('📊 PublicSite - Estados atuais:', { 
+    hasSlug: !!slug,
+    hasSiteData: !!siteData, 
+    loading, 
+    notFound,
+    siteId: siteData?.id,
+    coupleName: siteData?.couple_names,
+    templateName: siteData?.template_name
+  });
 
+  // Mostrar loading enquanto carrega
   if (loading) {
-    console.log('⏳ Exibindo loading...');
-    return <LoadingSpinner />;
+    console.log('⏳ PublicSite: Exibindo loading spinner');
+    return <LoadingSpinner message="Carregando site do casamento..." />;
   }
 
+  // Mostrar não encontrado se houver erro ou site não existir
   if (notFound || !siteData) {
-    console.log('🚫 Exibindo página não encontrada');
+    console.log('🚫 PublicSite: Exibindo página não encontrada', { notFound, hasSiteData: !!siteData });
     return <NotFoundPage />;
   }
 
-  console.log('🎯 Renderizando site:', siteData.couple_names, 'Template:', siteData.template_name);
+  // Verificar se é template moderno
+  const isModernTemplate = siteData.template_name && 
+    siteData.template_name.toLowerCase().includes('modern');
 
-  // Check if it's a modern template
-  const isModernTemplate = siteData.template_name.toLowerCase().includes('modern');
+  console.log('🎯 PublicSite: Renderizando site:', {
+    id: siteData.id,
+    couple_names: siteData.couple_names,
+    template_name: siteData.template_name,
+    isModernTemplate
+  });
 
+  // Renderizar template moderno
   if (isModernTemplate) {
+    console.log('🔮 Renderizando template moderno');
     return (
       <ModernVisualTokensProvider>
         <ModernSiteRenderer siteData={siteData} />
@@ -39,6 +57,8 @@ const PublicSite = () => {
     );
   }
 
+  // Renderizar template clássico
+  console.log('🎨 Renderizando template clássico');
   return (
     <VisualTokensProvider>
       <ClassicSiteRenderer siteData={siteData} />
