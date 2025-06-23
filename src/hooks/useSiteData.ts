@@ -24,29 +24,48 @@ export const useSiteData = (slug: string | undefined) => {
 
   useEffect(() => {
     if (slug) {
+      console.log('🔍 Buscando site com slug:', slug);
       fetchSiteData();
+    } else {
+      console.log('❌ Slug não fornecido');
+      setNotFound(true);
+      setLoading(false);
     }
   }, [slug]);
 
   const fetchSiteData = async () => {
     try {
+      setLoading(true);
+      setNotFound(false);
+      
+      console.log('📡 Fazendo query para slug:', slug);
+      
       const { data, error } = await supabase
         .from('wedding_sites')
         .select('*')
         .eq('slug', slug)
-        .eq('is_published', true)
-        .single();
+        .maybeSingle();
+
+      console.log('📊 Resultado da query:', { data, error });
 
       if (error) {
-        if (error.code === 'PGRST116') {
-          setNotFound(true);
-        } else {
-          throw error;
-        }
+        console.error('❌ Erro na query:', error);
+        throw error;
+      }
+
+      if (!data) {
+        console.log('🚫 Site não encontrado para slug:', slug);
+        setNotFound(true);
         return;
       }
 
-      console.log('🎯 Site carregado:', data.id, data.couple_names);
+      if (!data.is_published) {
+        console.log('📝 Site não publicado:', data.id);
+        setNotFound(true);
+        return;
+      }
+
+      console.log('✅ Site encontrado e publicado:', data.id, data.couple_names);
       setSiteData(data);
       
       // Increment view count
@@ -54,12 +73,13 @@ export const useSiteData = (slug: string | undefined) => {
         await supabase.rpc('increment_view_count', {
           site_slug: slug
         });
+        console.log('👀 View count incrementado');
       } catch (viewError) {
-        console.error('Error incrementing view count:', viewError);
+        console.error('⚠️ Erro ao incrementar view count:', viewError);
       }
 
     } catch (error: any) {
-      console.error('Error loading site:', error);
+      console.error('💥 Erro geral ao carregar site:', error);
       toast({
         title: "Erro ao carregar site",
         description: "Não foi possível carregar o site do casamento.",

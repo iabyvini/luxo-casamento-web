@@ -17,29 +17,33 @@ import PublicSite from "./pages/PublicSite";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <VisualTokensProvider>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/quiz" element={<Quiz />} />
-              <Route path="/preview" element={<Preview />} />
-              <Route path="/template-preview/:templateId" element={<TemplatePreview />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/editor/:siteId" element={<Editor />} />
-              <Route path="/site/:slug" element={<PublicSite />} />
-            </Routes>
-          </VisualTokensProvider>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+const App = () => {
+  console.log('🚀 App inicializado');
+  
+  return (
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <VisualTokensProvider>
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/auth" element={<Auth />} />
+                <Route path="/quiz" element={<Quiz />} />
+                <Route path="/preview" element={<Preview />} />
+                <Route path="/template-preview/:templateId" element={<TemplatePreview />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/editor/:siteId" element={<Editor />} />
+                <Route path="/site/:slug" element={<PublicSite />} />
+              </Routes>
+            </VisualTokensProvider>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  );
+};
 
 export default App;
