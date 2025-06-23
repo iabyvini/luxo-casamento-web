@@ -3,7 +3,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface AuthContextType {
   user: User | null;
@@ -30,6 +30,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     // Set up auth state listener
@@ -39,7 +40,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(session?.user ?? null);
         setLoading(false);
 
-        if (event === 'SIGNED_IN') {
+        // Only show login toast if not on a public site route
+        if (event === 'SIGNED_IN' && !location.pathname.startsWith('/site/')) {
           toast({
             title: "Login realizado com sucesso!",
             description: "Bem-vindo ao Casamento de Luxo",
@@ -56,7 +58,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     });
 
     return () => subscription.unsubscribe();
-  }, [toast]);
+  }, [toast, location.pathname]);
 
   const signUp = async (email: string, password: string, fullName: string) => {
     const redirectUrl = `https://1f187d93-7641-40f8-9575-db5aeb4c45f4.lovableproject.com/email-confirmed`;
