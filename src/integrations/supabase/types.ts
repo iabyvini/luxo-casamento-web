@@ -330,6 +330,7 @@ export type Database = {
           ai_welcome_message: string | null
           analytics_data: Json | null
           couple_names: string
+          couple_photo_url: string | null
           created_at: string
           custom_content: Json | null
           domain_custom: string | null
@@ -347,6 +348,7 @@ export type Database = {
           ai_welcome_message?: string | null
           analytics_data?: Json | null
           couple_names: string
+          couple_photo_url?: string | null
           created_at?: string
           custom_content?: Json | null
           domain_custom?: string | null
@@ -364,6 +366,7 @@ export type Database = {
           ai_welcome_message?: string | null
           analytics_data?: Json | null
           couple_names?: string
+          couple_photo_url?: string | null
           created_at?: string
           custom_content?: Json | null
           domain_custom?: string | null

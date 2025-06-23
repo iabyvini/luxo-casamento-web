@@ -3,9 +3,8 @@ import React, { useState, useRef } from 'react';
 import { Camera, Upload, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { uploadImage, deleteImage, extractPathFromUrl, validateImageFile } from '@/utils/supabaseStorage';
-import { useModernVisualTokens } from '@/contexts/ModernVisualTokensContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useModernVisualTokens } from '@/contexts/ModernVisualTokensContext';
 
 interface PhotoUploadProps {
   frameStyle?: 'classic' | 'modern' | 'rustic';
@@ -23,9 +22,26 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
 
+  const validateImageFile = (file: File): { valid: boolean; error?: string } => {
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+
+    if (!allowedTypes.includes(file.type)) {
+      return { valid: false, error: 'Tipo de arquivo não suportado. Use JPEG, PNG ou WebP.' };
+    }
+
+    if (file.size > maxSize) {
+      return { valid: false, error: 'Arquivo muito grande. Máximo 5MB.' };
+    }
+
+    return { valid: true };
+  };
+
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    console.log('📁 Arquivo selecionado:', file.name, file.size, file.type);
 
     const validation = validateImageFile(file);
     if (!validation.valid) {
@@ -39,51 +55,68 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
 
     setUploading(true);
     try {
-      console.log('🔄 Iniciando upload para siteId:', siteId);
-      console.log('📁 Arquivo:', file.name, file.size, file.type);
-
-      // Deletar foto anterior se existir
+      // Remover foto anterior se existir
       if (couplePhotoUrl) {
-        const oldPath = extractPathFromUrl(couplePhotoUrl, 'couple-photos');
+        const oldPath = extractPathFromUrl(couplePhotoUrl);
         if (oldPath) {
-          console.log('🗑️ Deletando foto anterior:', oldPath);
-          await deleteImage('couple-photos', oldPath);
+          console.log('🗑️ Removendo foto anterior:', oldPath);
+          await supabase.storage
+            .from('couple-photos')
+            .remove([oldPath]);
         }
       }
 
-      // Upload nova foto para Supabase Storage com path mais simples
-      const fileName = `couple_${siteId}_${Date.now()}`;
-      console.log('📤 Fazendo upload com nome:', fileName);
+      // Nome único para o arquivo
+      const fileExt = file.name.split('.').pop();
+      const fileName = `couple_${siteId}_${Date.now()}.${fileExt}`;
       
-      const photoUrl = await uploadImage(file, 'couple-photos', fileName);
-      console.log('📸 URL da foto gerada:', photoUrl);
-      
-      if (photoUrl) {
-        // Salvar URL no banco de dados
-        console.log('💾 Salvando URL no banco...');
-        const { error } = await supabase
-          .from('wedding_sites')
-          .update({ couple_photo_url: photoUrl } as any)
-          .eq('id', siteId);
+      console.log('📤 Fazendo upload:', fileName);
 
-        if (error) {
-          console.error('❌ Erro ao salvar URL no banco:', error);
-          throw new Error('Falha ao salvar no banco de dados: ' + error.message);
-        }
-
-        // Atualizar contexto
-        setCouplePhotoUrl(photoUrl);
-        
-        console.log('✅ Upload concluído com sucesso!');
-        toast({
-          title: "Foto enviada!",
-          description: "A foto do casal foi atualizada com sucesso.",
+      // Upload do arquivo
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('couple-photos')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: true
         });
-      } else {
-        throw new Error('URL da foto não foi gerada');
+
+      if (uploadError) {
+        console.error('❌ Erro no upload:', uploadError);
+        throw new Error(`Erro no upload: ${uploadError.message}`);
       }
+
+      console.log('✅ Upload realizado:', uploadData);
+
+      // Obter URL pública
+      const { data: urlData } = supabase.storage
+        .from('couple-photos')
+        .getPublicUrl(fileName);
+
+      const photoUrl = urlData.publicUrl;
+      console.log('🔗 URL gerada:', photoUrl);
+
+      // Salvar no banco de dados
+      const { error: dbError } = await supabase
+        .from('wedding_sites')
+        .update({ couple_photo_url: photoUrl })
+        .eq('id', siteId);
+
+      if (dbError) {
+        console.error('❌ Erro ao salvar no banco:', dbError);
+        throw new Error('Falha ao salvar no banco de dados');
+      }
+
+      // Atualizar contexto
+      setCouplePhotoUrl(photoUrl);
+      
+      console.log('✅ Upload concluído com sucesso!');
+      toast({
+        title: "Foto enviada!",
+        description: "A foto do casal foi atualizada com sucesso.",
+      });
+
     } catch (error: any) {
-      console.error('❌ Erro completo no upload:', error);
+      console.error('❌ Erro completo:', error);
       toast({
         title: "Erro no upload",
         description: error.message || "Não foi possível enviar a foto. Tente novamente.",
@@ -97,6 +130,20 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
     }
   };
 
+  const extractPathFromUrl = (url: string): string | null => {
+    try {
+      const bucketPath = '/storage/v1/object/public/couple-photos/';
+      const pathIndex = url.indexOf(bucketPath);
+      
+      if (pathIndex === -1) return null;
+      
+      return url.substring(pathIndex + bucketPath.length);
+    } catch (error) {
+      console.error('❌ Erro ao extrair path:', error);
+      return null;
+    }
+  };
+
   const handleRemovePhoto = async () => {
     if (!couplePhotoUrl) return;
 
@@ -104,20 +151,22 @@ const PhotoUpload: React.FC<PhotoUploadProps> = ({
       console.log('🗑️ Removendo foto:', couplePhotoUrl);
 
       // Remover do storage
-      const path = extractPathFromUrl(couplePhotoUrl, 'couple-photos');
+      const path = extractPathFromUrl(couplePhotoUrl);
       if (path) {
-        await deleteImage('couple-photos', path);
+        await supabase.storage
+          .from('couple-photos')
+          .remove([path]);
       }
 
       // Remover do banco de dados
       const { error } = await supabase
         .from('wedding_sites')
-        .update({ couple_photo_url: null } as any)
+        .update({ couple_photo_url: null })
         .eq('id', siteId);
 
       if (error) {
-        console.error('❌ Erro ao remover URL do banco:', error);
-        throw new Error('Falha ao remover do banco de dados: ' + error.message);
+        console.error('❌ Erro ao remover do banco:', error);
+        throw new Error('Falha ao remover do banco de dados');
       }
 
       setCouplePhotoUrl(null);
