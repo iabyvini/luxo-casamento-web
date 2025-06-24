@@ -1,20 +1,37 @@
 
 export const generateSlug = (coupleNames: string, weddingDate: string): string => {
-  // Normalize couple names
+  console.log('🔧 Gerando slug para:', { coupleNames, weddingDate });
+  
+  // Normalize couple names with proper accent removal
   const normalizedNames = coupleNames
     .toLowerCase()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '') // Remove accents
+    .normalize('NFD') // Decompose accented characters
+    .replace(/[\u0300-\u036f]/g, '') // Remove accent marks
     .replace(/[^a-z0-9\s&-]/g, '') // Keep only letters, numbers, spaces, & and -
     .replace(/\s*&\s*/g, '-e-') // Replace & with -e-
     .replace(/\s+/g, '-') // Replace spaces with -
     .replace(/-+/g, '-') // Replace multiple - with single -
-    .replace(/^-|-$/g, ''); // Remove leading/trailing -
+    .replace(/^-|-$/g, '') // Remove leading/trailing -
+    .trim(); // Remove any extra whitespace
 
   // Extract year from wedding date
   const year = new Date(weddingDate).getFullYear();
   
-  return `${normalizedNames}-${year}`;
+  const slug = `${normalizedNames}-${year}`;
+  console.log('✅ Slug gerado:', slug);
+  
+  return slug;
+};
+
+export const sanitizeSlug = (slug: string): string => {
+  return slug
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9-]/g, '')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '')
+    .trim();
 };
 
 export const checkSlugAvailability = async (slug: string, currentSiteId?: string) => {
@@ -57,4 +74,15 @@ export const validateSlug = (slug: string): { isValid: boolean; error?: string }
   }
   
   return { isValid: true };
+};
+
+// Nova função para corrigir slugs existentes
+export const fixExistingSlug = (coupleNames: string, weddingDate: string): string => {
+  console.log('🔧 Corrigindo slug existente para:', { coupleNames, weddingDate });
+  
+  // Aplicar a nova lógica de geração
+  const correctedSlug = generateSlug(coupleNames, weddingDate);
+  
+  console.log('✅ Slug corrigido:', correctedSlug);
+  return correctedSlug;
 };

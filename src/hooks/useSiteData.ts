@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { sanitizeSlug } from "@/utils/slugGenerator";
 
 interface SiteData {
   id: string;
@@ -39,22 +40,71 @@ export const useSiteData = (slug: string | undefined) => {
     if (!slug) return;
     
     try {
-      console.log('📡 Iniciando fetchSiteData para slug:', slug);
+      console.log('📡 Iniciando fetchSiteData para slug original:', slug);
       setLoading(true);
       setNotFound(false);
       setSiteData(null);
       
-      const { data, error } = await supabase
+      // Primeiro, tentar com o slug original
+      let { data, error } = await supabase
         .from('wedding_sites')
         .select('*')
         .eq('slug', slug)
         .maybeSingle();
 
-      console.log('📊 Resultado da query:', { 
+      console.log('📊 Primeira tentativa - Resultado da query:', { 
         data: data ? { id: data.id, couple_names: data.couple_names, is_published: data.is_published } : null, 
         error,
         slug 
       });
+
+      // Se não encontrou, tentar com slug sanitizado
+      if (!data && !error) {
+        const sanitizedSlug = sanitizeSlug(slug);
+        console.log('🧹 Tentando com slug sanitizado:', sanitizedSlug);
+        
+        const { data: sanitizedData, error: sanitizedError } = await supabase
+          .from('wedding_sites')
+          .select('*')
+          .eq('slug', sanitizedSlug)
+          .maybeSingle();
+
+        console.log('📊 Segunda tentativa - Resultado da query sanitizada:', { 
+          data: sanitizedData ? { id: sanitizedData.id, couple_names: sanitizedData.couple_names } : null, 
+          error: sanitizedError 
+        });
+
+        data = sanitizedData;
+        error = sanitizedError;
+      }
+
+      // Se ainda não encontrou, tentar busca parcial por nomes do casal
+      if (!data && !error) {
+        console.log('🔍 Tentando busca por semelhança de nomes...');
+        
+        // Extrair possíveis nomes do slug
+        const slugParts = slug.split('-');
+        const possibleNames = slugParts.slice(0, -1).join(' '); // Remove year part
+        
+        if (possibleNames.length > 2) {
+          const { data: similarData, error: similarError } = await supabase
+            .from('wedding_sites')
+            .select('*')
+            .ilike('couple_names', `%${possibleNames}%`)
+            .eq('is_published', true)
+            .limit(1)
+            .maybeSingle();
+
+          console.log('📊 Terceira tentativa - Busca por similaridade:', { 
+            searchTerm: possibleNames,
+            data: similarData ? { id: similarData.id, couple_names: similarData.couple_names } : null, 
+            error: similarError 
+          });
+
+          data = similarData;
+          error = similarError;
+        }
+      }
 
       if (error) {
         console.error('❌ Erro na query Supabase:', error);
@@ -78,7 +128,9 @@ export const useSiteData = (slug: string | undefined) => {
         id: data.id,
         couple_names: data.couple_names,
         template_name: data.template_name,
-        is_published: data.is_published
+        is_published: data.is_published,
+        original_slug: data.slug,
+        requested_slug: slug
       });
 
       setSiteData(data);
@@ -87,7 +139,7 @@ export const useSiteData = (slug: string | undefined) => {
       try {
         console.log('👀 Incrementando view count...');
         const { error: viewError } = await supabase.rpc('increment_view_count', {
-          site_slug: slug
+          site_slug: data.slug // Use the actual slug from database
         });
         
         if (viewError) {
