@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { sanitizeSlug } from "@/utils/slugGenerator";
+import { getCorrectSlugMapping } from "@/utils/slugFixing";
 
 interface SiteData {
   id: string;
@@ -40,74 +40,100 @@ export const useSiteData = (slug: string | undefined) => {
     if (!slug) return;
     
     try {
-      console.log('📡 Iniciando fetchSiteData para slug original:', slug);
+      console.log('📡 Iniciando fetchSiteData para slug:', slug);
       setLoading(true);
       setNotFound(false);
       setSiteData(null);
-      
-      // Primeiro, tentar com o slug original
+
+      // 1. Primeiro, tentar buscar diretamente
       let { data, error } = await supabase
         .from('wedding_sites')
         .select('*')
         .eq('slug', slug)
+        .eq('is_published', true)
         .maybeSingle();
 
-      console.log('📊 Primeira tentativa - Resultado da query:', { 
-        data: data ? { id: data.id, couple_names: data.couple_names, is_published: data.is_published } : null, 
-        error,
-        slug 
+      console.log('📊 Primeira tentativa - busca direta:', { 
+        found: !!data, 
+        error: error?.message 
       });
 
-      // Se não encontrou, tentar com slug sanitizado
+      // 2. Se não encontrou, verificar mapeamento de slugs conhecidos
       if (!data && !error) {
-        const sanitizedSlug = sanitizeSlug(slug);
-        console.log('🧹 Tentando com slug sanitizado:', sanitizedSlug);
+        const slugMapping = getCorrectSlugMapping();
+        const correctSlug = Object.keys(slugMapping).find(key => 
+          slugMapping[key] === slug || key === slug
+        );
         
-        const { data: sanitizedData, error: sanitizedError } = await supabase
-          .from('wedding_sites')
-          .select('*')
-          .eq('slug', sanitizedSlug)
-          .maybeSingle();
+        if (correctSlug) {
+          const targetSlug = slugMapping[correctSlug] || correctSlug;
+          console.log('🔄 Tentando com slug mapeado:', targetSlug);
+          
+          const { data: mappedData, error: mappedError } = await supabase
+            .from('wedding_sites')
+            .select('*')
+            .eq('slug', targetSlug)
+            .eq('is_published', true)
+            .maybeSingle();
 
-        console.log('📊 Segunda tentativa - Resultado da query sanitizada:', { 
-          data: sanitizedData ? { id: sanitizedData.id, couple_names: sanitizedData.couple_names } : null, 
-          error: sanitizedError 
-        });
-
-        data = sanitizedData;
-        error = sanitizedError;
+          data = mappedData;
+          error = mappedError;
+          
+          console.log('📊 Segunda tentativa - slug mapeado:', { 
+            found: !!data, 
+            error: error?.message 
+          });
+        }
       }
 
-      // Se ainda não encontrou, tentar busca parcial por nomes do casal
+      // 3. Se ainda não encontrou, tentar buscar por partes do slug
       if (!data && !error) {
-        console.log('🔍 Tentando busca por semelhança de nomes...');
+        // Remover números e separar por hífen
+        const slugParts = slug.replace(/-\d{4}$/, '').split('-');
         
-        // Extrair possíveis nomes do slug
-        const slugParts = slug.split('-');
-        const possibleNames = slugParts.slice(0, -1).join(' '); // Remove year part
-        
-        if (possibleNames.length > 2) {
+        if (slugParts.length >= 2) {
+          console.log('🔍 Tentando busca por nomes similares:', slugParts);
+          
+          // Buscar sites que contenham os nomes
           const { data: similarData, error: similarError } = await supabase
             .from('wedding_sites')
             .select('*')
-            .ilike('couple_names', `%${possibleNames}%`)
-            .eq('is_published', true)
-            .limit(1)
-            .maybeSingle();
+            .eq('is_published', true);
 
-          console.log('📊 Terceira tentativa - Busca por similaridade:', { 
-            searchTerm: possibleNames,
-            data: similarData ? { id: similarData.id, couple_names: similarData.couple_names } : null, 
-            error: similarError 
-          });
+          if (similarData && !similarError) {
+            // Filtrar por sites que contenham as palavras do slug
+            const matchingSite = similarData.find(site => {
+              const siteNameNormalized = site.couple_names
+                .toLowerCase()
+                .replace(/[àáâãäåèéêëìíîïòóôõöùúûüç]/g, (char) => {
+                  const accentsMap: { [key: string]: string } = {
+                    'à': 'a', 'á': 'a', 'â': 'a', 'ã': 'a', 'ä': 'a', 'å': 'a',
+                    'è': 'e', 'é': 'e', 'ê': 'e', 'ë': 'e',
+                    'ì': 'i', 'í': 'i', 'î': 'i', 'ï': 'i',
+                    'ò': 'o', 'ó': 'o', 'ô': 'o', 'õ': 'o', 'ö': 'o',
+                    'ù': 'u', 'ú': 'u', 'û': 'u', 'ü': 'u',
+                    'ç': 'c'
+                  };
+                  return accentsMap[char] || char;
+                })
+                .replace(/[^a-z\s]/g, '')
+                .replace(/\s+/g, ' ');
+              
+              return slugParts.some(part => 
+                part.length > 2 && siteNameNormalized.includes(part)
+              );
+            });
 
-          data = similarData;
-          error = similarError;
+            if (matchingSite) {
+              data = matchingSite;
+              console.log('✅ Site encontrado por similaridade:', matchingSite.couple_names);
+            }
+          }
         }
       }
 
       if (error) {
-        console.error('❌ Erro na query Supabase:', error);
+        console.error('❌ Erro na query:', error);
         throw error;
       }
 
@@ -117,35 +143,23 @@ export const useSiteData = (slug: string | undefined) => {
         return;
       }
 
-      // Verificar se o site está publicado
-      if (!data.is_published) {
-        console.log('📝 Site não publicado:', data.id, data.couple_names);
-        setNotFound(true);
-        return;
-      }
-
-      console.log('✅ Site encontrado e publicado:', {
+      console.log('✅ Site encontrado:', {
         id: data.id,
         couple_names: data.couple_names,
-        template_name: data.template_name,
-        is_published: data.is_published,
-        original_slug: data.slug,
-        requested_slug: slug
+        slug: data.slug,
+        is_published: data.is_published
       });
 
       setSiteData(data);
       
       // Incrementar contador de visualizações
       try {
-        console.log('👀 Incrementando view count...');
         const { error: viewError } = await supabase.rpc('increment_view_count', {
-          site_slug: data.slug // Use the actual slug from database
+          site_slug: data.slug
         });
         
         if (viewError) {
           console.error('⚠️ Erro ao incrementar view count:', viewError);
-        } else {
-          console.log('✅ View count incrementado com sucesso');
         }
       } catch (viewError) {
         console.error('⚠️ Erro ao incrementar view count:', viewError);
@@ -153,26 +167,18 @@ export const useSiteData = (slug: string | undefined) => {
 
     } catch (error: any) {
       console.error('💥 Erro geral ao carregar site:', error);
-      console.error('💥 Stack trace:', error.stack);
       
       toast({
         title: "Erro ao carregar site",
-        description: `Não foi possível carregar o site: ${error.message}`,
+        description: "Não foi possível carregar o site. Tente novamente.",
         variant: "destructive",
       });
       
       setNotFound(true);
     } finally {
-      console.log('🏁 fetchSiteData finalizado, setLoading(false)');
       setLoading(false);
     }
   };
-
-  console.log('🎯 useSiteData returning:', { 
-    siteData: siteData ? { id: siteData.id, couple_names: siteData.couple_names } : null, 
-    loading, 
-    notFound 
-  });
 
   return { siteData, loading, notFound };
 };
