@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -38,6 +37,13 @@ export const useSiteData = (slug: string | undefined) => {
 
   const fetchSiteData = async () => {
     if (!slug) return;
+    
+    // 👉 Aplicar mapeamento manual ANTES da busca no banco
+    const slugMapping = getCorrectSlugMapping();
+    if (slugMapping[slug]) {
+      console.log('⚠️ Corrigindo slug via mapeamento antes da busca:', slug, '→', slugMapping[slug]);
+      slug = slugMapping[slug];
+    }
     
     try {
       console.log('📡 INICIANDO fetchSiteData para slug:', slug);
