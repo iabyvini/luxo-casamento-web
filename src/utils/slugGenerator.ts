@@ -1,4 +1,6 @@
 
+import { supabase } from "@/integrations/supabase/client";
+
 export const generateSlug = (coupleNames: string, weddingDate: string): string => {
   console.log('🔧 Gerando slug para:', { coupleNames, weddingDate });
   
@@ -34,10 +36,24 @@ export const sanitizeSlug = (slug: string): string => {
     .trim();
 };
 
-export const checkSlugAvailability = async (slug: string, currentSiteId?: string) => {
-  // This will be implemented when we add the database check
-  // For now, return true (available)
-  return true;
+export const checkSlugAvailability = async (slug: string, currentSiteId?: string): Promise<boolean> => {
+  try {
+    const { data, error } = await supabase
+      .from("wedding_sites")
+      .select("id")
+      .eq("slug", slug)
+      .neq("id", currentSiteId ?? "");
+
+    if (error) {
+      console.error('Erro ao verificar disponibilidade do slug:', error);
+      return false;
+    }
+
+    return !data || data.length === 0;
+  } catch (error) {
+    console.error('Erro ao verificar disponibilidade do slug:', error);
+    return false;
+  }
 };
 
 export const generateUniqueSlug = async (baseSlug: string, currentSiteId?: string): Promise<string> => {
