@@ -46,6 +46,7 @@ export const useSiteData = (slug: string | undefined) => {
       setSiteData(null);
 
       // 1. Primeiro, tentar buscar diretamente
+      console.log('🔎 Tentativa 1: Busca direta pelo slug:', slug);
       let { data, error } = await supabase
         .from('wedding_sites')
         .select('*')
@@ -53,21 +54,42 @@ export const useSiteData = (slug: string | undefined) => {
         .eq('is_published', true)
         .maybeSingle();
 
-      console.log('📊 Primeira tentativa - busca direta:', { 
+      console.log('📊 Resultado da busca direta:', { 
         found: !!data, 
-        error: error?.message 
+        error: error?.message,
+        slug_usado: slug
       });
 
       // 2. Se não encontrou, verificar mapeamento de slugs conhecidos
       if (!data && !error) {
+        console.log('🔄 Tentativa 2: Verificando mapeamento de slugs...');
         const slugMapping = getCorrectSlugMapping();
-        const correctSlug = Object.keys(slugMapping).find(key => 
-          slugMapping[key] === slug || key === slug
-        );
+        console.log('📋 Mapeamento disponível:', slugMapping);
         
-        if (correctSlug) {
-          const targetSlug = slugMapping[correctSlug] || correctSlug;
-          console.log('🔄 Tentando com slug mapeado:', targetSlug);
+        // Verificar se o slug atual está no mapeamento (como chave ou valor)
+        let targetSlug = null;
+        
+        // Se o slug está como chave no mapeamento, usar o valor correto
+        if (slugMapping[slug]) {
+          targetSlug = slugMapping[slug];
+          console.log('🎯 Slug encontrado como chave, usando valor:', targetSlug);
+        }
+        // Se o slug está como valor no mapeamento, usar ele mesmo
+        else if (Object.values(slugMapping).includes(slug)) {
+          targetSlug = slug;
+          console.log('🎯 Slug encontrado como valor correto:', targetSlug);
+        }
+        // Se não está no mapeamento, verificar se alguma chave mapeia para este slug
+        else {
+          const mappingKey = Object.keys(slugMapping).find(key => slugMapping[key] === slug);
+          if (mappingKey) {
+            targetSlug = slug;
+            console.log('🎯 Slug é destino de mapeamento:', targetSlug);
+          }
+        }
+        
+        if (targetSlug && targetSlug !== slug) {
+          console.log('🔄 Buscando com slug mapeado:', targetSlug);
           
           const { data: mappedData, error: mappedError } = await supabase
             .from('wedding_sites')
@@ -79,55 +101,50 @@ export const useSiteData = (slug: string | undefined) => {
           data = mappedData;
           error = mappedError;
           
-          console.log('📊 Segunda tentativa - slug mapeado:', { 
+          console.log('📊 Resultado da busca mapeada:', { 
             found: !!data, 
-            error: error?.message 
+            error: error?.message,
+            slug_mapeado: targetSlug
           });
         }
       }
 
-      // 3. Se ainda não encontrou, tentar buscar por partes do slug
+      // 3. Se ainda não encontrou, buscar todos os sites publicados para debug
       if (!data && !error) {
-        // Remover números e separar por hífen
-        const slugParts = slug.replace(/-\d{4}$/, '').split('-');
+        console.log('🔍 Tentativa 3: Listando todos os sites publicados para debug...');
         
-        if (slugParts.length >= 2) {
-          console.log('🔍 Tentando busca por nomes similares:', slugParts);
+        const { data: allSites, error: debugError } = await supabase
+          .from('wedding_sites')
+          .select('id, couple_names, slug, is_published')
+          .eq('is_published', true)
+          .limit(10);
+
+        console.log('📋 Sites publicados encontrados:', allSites?.map(site => ({
+          slug: site.slug,
+          couple_names: site.couple_names
+        })));
+
+        // Buscar por slug similar (ignorando case e acentos)
+        if (allSites) {
+          const normalizedSlug = slug.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
           
-          // Buscar sites que contenham os nomes
-          const { data: similarData, error: similarError } = await supabase
-            .from('wedding_sites')
-            .select('*')
-            .eq('is_published', true);
+          const similarSite = allSites.find(site => {
+            const normalizedSiteSlug = site.slug.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            return normalizedSiteSlug === normalizedSlug;
+          });
 
-          if (similarData && !similarError) {
-            // Filtrar por sites que contenham as palavras do slug
-            const matchingSite = similarData.find(site => {
-              const siteNameNormalized = site.couple_names
-                .toLowerCase()
-                .replace(/[àáâãäåèéêëìíîïòóôõöùúûüç]/g, (char) => {
-                  const accentsMap: { [key: string]: string } = {
-                    'à': 'a', 'á': 'a', 'â': 'a', 'ã': 'a', 'ä': 'a', 'å': 'a',
-                    'è': 'e', 'é': 'e', 'ê': 'e', 'ë': 'e',
-                    'ì': 'i', 'í': 'i', 'î': 'i', 'ï': 'i',
-                    'ò': 'o', 'ó': 'o', 'ô': 'o', 'õ': 'o', 'ö': 'o',
-                    'ù': 'u', 'ú': 'u', 'û': 'u', 'ü': 'u',
-                    'ç': 'c'
-                  };
-                  return accentsMap[char] || char;
-                })
-                .replace(/[^a-z\s]/g, '')
-                .replace(/\s+/g, ' ');
-              
-              return slugParts.some(part => 
-                part.length > 2 && siteNameNormalized.includes(part)
-              );
-            });
+          if (similarSite) {
+            console.log('✅ Site encontrado por similaridade:', similarSite.slug);
+            
+            const { data: similarData, error: similarError } = await supabase
+              .from('wedding_sites')
+              .select('*')
+              .eq('slug', similarSite.slug)
+              .eq('is_published', true)
+              .maybeSingle();
 
-            if (matchingSite) {
-              data = matchingSite;
-              console.log('✅ Site encontrado por similaridade:', matchingSite.couple_names);
-            }
+            data = similarData;
+            error = similarError;
           }
         }
       }
@@ -139,6 +156,7 @@ export const useSiteData = (slug: string | undefined) => {
 
       if (!data) {
         console.log('🚫 Site não encontrado para slug:', slug);
+        console.log('💡 Verifique se o slug está correto no banco de dados');
         setNotFound(true);
         return;
       }
@@ -160,6 +178,8 @@ export const useSiteData = (slug: string | undefined) => {
         
         if (viewError) {
           console.error('⚠️ Erro ao incrementar view count:', viewError);
+        } else {
+          console.log('📈 View count incrementado para:', data.slug);
         }
       } catch (viewError) {
         console.error('⚠️ Erro ao incrementar view count:', viewError);
