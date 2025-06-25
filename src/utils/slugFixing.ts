@@ -23,7 +23,7 @@ export const getCorrectSlugMapping = (): { [key: string]: string } => {
     'flora-e-vincius-2025-9347': 'flora-e-vinicius-2025-9347', // Slug sem "i"
     // Adicionar variações comuns
     'flora-e-vinícius-2025-9347': 'flora-e-vinicius-2025-9347', // Com acento
-    'flora-e-vincius-2025-9347': 'flora-e-vinicius-2025-9347'  // Sem "i" nem acento
+    'flora-e-vincius-2025-9347-alt': 'flora-e-vinicius-2025-9347'  // Alternativa para evitar duplicata
   };
 };
 
