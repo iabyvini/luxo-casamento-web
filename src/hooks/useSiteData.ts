@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { getCorrectSlugMapping } from "@/utils/slugFixing";
+import { getCorrectSlugMapping, findSimilarSlug } from "@/utils/slugFixing";
 
 interface SiteData {
   id: string;
@@ -143,9 +143,9 @@ export const useSiteData = (slug: string | undefined) => {
         }
       }
 
-      // 3. Se ainda não encontrou, buscar por similaridade em todos os sites
+      // 3. Buscar por similaridade usando a nova função melhorada
       if (!data && !error) {
-        console.log('🔍 TENTATIVA 3: Busca por similaridade em todos os sites...');
+        console.log('🔍 TENTATIVA 3: Busca por similaridade avançada...');
         
         const { data: allSites, error: debugError } = await supabase
           .from('wedding_sites')
@@ -163,25 +163,21 @@ export const useSiteData = (slug: string | undefined) => {
           })));
 
           if (allSites) {
-            const normalizedSlug = slug.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            const availableSlugs = allSites.map(site => site.slug);
+            const similarSlug = findSimilarSlug(slug, availableSlugs);
             
-            const similarSite = allSites.find(site => {
-              const normalizedSiteSlug = site.slug.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-              return normalizedSiteSlug === normalizedSlug;
-            });
-
-            if (similarSite) {
-              console.log('✅ Site encontrado por similaridade:', similarSite.slug);
+            if (similarSlug) {
+              console.log('✅ Site encontrado por similaridade avançada:', similarSlug);
               
               const { data: similarData, error: similarError } = await supabase
                 .from('wedding_sites')
                 .select('*')
-                .eq('slug', similarSite.slug)
+                .eq('slug', similarSlug)
                 .eq('is_published', true)
                 .maybeSingle();
 
               if (similarData && !similarError) {
-                console.log('✅ SUCESSO: Site encontrado via similaridade!');
+                console.log('✅ SUCESSO: Site encontrado via similaridade avançada!');
                 setSiteData(similarData);
                 setLoading(false);
                 return;
@@ -190,11 +186,11 @@ export const useSiteData = (slug: string | undefined) => {
               console.log('📊 Resultado da busca por similaridade:', { 
                 encontrou: !!similarData, 
                 erro: similarError?.message,
-                slug_similar: similarSite.slug
+                slug_similar: similarSlug
               });
             } else {
-              console.log('🔍 Nenhum site similar encontrado para:', normalizedSlug);
-              console.log('🔍 Slugs disponíveis para comparação:', allSites.map(s => s.slug));
+              console.log('🔍 Nenhum site similar encontrado para:', slug);
+              console.log('🔍 Slugs disponíveis para comparação:', availableSlugs);
             }
           }
         }
@@ -203,6 +199,7 @@ export const useSiteData = (slug: string | undefined) => {
       // 4. Se chegou até aqui, realmente não encontrou
       console.log('🚫 FINAL: Site não encontrado após todas as tentativas para slug:', slug);
       console.log('💡 Verifique se o slug está correto e o site está publicado');
+      console.log('🔧 Slug normalizado testado:', slug.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim());
       setNotFound(true);
 
     } catch (error: any) {

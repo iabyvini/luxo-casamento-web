@@ -11,6 +11,10 @@ import DebugInfo from "@/components/PublicSite/DebugInfo";
 
 const PublicSite = () => {
   const { slug } = useParams<{ slug: string }>();
+  
+  console.log('🧪 Slug bruto recebido:', slug);
+  console.log('🧪 Slug normalizado:', slug?.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim());
+  
   console.log('🌐 PublicSite renderizado com slug da URL:', slug);
   
   const { siteData, loading, notFound } = useSiteData(slug);
