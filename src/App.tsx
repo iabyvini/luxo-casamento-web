@@ -14,6 +14,7 @@ import TemplatePreview from "./pages/TemplatePreview";
 import Dashboard from "./pages/Dashboard";
 import Editor from "./pages/Editor";
 import PublicSite from "./pages/PublicSite";
+import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +38,7 @@ const App = () => {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/editor/:siteId" element={<Editor />} />
                 <Route path="/site/:slug" element={<PublicSite />} />
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </VisualTokensProvider>
           </AuthProvider>

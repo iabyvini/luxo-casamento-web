@@ -27,7 +27,7 @@ export const useSiteData = (slug: string | undefined) => {
     console.log('🔍 useSiteData useEffect triggered with slug:', slug);
     
     if (!slug) {
-      console.log('❌ Slug não fornecido');
+      console.log('❌ Slug não fornecido - definindo notFound=true');
       setNotFound(true);
       setLoading(false);
       return;
@@ -40,13 +40,13 @@ export const useSiteData = (slug: string | undefined) => {
     if (!slug) return;
     
     try {
-      console.log('📡 Iniciando fetchSiteData para slug:', slug);
+      console.log('📡 INICIANDO fetchSiteData para slug:', slug);
       setLoading(true);
       setNotFound(false);
       setSiteData(null);
 
       // 1. Primeiro, tentar busca direta
-      console.log('🔎 Tentativa 1: Busca direta pelo slug:', slug);
+      console.log('🔎 TENTATIVA 1: Busca direta pelo slug:', slug);
       let { data, error } = await supabase
         .from('wedding_sites')
         .select('*')
@@ -54,15 +54,45 @@ export const useSiteData = (slug: string | undefined) => {
         .eq('is_published', true)
         .maybeSingle();
 
-      console.log('📊 Resultado da busca direta:', { 
-        found: !!data, 
-        error: error?.message,
-        slug_usado: slug
+      console.log('📊 RESULTADO busca direta:', { 
+        encontrou: !!data, 
+        erro: error?.message,
+        slug_usado: slug,
+        data_preview: data ? {
+          id: data.id,
+          slug: data.slug,
+          couple_names: data.couple_names,
+          is_published: data.is_published
+        } : null
       });
+
+      // Se encontrou na busca direta, usar esses dados
+      if (data && !error) {
+        console.log('✅ SUCESSO: Site encontrado na busca direta!');
+        setSiteData(data);
+        
+        // Incrementar view count
+        try {
+          const { error: viewError } = await supabase.rpc('increment_view_count', {
+            site_slug: data.slug
+          });
+          
+          if (viewError) {
+            console.error('⚠️ Erro ao incrementar view count:', viewError);
+          } else {
+            console.log('📈 View count incrementado para:', data.slug);
+          }
+        } catch (viewError) {
+          console.error('⚠️ Erro ao incrementar view count:', viewError);
+        }
+        
+        setLoading(false);
+        return;
+      }
 
       // 2. Se não encontrou, verificar mapeamento conhecido
       if (!data && !error) {
-        console.log('🔄 Tentativa 2: Verificando mapeamento de slugs...');
+        console.log('🔄 TENTATIVA 2: Verificando mapeamento de slugs...');
         const slugMapping = getCorrectSlugMapping();
         console.log('📋 Mapeamento disponível:', slugMapping);
         
@@ -98,12 +128,16 @@ export const useSiteData = (slug: string | undefined) => {
             .eq('is_published', true)
             .maybeSingle();
 
-          data = mappedData;
-          error = mappedError;
-          
+          if (mappedData && !mappedError) {
+            console.log('✅ SUCESSO: Site encontrado via mapeamento!');
+            setSiteData(mappedData);
+            setLoading(false);
+            return;
+          }
+
           console.log('📊 Resultado da busca mapeada:', { 
-            found: !!data, 
-            error: error?.message,
+            encontrou: !!mappedData, 
+            erro: mappedError?.message,
             slug_mapeado: targetSlug
           });
         }
@@ -111,20 +145,21 @@ export const useSiteData = (slug: string | undefined) => {
 
       // 3. Se ainda não encontrou, buscar por similaridade em todos os sites
       if (!data && !error) {
-        console.log('🔍 Tentativa 3: Busca por similaridade em todos os sites...');
+        console.log('🔍 TENTATIVA 3: Busca por similaridade em todos os sites...');
         
         const { data: allSites, error: debugError } = await supabase
           .from('wedding_sites')
           .select('id, couple_names, slug, is_published')
           .eq('is_published', true)
-          .limit(20);
+          .limit(50);
 
         if (debugError) {
           console.error('❌ Erro ao buscar todos os sites:', debugError);
         } else {
           console.log('📋 Sites publicados encontrados:', allSites?.map(site => ({
             slug: site.slug,
-            couple_names: site.couple_names
+            couple_names: site.couple_names,
+            id: site.id
           })));
 
           if (allSites) {
@@ -145,59 +180,33 @@ export const useSiteData = (slug: string | undefined) => {
                 .eq('is_published', true)
                 .maybeSingle();
 
-              data = similarData;
-              error = similarError;
-              
+              if (similarData && !similarError) {
+                console.log('✅ SUCESSO: Site encontrado via similaridade!');
+                setSiteData(similarData);
+                setLoading(false);
+                return;
+              }
+
               console.log('📊 Resultado da busca por similaridade:', { 
-                found: !!data, 
-                error: error?.message,
+                encontrou: !!similarData, 
+                erro: similarError?.message,
                 slug_similar: similarSite.slug
               });
             } else {
               console.log('🔍 Nenhum site similar encontrado para:', normalizedSlug);
+              console.log('🔍 Slugs disponíveis para comparação:', allSites.map(s => s.slug));
             }
           }
         }
       }
 
-      if (error) {
-        console.error('❌ Erro na query:', error);
-        throw error;
-      }
-
-      if (!data) {
-        console.log('🚫 Site não encontrado para slug:', slug);
-        console.log('💡 Verifique se o slug está correto e o site está publicado');
-        setNotFound(true);
-        return;
-      }
-
-      console.log('✅ Site encontrado:', {
-        id: data.id,
-        couple_names: data.couple_names,
-        slug: data.slug,
-        is_published: data.is_published
-      });
-
-      setSiteData(data);
-      
-      // Incrementar contador de visualizações
-      try {
-        const { error: viewError } = await supabase.rpc('increment_view_count', {
-          site_slug: data.slug
-        });
-        
-        if (viewError) {
-          console.error('⚠️ Erro ao incrementar view count:', viewError);
-        } else {
-          console.log('📈 View count incrementado para:', data.slug);
-        }
-      } catch (viewError) {
-        console.error('⚠️ Erro ao incrementar view count:', viewError);
-      }
+      // 4. Se chegou até aqui, realmente não encontrou
+      console.log('🚫 FINAL: Site não encontrado após todas as tentativas para slug:', slug);
+      console.log('💡 Verifique se o slug está correto e o site está publicado');
+      setNotFound(true);
 
     } catch (error: any) {
-      console.error('💥 Erro geral ao carregar site:', error);
+      console.error('💥 ERRO GERAL ao carregar site:', error);
       
       toast({
         title: "Erro ao carregar site",
@@ -207,9 +216,18 @@ export const useSiteData = (slug: string | undefined) => {
       
       setNotFound(true);
     } finally {
+      console.log('🏁 useSiteData finalizando - definindo loading=false');
       setLoading(false);
     }
   };
+
+  // Log final dos estados antes de retornar
+  console.log('📤 useSiteData retornando estados:', {
+    hasData: !!siteData,
+    loading,
+    notFound,
+    slug
+  });
 
   return { siteData, loading, notFound };
 };
