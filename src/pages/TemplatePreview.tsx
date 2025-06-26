@@ -7,6 +7,7 @@ import PreviewSite from "@/components/PreviewSite";
 import { PreviewData } from "@/types/quiz";
 import { EXTENDED_TEMPLATE_LIBRARY } from "@/data/extendedTemplateLibrary";
 import { ModernVisualTokensProvider } from "@/contexts/ModernVisualTokensContext";
+import { getTemplateTokens, applyTemplateTokensToCSS } from "@/utils/templateTokens";
 
 const TemplatePreview = () => {
   const { templateId } = useParams<{ templateId: string }>();
@@ -32,7 +33,21 @@ const TemplatePreview = () => {
 
     console.log('✅ Template encontrado:', template.name);
 
-    // Create preview data based on template
+    // Apply template-specific tokens
+    const tokens = getTemplateTokens(templateId);
+    const styleId = `template-preview-${templateId}`;
+    let styleElement = document.getElementById(styleId) as HTMLStyleElement;
+    
+    if (!styleElement) {
+      styleElement = document.createElement('style');
+      styleElement.id = styleId;
+      document.head.appendChild(styleElement);
+    }
+    
+    styleElement.textContent = applyTemplateTokensToCSS(tokens, templateId);
+    console.log('🎨 Template tokens aplicados:', tokens);
+
+    // Create preview data based on template with enhanced quiz answers
     const mockPreviewData: PreviewData = {
       coupleNames: "João & Maria",
       weddingDate: "2024-12-25",
@@ -47,11 +62,24 @@ const TemplatePreview = () => {
         tema: template.category,
         tom: "Elegante e formal",
         data_casamento: "2024-12-25",
-        nomes: "João & Maria"
+        nomes: "João & Maria",
+        // Adicionar dados específicos do template
+        template_id: templateId,
+        visual_style: template.category,
+        font_preference: tokens.fontFamily,
+        color_scheme: tokens.primaryColor
       }
     };
 
     setPreviewData(mockPreviewData);
+    
+    // Cleanup function
+    return () => {
+      const element = document.getElementById(styleId);
+      if (element) {
+        element.remove();
+      }
+    };
   }, [templateId, navigate]);
 
   const handleSelectTemplate = () => {
@@ -81,7 +109,7 @@ const TemplatePreview = () => {
 
   return (
     <ModernVisualTokensProvider>
-      <div className="min-h-screen bg-gray-100">
+      <div className={`min-h-screen bg-gray-100 template-${templateId}`}>
         {/* Header de Controle */}
         <div className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
           <div className="container mx-auto px-4 py-4">
@@ -97,10 +125,10 @@ const TemplatePreview = () => {
                 </Button>
                 <div>
                   <h1 className="text-xl font-bold text-gray-900">
-                    Preview: Template {previewData.templateName}
+                    Preview: {previewData.templateName}
                   </h1>
                   <p className="text-sm text-gray-600">
-                    Esta é uma demonstração com dados fictícios
+                    Template personalizado com tokens visuais únicos
                   </p>
                 </div>
               </div>
@@ -135,6 +163,9 @@ const TemplatePreview = () => {
                 <Button
                   onClick={handleSelectTemplate}
                   className="bg-gradient-luxury hover:opacity-90 text-white"
+                  style={{
+                    background: `linear-gradient(135deg, ${getTemplateTokens(templateId!).primaryColor}, ${getTemplateTokens(templateId!).accentColor})`
+                  }}
                 >
                   Usar Este Template
                 </Button>
@@ -153,13 +184,40 @@ const TemplatePreview = () => {
             }`}
           >
             <div 
-              className={`bg-white rounded-lg overflow-hidden shadow-2xl transition-all duration-300 ${
+              className={`bg-white rounded-lg overflow-hidden shadow-2xl transition-all duration-300 template-preview-content ${
                 viewMode === 'mobile' 
                   ? 'transform scale-90' 
                   : ''
               }`}
             >
-              <PreviewSite data={previewData} />
+              <PreviewSite data={previewData} siteId={`preview-${templateId}`} />
+            </div>
+          </div>
+          
+          {/* Template Info */}
+          <div className="mt-8 max-w-4xl mx-auto">
+            <div className="bg-white rounded-lg p-6 shadow-sm">
+              <h3 className="text-lg font-semibold mb-4">Informações do Template</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <span className="text-sm font-medium text-gray-500">Categoria:</span>
+                  <p className="text-sm text-gray-900 capitalize">{previewData.quizAnswers.estilo}</p>
+                </div>
+                <div>
+                  <span className="text-sm font-medium text-gray-500">Fonte Principal:</span>
+                  <p className="text-sm text-gray-900">{getTemplateTokens(templateId!).fontFamily}</p>
+                </div>
+                <div>
+                  <span className="text-sm font-medium text-gray-500">Cor Primária:</span>
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-4 h-4 rounded-full border border-gray-200"
+                      style={{ backgroundColor: getTemplateTokens(templateId!).primaryColor }}
+                    ></div>
+                    <p className="text-sm text-gray-900">{getTemplateTokens(templateId!).primaryColor}</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

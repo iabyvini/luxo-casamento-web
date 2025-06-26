@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,12 +7,41 @@ import { Input } from "@/components/ui/input";
 import { Eye, Heart, Search, Filter } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { EXTENDED_TEMPLATE_LIBRARY, ExtendedTemplateItem } from "@/data/extendedTemplateLibrary";
+import { getTemplateTokens, applyTemplateTokensToCSS } from "@/utils/templateTokens";
 
 const TemplateGallery = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [favorites, setFavorites] = useState<string[]>([]);
+
+  // Apply all template styles on mount
+  useEffect(() => {
+    const styleId = 'template-gallery-styles';
+    let styleElement = document.getElementById(styleId) as HTMLStyleElement;
+    
+    if (!styleElement) {
+      styleElement = document.createElement('style');
+      styleElement.id = styleId;
+      document.head.appendChild(styleElement);
+    }
+    
+    // Generate CSS for all templates
+    const allTemplateCSS = EXTENDED_TEMPLATE_LIBRARY.map(template => {
+      const tokens = getTemplateTokens(template.id);
+      return applyTemplateTokensToCSS(tokens, template.id);
+    }).join('\n');
+    
+    styleElement.textContent = allTemplateCSS;
+    
+    console.log('✅ Template gallery styles applied for', EXTENDED_TEMPLATE_LIBRARY.length, 'templates');
+    
+    return () => {
+      if (styleElement) {
+        styleElement.remove();
+      }
+    };
+  }, []);
 
   const categories = [
     { id: "all", name: "Todos", count: EXTENDED_TEMPLATE_LIBRARY.length },
@@ -39,7 +68,6 @@ const TemplateGallery = () => {
   });
 
   const handleTemplateSelect = (template: ExtendedTemplateItem) => {
-    // Navigate to quiz with selected template
     navigate('/quiz', { 
       state: { 
         selectedTemplate: template.name,
@@ -58,6 +86,70 @@ const TemplateGallery = () => {
       prev.includes(templateId) 
         ? prev.filter(id => id !== templateId)
         : [...prev, templateId]
+    );
+  };
+
+  const renderTemplatePreview = (template: ExtendedTemplateItem) => {
+    const tokens = getTemplateTokens(template.id);
+    
+    return (
+      <div 
+        className={`aspect-[4/3] relative overflow-hidden template-${template.id}`}
+        style={{
+          background: tokens.gradients?.hero || `linear-gradient(135deg, ${tokens.primaryColor}, ${tokens.accentColor})`
+        }}
+      >
+        {/* Template Preview Content */}
+        <div className="absolute inset-0 p-4 flex flex-col justify-center items-center text-center template-preview-hero">
+          <div className="text-white mb-2" style={{ fontFamily: tokens.fontFamily }}>
+            <h3 className="text-lg font-bold mb-1">João & Maria</h3>
+            <p className="text-sm opacity-80">25 • 12 • 2024</p>
+          </div>
+          <div className="text-white text-xs opacity-60" style={{ fontFamily: tokens.fontFamily }}>
+            {template.sections.slice(0, 3).join(" • ")}
+          </div>
+          
+          {/* Visual Elements específicos do template */}
+          <div className="absolute bottom-2 left-2 right-2 flex justify-between items-center">
+            <div className="text-xs opacity-60" style={{ fontFamily: tokens.fontFamily }}>
+              {template.category}
+            </div>
+            <div 
+              className="w-3 h-3 rounded-full" 
+              style={{ backgroundColor: tokens.accentColor }}
+            ></div>
+          </div>
+        </div>
+
+        {/* Overlay Actions */}
+        <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
+          <Button
+            size="sm"
+            variant="secondary"
+            onClick={() => handlePreview(template)}
+          >
+            <Eye className="h-4 w-4 mr-1" />
+            Preview
+          </Button>
+          <Button
+            size="sm"
+            onClick={() => handleTemplateSelect(template)}
+            className="bg-rose-500 hover:bg-rose-600 text-white"
+          >
+            Escolher
+          </Button>
+        </div>
+
+        {/* Favorite Button */}
+        <button
+          onClick={() => toggleFavorite(template.id)}
+          className="absolute top-2 right-2 p-2 rounded-full bg-white bg-opacity-80 hover:bg-opacity-100 transition-all"
+        >
+          <Heart 
+            className={`h-4 w-4 ${favorites.includes(template.id) ? 'text-red-500 fill-current' : 'text-gray-600'}`} 
+          />
+        </button>
+      </div>
     );
   };
 
@@ -116,53 +208,7 @@ const TemplateGallery = () => {
             <Card key={template.id} className="group hover:shadow-lg transition-all duration-300 overflow-hidden">
               {/* Template Preview */}
               <CardHeader className="p-0">
-                <div className="aspect-[4/3] bg-gradient-to-br relative overflow-hidden"
-                     style={{
-                       background: `linear-gradient(135deg, ${template.colors[0]}, ${template.colors[1]})`
-                     }}>
-                  
-                  {/* Mock Content Preview */}
-                  <div className="absolute inset-0 p-4 flex flex-col justify-center items-center text-center">
-                    <div className="text-white mb-2" 
-                         style={{ fontFamily: template.fonts.heading }}>
-                      <h3 className="text-lg font-bold mb-1">João & Maria</h3>
-                      <p className="text-sm opacity-80">25 • 12 • 2024</p>
-                    </div>
-                    <div className="text-white text-xs opacity-60" 
-                         style={{ fontFamily: template.fonts.body }}>
-                      {template.sections.slice(0, 3).join(" • ")}
-                    </div>
-                  </div>
-
-                  {/* Overlay Actions */}
-                  <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
-                    <Button
-                      size="sm"
-                      variant="secondary"
-                      onClick={() => handlePreview(template)}
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
-                      Preview
-                    </Button>
-                    <Button
-                      size="sm"
-                      onClick={() => handleTemplateSelect(template)}
-                      className="bg-rose-500 hover:bg-rose-600 text-white"
-                    >
-                      Escolher
-                    </Button>
-                  </div>
-
-                  {/* Favorite Button */}
-                  <button
-                    onClick={() => toggleFavorite(template.id)}
-                    className="absolute top-2 right-2 p-2 rounded-full bg-white bg-opacity-80 hover:bg-opacity-100 transition-all"
-                  >
-                    <Heart 
-                      className={`h-4 w-4 ${favorites.includes(template.id) ? 'text-red-500 fill-current' : 'text-gray-600'}`} 
-                    />
-                  </button>
-                </div>
+                {renderTemplatePreview(template)}
               </CardHeader>
 
               <CardContent className="p-4">
