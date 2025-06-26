@@ -1,13 +1,11 @@
 
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Eye, Heart, Search, Filter } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { EXTENDED_TEMPLATE_LIBRARY, ExtendedTemplateItem } from "@/data/extendedTemplateLibrary";
 import { getTemplateTokens, applyTemplateTokensToCSS } from "@/utils/templateTokens";
+import GalleryHeader from "./TemplateGallery/GalleryHeader";
+import CategoryFilters from "./TemplateGallery/CategoryFilters";
+import TemplateGrid from "./TemplateGallery/TemplateGrid";
 
 const TemplateGallery = () => {
   const navigate = useNavigate();
@@ -89,181 +87,27 @@ const TemplateGallery = () => {
     );
   };
 
-  const renderTemplatePreview = (template: ExtendedTemplateItem) => {
-    const tokens = getTemplateTokens(template.id);
-    
-    return (
-      <div 
-        className={`aspect-[4/3] relative overflow-hidden template-${template.id}`}
-        style={{
-          background: tokens.gradients?.hero || `linear-gradient(135deg, ${tokens.primaryColor}, ${tokens.accentColor})`
-        }}
-      >
-        {/* Template Preview Content */}
-        <div className="absolute inset-0 p-4 flex flex-col justify-center items-center text-center template-preview-hero">
-          <div className="text-white mb-2" style={{ fontFamily: tokens.fontFamily }}>
-            <h3 className="text-lg font-bold mb-1">João & Maria</h3>
-            <p className="text-sm opacity-80">25 • 12 • 2024</p>
-          </div>
-          <div className="text-white text-xs opacity-60" style={{ fontFamily: tokens.fontFamily }}>
-            {template.sections.slice(0, 3).join(" • ")}
-          </div>
-          
-          {/* Visual Elements específicos do template */}
-          <div className="absolute bottom-2 left-2 right-2 flex justify-between items-center">
-            <div className="text-xs opacity-60" style={{ fontFamily: tokens.fontFamily }}>
-              {template.category}
-            </div>
-            <div 
-              className="w-3 h-3 rounded-full" 
-              style={{ backgroundColor: tokens.accentColor }}
-            ></div>
-          </div>
-        </div>
-
-        {/* Overlay Actions */}
-        <div className="absolute inset-0 bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center gap-2">
-          <Button
-            size="sm"
-            variant="secondary"
-            onClick={() => handlePreview(template)}
-          >
-            <Eye className="h-4 w-4 mr-1" />
-            Preview
-          </Button>
-          <Button
-            size="sm"
-            onClick={() => handleTemplateSelect(template)}
-            className="bg-rose-500 hover:bg-rose-600 text-white"
-          >
-            Escolher
-          </Button>
-        </div>
-
-        {/* Favorite Button */}
-        <button
-          onClick={() => toggleFavorite(template.id)}
-          className="absolute top-2 right-2 p-2 rounded-full bg-white bg-opacity-80 hover:bg-opacity-100 transition-all"
-        >
-          <Heart 
-            className={`h-4 w-4 ${favorites.includes(template.id) ? 'text-red-500 fill-current' : 'text-gray-600'}`} 
-          />
-        </button>
-      </div>
-    );
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b">
-        <div className="container mx-auto px-4 py-6">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Escolha Seu Template Perfeito
-            </h1>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Explore nossa coleção de 50 templates únicos, cada um com seu próprio estilo e personalidade
-            </p>
-          </div>
+      <GalleryHeader 
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+      />
+      
+      <CategoryFilters
+        categories={categories}
+        selectedCategory={selectedCategory}
+        onCategoryChange={setSelectedCategory}
+      />
 
-          {/* Search and Filters */}
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <Input
-                placeholder="Buscar templates..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-          </div>
-
-          {/* Category Filters */}
-          <div className="flex flex-wrap gap-2 mb-6">
-            {categories.map((category) => (
-              <Button
-                key={category.id}
-                variant={selectedCategory === category.id ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedCategory(category.id)}
-                className="flex items-center gap-2"
-              >
-                <Filter className="h-3 w-3" />
-                {category.name}
-                <Badge variant="secondary" className="ml-1">
-                  {category.count}
-                </Badge>
-              </Button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Templates Grid */}
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-          {filteredTemplates.map((template) => (
-            <Card key={template.id} className="group hover:shadow-lg transition-all duration-300 overflow-hidden">
-              {/* Template Preview */}
-              <CardHeader className="p-0">
-                {renderTemplatePreview(template)}
-              </CardHeader>
-
-              <CardContent className="p-4">
-                <div className="mb-3">
-                  <h3 className="font-bold text-gray-900 mb-1">{template.name}</h3>
-                  <p className="text-sm text-gray-600 line-clamp-2">{template.description}</p>
-                </div>
-
-                {/* Color Palette */}
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-xs text-gray-500">Cores:</span>
-                  <div className="flex gap-1">
-                    {template.colors.slice(0, 4).map((color, idx) => (
-                      <div
-                        key={idx}
-                        className="w-4 h-4 rounded-full border border-gray-200"
-                        style={{ backgroundColor: color }}
-                        title={color}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                {/* Tags */}
-                <div className="flex flex-wrap gap-1 mb-3">
-                  {template.tags.slice(0, 3).map((tag, idx) => (
-                    <Badge key={idx} variant="outline" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-
-                {/* Category */}
-                <div className="flex items-center justify-between">
-                  <Badge variant="secondary" className="capitalize">
-                    {template.category}
-                  </Badge>
-                  <div className="text-xs text-gray-500">
-                    {template.sections.length} seções
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {filteredTemplates.length === 0 && (
-          <div className="text-center py-12">
-            <div className="text-gray-500 mb-4">
-              <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium">Nenhum template encontrado</p>
-              <p className="text-sm">Tente ajustar sua busca ou filtros</p>
-            </div>
-          </div>
-        )}
+        <TemplateGrid
+          templates={filteredTemplates}
+          favorites={favorites}
+          onPreview={handlePreview}
+          onSelect={handleTemplateSelect}
+          onToggleFavorite={toggleFavorite}
+        />
       </div>
     </div>
   );
