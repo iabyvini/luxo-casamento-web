@@ -10,35 +10,12 @@ interface QuizStepProps {
   question: QuizQuestion;
   value: string | string[];
   onChange: (value: string | string[]) => void;
-  onNext: () => void;
-  onBack: () => void;
-  isFirst: boolean;
-  isLast: boolean;
-  isValid: boolean;
-  isSubmitting?: boolean;
 }
 
-const QuizStep = ({ 
-  question, 
-  value, 
-  onChange, 
-  onNext, 
-  onBack, 
-  isFirst, 
-  isLast, 
-  isValid,
-  isSubmitting = false
-}: QuizStepProps) => {
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isValid && !isSubmitting) {
-      onNext();
-    }
-  };
-
+const QuizStep = ({ question, value, onChange }: QuizStepProps) => {
   return (
     <div className="max-w-2xl mx-auto">
-      <form onSubmit={handleSubmit} className="luxury-card rounded-2xl p-8 space-y-8">
+      <div className="luxury-card rounded-2xl p-8 space-y-8">
         {question.section && (
           <div className="text-center">
             <div className="inline-flex items-center space-x-2 bg-brown-100 text-brown-800 px-3 py-1 rounded-full text-sm font-medium mb-4">
@@ -118,34 +95,7 @@ const QuizStep = ({
             </div>
           )}
         </div>
-
-        <div className="flex justify-between pt-6">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onBack}
-            disabled={isFirst || isSubmitting}
-            className="px-8"
-          >
-            Voltar
-          </Button>
-          
-          <Button
-            type="submit"
-            disabled={!isValid || isSubmitting}
-            className="px-8 bg-gradient-luxury hover:opacity-90 text-white"
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Criando Site...
-              </>
-            ) : (
-              isLast ? 'Criar Site' : 'Próximo'
-            )}
-          </Button>
-        </div>
-      </form>
+      </div>
     </div>
   );
 };

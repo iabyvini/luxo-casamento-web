@@ -1,7 +1,7 @@
 
 import { QuizQuestion } from "@/types/quiz";
 
-export const quizQuestions: QuizQuestion[] = [
+export const QUIZ_QUESTIONS: QuizQuestion[] = [
   // Perguntas originais
   {
     id: 'nomes',
