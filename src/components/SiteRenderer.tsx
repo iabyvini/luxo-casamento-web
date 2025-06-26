@@ -2,7 +2,9 @@
 import { PreviewData } from "@/types/quiz";
 import ModernEleganceTemplate from "./templates/ModernElegance/ModernEleganceTemplate";
 import BohoRomanceTemplate from "./templates/BohoRomance/BohoRomanceTemplate";
-import PreviewSite from "./PreviewSite"; // Fallback para templates antigos
+import DefaultTemplate from "./templates/DefaultTemplate/DefaultTemplate";
+import PreviewSite from "./PreviewSite";
+import ErrorBoundary from "./ErrorBoundary";
 
 interface SiteRendererProps {
   siteData: PreviewData;
@@ -10,10 +12,17 @@ interface SiteRendererProps {
 }
 
 const SiteRenderer = ({ siteData, siteId = "preview" }: SiteRendererProps) => {
-  console.log('🎨 SiteRenderer - Template:', siteData.templateName);
+  console.log('🎨 SiteRenderer - Template original:', siteData.templateName);
   console.log('🆔 SiteRenderer - SiteId:', siteId);
 
-  // Mapeamento de templates
+  // Aplicar fallback se template_name estiver ausente
+  let templateName = siteData.templateName;
+  if (!templateName) {
+    console.warn("❗ template_name ausente, aplicando fallback");
+    templateName = "default-template";
+  }
+
+  // Mapeamento de templates com fallback garantido
   const templateMap: Record<string, React.ComponentType<any>> = {
     'Modern Elegance': ModernEleganceTemplate,
     'Boho Romance': BohoRomanceTemplate,
@@ -22,19 +31,38 @@ const SiteRenderer = ({ siteData, siteId = "preview" }: SiteRendererProps) => {
     'Forest Bohemian': BohoRomanceTemplate, // Fallback
     'Cathedral Elegance': ModernEleganceTemplate, // Fallback
     'Vintage Mansion': ModernEleganceTemplate, // Fallback
+    'default-template': DefaultTemplate, // Template de fallback seguro
   };
 
   // Verificar se existe um template específico
-  const SelectedTemplate = templateMap[siteData.templateName];
+  let SelectedTemplate = templateMap[templateName];
 
-  if (SelectedTemplate) {
-    console.log('✅ Usando template específico:', siteData.templateName);
-    return <SelectedTemplate siteData={siteData} siteId={siteId} />;
+  if (!SelectedTemplate) {
+    console.warn(`⚠️ Template "${templateName}" não encontrado. Usando fallback padrão.`);
+    SelectedTemplate = DefaultTemplate;
+    templateName = "default-template";
   }
 
-  // Fallback para o sistema antigo
-  console.log('🔄 Usando sistema de template antigo para:', siteData.templateName);
-  return <PreviewSite data={siteData} siteId={siteId} />;
+  // Criar dados corrigidos com template garantido
+  const correctedSiteData = {
+    ...siteData,
+    templateName: templateName
+  };
+
+  console.log('✅ Usando template:', templateName);
+
+  // Renderizar com ErrorBoundary para capturar erros inesperados
+  return (
+    <ErrorBoundary>
+      {SelectedTemplate === DefaultTemplate ? (
+        <SelectedTemplate siteData={correctedSiteData} siteId={siteId} />
+      ) : (
+        <ErrorBoundary fallback={<DefaultTemplate siteData={correctedSiteData} siteId={siteId} />}>
+          <SelectedTemplate siteData={correctedSiteData} siteId={siteId} />
+        </ErrorBoundary>
+      )}
+    </ErrorBoundary>
+  );
 };
 
 export default SiteRenderer;
