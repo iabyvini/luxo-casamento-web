@@ -31,6 +31,9 @@ const Quiz = () => {
   const isLastStep = currentStep === QUIZ_QUESTIONS.length - 1;
   const isFirstStep = currentStep === 0;
 
+  // Calculate progress percentage
+  const progress = ((currentStep + 1) / QUIZ_QUESTIONS.length) * 100;
+
   const handleAnswerChange = (questionId: string, value: string | string[]) => {
     console.log('📝 Resposta alterada:', questionId, value);
     setAnswers(prev => ({
@@ -112,6 +115,19 @@ const Quiz = () => {
     }
   };
 
+  // Get current answer with proper type handling
+  const getCurrentAnswer = () => {
+    const answer = answers[currentQuestion.id as keyof QuizAnswers];
+    
+    // Ensure we return the correct type for each question type
+    if (currentQuestion.type === 'multi_select') {
+      return Array.isArray(answer) ? answer : [];
+    }
+    
+    // For other question types, return string or empty string
+    return typeof answer === 'string' ? answer : '';
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-brown-50 to-gold-50 flex items-center justify-center">
@@ -129,6 +145,7 @@ const Quiz = () => {
         <QuizHeader
           currentStep={currentStep + 1}
           totalSteps={QUIZ_QUESTIONS.length}
+          progress={progress}
         />
 
         <div className="max-w-4xl mx-auto">
@@ -147,7 +164,7 @@ const Quiz = () => {
           {/* Question */}
           <QuizStep
             question={currentQuestion}
-            value={answers[currentQuestion.id as keyof QuizAnswers] || (currentQuestion.type === 'multi_select' ? [] : '')}
+            value={getCurrentAnswer()}
             onChange={(value) => handleAnswerChange(currentQuestion.id, value)}
           />
 
