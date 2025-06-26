@@ -75,7 +75,11 @@ const QuizStep = ({
 
           {question.type === 'multi_select' && question.options && (
             <MultiSelectQuestion
-              question={question}
+              question={{
+                id: question.id,
+                label: question.label,
+                options: question.options
+              }}
               values={Array.isArray(value) ? value : []}
               onChange={onChange}
             />
