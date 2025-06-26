@@ -21,58 +21,127 @@ const Quiz = () => {
     tom: '',
     cores: '',
     data_casamento: '',
-    nomes: ''
+    nomes: '',
+    // Novas respostas expandidas
+    visual_style: '',
+    typography: '',
+    color_palette: [],
+    animations: '',
+    photos: '',
+    emotion: ''
   });
 
   const questions: QuizQuestion[] = [
+    // Perguntas originais
     {
-      id: 'estilo',
-      label: 'Qual o estilo do seu casamento?',
-      type: 'multiple_choice',
-      options: ['Clássico', 'Moderno', 'Romântico', 'Minimalista', 'Vintage', 'Boho'],
-      required: true
+      id: 'nomes',
+      label: 'Nome do casal',
+      type: 'text',
+      placeholder: 'Ex: Ana & João',
+      required: true,
+      section: 'Informações Básicas'
+    },
+    {
+      id: 'data_casamento',
+      label: 'Já tem data marcada?',
+      type: 'date',
+      required: true,
+      section: 'Informações Básicas'
     },
     {
       id: 'local',
       label: 'Onde será o evento?',
       type: 'multiple_choice',
       options: ['Igreja', 'Salão de Festas', 'Fazenda', 'Praia', 'Outro'],
-      required: true
+      required: true,
+      section: 'Informações Básicas'
+    },
+    
+    // Novas perguntas expandidas
+    {
+      id: 'visual_style',
+      label: 'Qual estilo combina mais com vocês?',
+      type: 'multiple_choice',
+      options: ['Clássico', 'Moderno', 'Boho', 'Tropical', 'Minimalista', 'Romântico'],
+      required: true,
+      section: 'Estilo Visual'
+    },
+    {
+      id: 'typography',
+      label: 'Que tipo de fonte mais agrada visualmente?',
+      type: 'multiple_choice',
+      options: ['Manuscrita', 'Serifada', 'Sem Serifa (Sans-serif)', 'Estilo revista'],
+      required: true,
+      section: 'Estilo Visual'
+    },
+    {
+      id: 'color_palette',
+      label: 'Quais cores representam melhor o casal?',
+      type: 'multi_select',
+      options: ['Rosé', 'Azul-marinho', 'Verde-oliva', 'Branco minimalista', 'Bege', 'Dourado'],
+      required: true,
+      section: 'Estilo Visual'
+    },
+    {
+      id: 'animations',
+      label: 'Como o site deve se comportar visualmente?',
+      type: 'multiple_choice',
+      options: ['Sem animações', 'Suaves', 'Marcantes e dinâmicas'],
+      required: true,
+      section: 'Comportamento'
+    },
+    {
+      id: 'photos',
+      label: 'Quantas fotos querem usar no site?',
+      type: 'multiple_choice',
+      options: ['Nenhuma', 'Algumas', 'Muitas'],
+      required: true,
+      section: 'Comportamento'
+    },
+    {
+      id: 'emotion',
+      label: 'Que sentimento o site deve transmitir?',
+      type: 'multiple_choice',
+      options: ['Elegância', 'Diversão', 'Tradição', 'Criatividade', 'Aconchego', 'Inovação'],
+      required: true,
+      section: 'Comportamento'
+    },
+    
+    // Perguntas originais restantes
+    {
+      id: 'estilo',
+      label: 'Qual o estilo do seu casamento?',
+      type: 'multiple_choice',
+      options: ['Clássico', 'Moderno', 'Romântico', 'Minimalista', 'Vintage', 'Boho'],
+      required: true,
+      section: 'Preferências Gerais'
     },
     {
       id: 'tom',
       label: 'Qual é o tom do site que vocês preferem?',
       type: 'multiple_choice',
       options: ['Elegante e formal', 'Divertido e descontraído', 'Emotivo e romântico'],
-      required: true
+      required: true,
+      section: 'Preferências Gerais'
     },
     {
       id: 'cores',
       label: 'Qual a paleta de cores preferida?',
       type: 'multiple_choice',
       options: ['Dourado', 'Rosa claro', 'Azul', 'Verde', 'Neutros', 'Não sei'],
-      required: true
-    },
-    {
-      id: 'data_casamento',
-      label: 'Já tem data marcada?',
-      type: 'date',
-      required: true
-    },
-    {
-      id: 'nomes',
-      label: 'Nome do casal',
-      type: 'text',
-      placeholder: 'Ex: Ana & João',
-      required: true
+      required: true,
+      section: 'Preferências Gerais'
     }
   ];
 
   const currentQuestion = questions[currentStep];
   const currentValue = answers[currentQuestion.id as keyof QuizAnswers];
-  const isValid = currentQuestion.required ? !!currentValue : true;
+  
+  const isValid = currentQuestion.required ? 
+    (Array.isArray(currentValue) ? currentValue.length > 0 : !!currentValue) : 
+    true;
 
-  const handleAnswer = (value: string) => {
+  const handleAnswer = (value: string | string[]) => {
     setAnswers(prev => ({
       ...prev,
       [currentQuestion.id]: value
@@ -131,6 +200,8 @@ const Quiz = () => {
       // Gerar mensagem de boas-vindas simples
       const welcomeMessage = `Bem-vindos ao nosso site de casamento! Estamos muito felizes em compartilhar este momento especial com vocês. Confirme sua presença e deixe seu carinho para nós!`;
 
+      console.log('📤 Enviando quiz expandido:', answers);
+
       const { data, error } = await supabase
         .from('wedding_sites')
         .insert({
@@ -139,7 +210,7 @@ const Quiz = () => {
           couple_names: answers.nomes,
           wedding_date: answers.data_casamento,
           template_name: templateName,
-          quiz_answers: answers as any, // Type assertion to handle Json type
+          quiz_answers: answers as any,
           ai_welcome_message: welcomeMessage,
           custom_content: {
             hero: {
@@ -155,6 +226,8 @@ const Quiz = () => {
 
       if (error) throw error;
 
+      console.log('✅ Quiz expandido salvo no Supabase:', data);
+
       toast({
         title: "Site criado com sucesso!",
         description: "Seu site de casamento foi gerado. Agora você pode editá-lo e publicá-lo.",
@@ -164,7 +237,7 @@ const Quiz = () => {
       navigate(`/editor/${data.id}`);
 
     } catch (error: any) {
-      console.error('Erro ao criar site:', error);
+      console.error('❌ Erro ao salvar quiz expandido:', error);
       toast({
         title: "Erro ao criar site",
         description: error.message || "Não foi possível criar seu site. Tente novamente.",

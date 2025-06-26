@@ -1,19 +1,32 @@
+
 export interface QuizQuestion {
   id: string;
   label: string;
-  type: 'multiple_choice' | 'text' | 'date';
+  type: 'multiple_choice' | 'text' | 'date' | 'multi_select';
   options?: string[];
   placeholder?: string;
   required: boolean;
+  section?: string;
 }
 
 export interface QuizAnswers {
+  // Perguntas originais
   estilo: string;
   local: string;
   tom: string;
   cores: string;
   data_casamento: string;
   nomes: string;
+  
+  // Novas perguntas expandidas
+  visual_style?: string;
+  typography?: string;
+  color_palette?: string[];
+  animations?: string;
+  photos?: string;
+  emotion?: string;
+  
+  // Campos opcionais existentes
   personalidade?: string;
   convidados?: string;
   tema?: string;
