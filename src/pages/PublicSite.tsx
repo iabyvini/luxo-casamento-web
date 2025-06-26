@@ -5,8 +5,7 @@ import { ModernVisualTokensProvider } from "@/contexts/ModernVisualTokensContext
 import { useSiteData } from "@/hooks/useSiteData";
 import LoadingSpinner from "@/components/PublicSite/LoadingSpinner";
 import NotFoundPage from "@/components/PublicSite/NotFoundPage";
-import ModernSiteRenderer from "@/components/PublicSite/ModernSiteRenderer";
-import ClassicSiteRenderer from "@/components/PublicSite/ClassicSiteRenderer";
+import SiteRenderer from "@/components/SiteRenderer";
 
 const PublicSite = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -23,23 +22,26 @@ const PublicSite = () => {
     return <NotFoundPage />;
   }
 
-  // Verificar se é template moderno
-  const isModernTemplate = siteData.template_name && 
-    siteData.template_name.toLowerCase().includes('modern');
+  // Preparar dados no formato PreviewData
+  const previewData = {
+    coupleNames: siteData.couple_names,
+    weddingDate: siteData.wedding_date,
+    welcomeMessage: siteData.ai_welcome_message || 'Bem-vindos ao nosso casamento!',
+    templateName: siteData.template_name,
+    quizAnswers: siteData.quiz_answers
+  };
 
-  // Renderizar template moderno
-  if (isModernTemplate) {
-    return (
-      <ModernVisualTokensProvider>
-        <ModernSiteRenderer siteData={siteData} />
-      </ModernVisualTokensProvider>
-    );
-  }
+  console.log('🌐 PublicSite - Renderizando:', siteData.template_name, 'para slug:', slug);
 
-  // Renderizar template clássico
+  // Renderizar sempre com os provedores de contexto para compatibilidade
   return (
     <VisualTokensProvider>
-      <ClassicSiteRenderer siteData={siteData} />
+      <ModernVisualTokensProvider>
+        <SiteRenderer 
+          siteData={previewData} 
+          siteId={siteData.id} 
+        />
+      </ModernVisualTokensProvider>
     </VisualTokensProvider>
   );
 };

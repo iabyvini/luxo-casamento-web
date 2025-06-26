@@ -1,17 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:wght@400;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Lora:wght@400;500;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:wght@400;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Source+Sans+Pro:wght@300;400;600;700&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Allura&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Sacramento&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Satisfy&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700;800;900&family=Dancing+Script:wght@400;500;600;700&family=Caveat:wght@400;500;600;700&display=swap');
+@import './components/templates/TemplateStyles.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
