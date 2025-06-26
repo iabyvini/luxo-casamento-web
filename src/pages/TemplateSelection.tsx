@@ -125,6 +125,9 @@ const TemplateSelection = () => {
       console.log('🎨 Template selecionado:', templateProfile.name);
       console.log('📤 Criando site com template:', templateProfile);
 
+      // Convert template profile to Json-compatible format
+      const templateProfileData = JSON.parse(JSON.stringify(templateProfile));
+
       const { data, error } = await supabase
         .from('wedding_sites')
         .insert({
@@ -141,7 +144,7 @@ const TemplateSelection = () => {
               subtitle: `${new Date(quizAnswers.data_casamento).toLocaleDateString('pt-BR')}`,
               message: welcomeMessage
             },
-            template_profile: templateProfile
+            template_profile: templateProfileData
           },
           is_published: false
         })
