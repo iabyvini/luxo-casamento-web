@@ -2,16 +2,16 @@
 import { TemplateProps, BaseTemplate, TemplateConfig } from "../BaseTemplate";
 import BohoRomanceHero from "./components/BohoRomanceHero";
 import BohoRomanceNavigation from "./components/BohoRomanceNavigation";
-import { CountdownSection } from "@/components/wedding-site/CountdownSection";
-import { CoupleSection } from "@/components/wedding-site/CoupleSection";
-import { OurStorySection } from "@/components/wedding-site/OurStorySection";
-import { GallerySection } from "@/components/wedding-site/GallerySection";
-import { EventDetailsSection } from "@/components/wedding-site/EventDetailsSection";
-import { BridesmaidsSection } from "@/components/wedding-site/BridesmaidsSection";
-import { GiftListSection } from "@/components/wedding-site/GiftListSection";
-import { RSVPSection } from "@/components/wedding-site/RSVPSection";
-import { MessagesSection } from "@/components/wedding-site/MessagesSection";
-import { FooterSection } from "@/components/wedding-site/FooterSection";
+import CountdownSection from "@/components/wedding-site/CountdownSection";
+import CoupleSection from "@/components/wedding-site/CoupleSection";
+import OurStorySection from "@/components/wedding-site/OurStorySection";
+import GallerySection from "@/components/wedding-site/GallerySection";
+import EventDetailsSection from "@/components/wedding-site/EventDetailsSection";
+import BridesmaidsSection from "@/components/wedding-site/BridesmaidsSection";
+import GiftListSection from "@/components/wedding-site/GiftListSection";
+import RSVPSection from "@/components/wedding-site/RSVPSection";
+import MessagesSection from "@/components/wedding-site/MessagesSection";
+import FooterSection from "@/components/wedding-site/FooterSection";
 
 const bohoRomanceConfig: TemplateConfig = {
   id: 'boho-romance',
