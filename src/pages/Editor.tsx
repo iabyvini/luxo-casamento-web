@@ -1,14 +1,14 @@
+
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowLeft, Save, Eye, Settings } from "lucide-react";
+import { Settings } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { ModernVisualTokensProvider, useModernVisualTokens } from "@/contexts/ModernVisualTokensContext";
 import SiteEditor from "@/components/SiteEditor";
-import SlugEditor from "@/components/SlugEditor";
+import EditorHeader from "@/components/editor/EditorHeader";
+import EditorSidebar from "@/components/editor/EditorSidebar";
 
 interface SiteData {
   id: string;
@@ -35,7 +35,6 @@ const EditorContent = () => {
 
   useEffect(() => {
     if (siteId) {
-      // Definir o site ID no contexto para gerenciar fotos específicas por site
       setSiteId(siteId);
       fetchSiteData();
     }
@@ -51,7 +50,6 @@ const EditorContent = () => {
         .single();
 
       if (error) throw error;
-
       setSiteData(data);
     } catch (error: any) {
       console.error('Erro ao carregar site:', error);
@@ -77,10 +75,7 @@ const EditorContent = () => {
         .eq('id', siteData.id);
 
       if (error) throw error;
-
-      // Atualizar dados locais
       setSiteData(prev => prev ? { ...prev, ...updates } : null);
-
     } catch (error: any) {
       toast({
         title: "Erro ao salvar",
@@ -141,46 +136,14 @@ const EditorContent = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="container mx-auto px-4 py-6">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/dashboard')}
-            className="text-gray-600 hover:text-gray-800"
-          >
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar para Dashboard
-          </Button>
-          
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900">
-              Editor Visual
-            </h1>
-            <p className="text-gray-600">
-              {siteData.couple_names}
-            </p>
-          </div>
-          
-          <div className="flex space-x-2">
-            <Button
-              variant="outline"
-              onClick={handlePreview}
-              className="flex items-center gap-2"
-            >
-              <Eye className="h-4 w-4" />
-              Preview
-            </Button>
-            <Button
-              onClick={handlePublishToggle}
-              variant={siteData.is_published ? "destructive" : "default"}
-            >
-              {siteData.is_published ? "Despublicar" : "Publicar"}
-            </Button>
-          </div>
-        </div>
+        <EditorHeader
+          coupleNames={siteData.couple_names}
+          onPreview={handlePreview}
+          onPublishToggle={handlePublishToggle}
+          isPublished={siteData.is_published}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Editor Panel */}
           <div className="lg:col-span-2">
             <SiteEditor
               siteData={siteData}
@@ -190,72 +153,12 @@ const EditorContent = () => {
             />
           </div>
 
-          {/* Settings Sidebar */}
-          <div className="space-y-6">
-            {/* URL Settings */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Configurações da URL</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <SlugEditor
-                  coupleNames={siteData.couple_names}
-                  weddingDate={siteData.wedding_date}
-                  currentSlug={siteData.slug}
-                  onSlugChange={handleSlugChange}
-                  disabled={saving}
-                />
-              </CardContent>
-            </Card>
-
-            {/* Site Status */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Status do Site</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Status</span>
-                  <span className={`text-sm px-2 py-1 rounded-full ${
-                    siteData.is_published 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {siteData.is_published ? 'Publicado' : 'Rascunho'}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Visualizações</span>
-                  <span className="text-sm text-gray-600">
-                    {siteData.views_count || 0}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium">Template</span>
-                  <span className="text-sm text-gray-600">
-                    {siteData.template_name}
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Quick Actions */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Ações Rápidas</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <Button variant="outline" className="w-full" onClick={handlePreview}>
-                  <Eye className="h-4 w-4 mr-2" />
-                  Visualizar Site
-                </Button>
-                <Button variant="outline" className="w-full">
-                  <Save className="h-4 w-4 mr-2" />
-                  Exportar Configurações
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+          <EditorSidebar
+            siteData={siteData}
+            onSlugChange={handleSlugChange}
+            onPreview={handlePreview}
+            saving={saving}
+          />
         </div>
       </div>
     </div>

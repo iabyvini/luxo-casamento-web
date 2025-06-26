@@ -1,19 +1,19 @@
 
 import { useState, useEffect } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Save, Eye, Settings, Camera, Users, Gift, MessageSquare, MapPin, Heart } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import GalleryPhotoManager from "./GalleryPhotoManager";
 import GiftItemManager from "./GiftItemManager";
 import CouplePhotoEditor from "./CouplePhotoEditor";
 import OurStoryEditor from "./OurStoryEditor";
 import EventDetailsEditor from "./EventDetailsEditor";
+import EditorTabs from "./editor/EditorTabs";
+import GeneralTab from "./editor/GeneralTab";
+import EditorHeader from "./editor/EditorHeader";
 
 interface SiteData {
   id: string;
@@ -86,111 +86,27 @@ const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorPro
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Editor do Site</h2>
-          <p className="text-gray-600">
-            Personalize o conteúdo e aparência do seu site
-          </p>
-        </div>
-        <div className="flex space-x-2">
-          <Button variant="outline" onClick={onPreview}>
-            <Eye className="h-4 w-4 mr-2" />
-            Preview
-          </Button>
-          <Button onClick={handleSave} disabled={saving}>
-            <Save className="h-4 w-4 mr-2" />
-            {saving ? 'Salvando...' : 'Salvar'}
-          </Button>
-        </div>
-      </div>
+      <EditorHeader
+        onSave={handleSave}
+        onPreview={onPreview}
+        saving={saving}
+      />
 
-      {/* Editor Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-7">
-          <TabsTrigger value="general" className="flex items-center gap-1">
-            <Settings className="h-3 w-3" />
-            Geral
-          </TabsTrigger>
-          <TabsTrigger value="couple" className="flex items-center gap-1">
-            <Camera className="h-3 w-3" />
-            Casal
-          </TabsTrigger>
-          <TabsTrigger value="story" className="flex items-center gap-1">
-            <Heart className="h-3 w-3" />
-            História
-          </TabsTrigger>
-          <TabsTrigger value="gallery" className="flex items-center gap-1">
-            <Users className="h-3 w-3" />
-            Galeria
-          </TabsTrigger>
-          <TabsTrigger value="event" className="flex items-center gap-1">
-            <MapPin className="h-3 w-3" />
-            Evento
-          </TabsTrigger>
-          <TabsTrigger value="gifts" className="flex items-center gap-1">
-            <Gift className="h-3 w-3" />
-            Presentes
-          </TabsTrigger>
-          <TabsTrigger value="messages" className="flex items-center gap-1">
-            <MessageSquare className="h-3 w-3" />
-            Mensagens
-          </TabsTrigger>
-        </TabsList>
+        <EditorTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-        {/* General Tab */}
         <TabsContent value="general" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Informações Básicas</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label>Nomes do Casal</Label>
-                <Input
-                  value={localData.couple_names}
-                  onChange={(e) => updateLocalData('couple_names', e.target.value)}
-                  placeholder="Ana & João"
-                />
-              </div>
-              
-              <div>
-                <Label>Data do Casamento</Label>
-                <Input
-                  type="date"
-                  value={localData.wedding_date}
-                  onChange={(e) => updateLocalData('wedding_date', e.target.value)}
-                />
-              </div>
-              
-              <div>
-                <Label>Mensagem de Boas-vindas</Label>
-                <Textarea
-                  value={localData.ai_welcome_message}
-                  onChange={(e) => updateLocalData('ai_welcome_message', e.target.value)}
-                  placeholder="Mensagem de boas-vindas personalizada..."
-                  rows={3}
-                />
-              </div>
-
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-                <div>
-                  <p className="font-medium">Template</p>
-                  <p className="text-sm text-gray-600">{siteData.template_name}</p>
-                </div>
-                <Badge variant="outline">{siteData.template_name}</Badge>
-              </div>
-            </CardContent>
-          </Card>
+          <GeneralTab
+            localData={localData}
+            templateName={siteData.template_name}
+            onUpdateData={updateLocalData}
+          />
         </TabsContent>
 
-        {/* Couple Tab */}
         <TabsContent value="couple" className="space-y-6">
           <CouplePhotoEditor siteId={siteData.id} />
         </TabsContent>
 
-        {/* Our Story Tab */}
         <TabsContent value="story" className="space-y-6">
           <OurStoryEditor 
             customContent={localData.custom_content}
@@ -198,7 +114,6 @@ const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorPro
           />
         </TabsContent>
 
-        {/* Gallery Tab */}
         <TabsContent value="gallery" className="space-y-6">
           <GalleryPhotoManager siteId={siteData.id} />
           
@@ -234,7 +149,6 @@ const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorPro
           </Card>
         </TabsContent>
 
-        {/* Event Details Tab */}
         <TabsContent value="event" className="space-y-6">
           <EventDetailsEditor 
             customContent={localData.custom_content}
@@ -242,7 +156,6 @@ const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorPro
           />
         </TabsContent>
 
-        {/* Gifts Tab */}
         <TabsContent value="gifts" className="space-y-6">
           <GiftItemManager siteId={siteData.id} />
           
@@ -278,7 +191,6 @@ const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorPro
           </Card>
         </TabsContent>
 
-        {/* Messages Tab */}
         <TabsContent value="messages" className="space-y-6">
           <Card>
             <CardHeader>
