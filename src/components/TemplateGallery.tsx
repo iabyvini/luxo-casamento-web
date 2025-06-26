@@ -39,22 +39,17 @@ const TemplateGallery = () => {
   });
 
   const handleTemplateSelect = (template: ExtendedTemplateItem) => {
-    // Criar um novo site com o template selecionado
-    navigate('/preview', { 
+    // Navigate to quiz with selected template
+    navigate('/quiz', { 
       state: { 
-        selectedTemplate: template,
-        siteData: {
-          templateName: template.name,
-          coupleNames: "João & Maria",
-          weddingDate: "2024-12-25",
-          welcomeMessage: "Bem-vindos ao nosso casamento!",
-          quizAnswers: {}
-        }
+        selectedTemplate: template.name,
+        templateId: template.id
       }
     });
   };
 
   const handlePreview = (template: ExtendedTemplateItem) => {
+    console.log('🔍 Navigating to preview for template:', template.id);
     navigate(`/template-preview/${template.id}`);
   };
 

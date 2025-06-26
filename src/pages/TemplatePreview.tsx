@@ -5,77 +5,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Eye, Smartphone, Monitor } from "lucide-react";
 import PreviewSite from "@/components/PreviewSite";
 import { PreviewData } from "@/types/quiz";
-
-const mockData: Record<string, PreviewData> = {
-  classico: {
-    coupleNames: "Ana & João",
-    weddingDate: "2024-12-25",
-    templateName: "Clássico",
-    welcomeMessage: "Com muito amor, convidamos vocês para celebrar nossa união em um dia que será inesquecível para nós. Sua presença é o presente mais especial que podemos receber.",
-    quizAnswers: {
-      estilo: "Clássico",
-      cores: "Dourado e Marfim",
-      personalidade: "elegante",
-      local: "Igreja",
-      convidados: "50-100",
-      tema: "tradicional",
-      tom: "Elegante e formal",
-      data_casamento: "2024-12-25",
-      nomes: "Ana & João"
-    }
-  },
-  moderno: {
-    coupleNames: "Camila & Daniel",
-    weddingDate: "2024-11-30",
-    templateName: "Moderno",
-    welcomeMessage: "Juntos construímos nossa história e agora queremos compartilhar este novo capítulo com vocês. Venham celebrar conosco o início de nossa nova jornada!",
-    quizAnswers: {
-      estilo: "Moderno",
-      cores: "Preto e Branco",
-      personalidade: "minimalista",
-      local: "Espaço de Eventos",
-      convidados: "100-200",
-      tema: "contemporâneo",
-      tom: "Moderno e sofisticado",
-      data_casamento: "2024-11-30",
-      nomes: "Camila & Daniel"
-    }
-  },
-  boho: {
-    coupleNames: "Flora & Vinícius",
-    weddingDate: "2024-10-15",
-    templateName: "Boho",
-    welcomeMessage: "Como flores que desabrocham ao sol, nosso amor cresceu naturalmente. Convidamos vocês para celebrar conosco em meio à natureza e ao amor verdadeiro.",
-    quizAnswers: {
-      estilo: "Boho",
-      cores: "Terracota e Verde",
-      personalidade: "livre",
-      local: "Ao Ar Livre",
-      convidados: "30-80",
-      tema: "natural",
-      tom: "Descontraído e natural",
-      data_casamento: "2024-10-15",
-      nomes: "Flora & Vinícius"
-    }
-  },
-  vintage: {
-    coupleNames: "Isabella & Ricardo",
-    weddingDate: "2024-09-20",
-    templateName: "Vintage",
-    welcomeMessage: "Como nos filmes antigos, nossa história começou com um olhar. Agora, queremos que vocês sejam testemunhas do nosso 'felizes para sempre'.",
-    quizAnswers: {
-      estilo: "Vintage",
-      cores: "Bordeaux e Dourado",
-      personalidade: "romântico",
-      local: "Salão Clássico",
-      convidados: "80-150",
-      tema: "retrô",
-      tom: "Romântico e nostálgico",
-      data_casamento: "2024-09-20",
-      nomes: "Isabella & Ricardo"
-    }
-  }
-};
+import { EXTENDED_TEMPLATE_LIBRARY } from "@/data/extendedTemplateLibrary";
 
 const TemplatePreview = () => {
   const { templateId } = useParams<{ templateId: string }>();
@@ -84,15 +14,57 @@ const TemplatePreview = () => {
   const [viewMode, setViewMode] = useState<'desktop' | 'mobile'>('desktop');
 
   useEffect(() => {
-    if (templateId && mockData[templateId]) {
-      setPreviewData(mockData[templateId]);
-    } else {
-      navigate('/');
+    if (!templateId) {
+      console.error('🚫 Template ID não fornecido');
+      navigate('/templates');
+      return;
     }
+
+    // Find template in the extended library
+    const template = EXTENDED_TEMPLATE_LIBRARY.find(t => t.id === templateId);
+    
+    if (!template) {
+      console.error('🚫 Template não encontrado:', templateId);
+      navigate('/templates');
+      return;
+    }
+
+    console.log('✅ Template encontrado:', template.name);
+
+    // Create preview data based on template
+    const mockPreviewData: PreviewData = {
+      coupleNames: "João & Maria",
+      weddingDate: "2024-12-25",
+      templateName: template.name,
+      welcomeMessage: "Com muito amor, convidamos vocês para celebrar nossa união em um dia que será inesquecível para nós. Sua presença é o presente mais especial que podemos receber.",
+      quizAnswers: {
+        estilo: template.category,
+        cores: template.colors.join(", "),
+        personalidade: template.tags[0] || "elegante",
+        local: "Igreja",
+        convidados: "50-100",
+        tema: template.category,
+        tom: "Elegante e formal",
+        data_casamento: "2024-12-25",
+        nomes: "João & Maria"
+      }
+    };
+
+    setPreviewData(mockPreviewData);
   }, [templateId, navigate]);
 
   const handleSelectTemplate = () => {
-    navigate('/quiz', { state: { selectedTemplate: templateId } });
+    if (!templateId) return;
+    
+    const template = EXTENDED_TEMPLATE_LIBRARY.find(t => t.id === templateId);
+    if (!template) return;
+
+    navigate('/quiz', { 
+      state: { 
+        selectedTemplate: template.name,
+        templateId: template.id
+      }
+    });
   };
 
   if (!previewData) {
@@ -115,7 +87,7 @@ const TemplatePreview = () => {
             <div className="flex items-center space-x-4">
               <Button
                 variant="ghost"
-                onClick={() => navigate('/')}
+                onClick={() => navigate('/templates')}
                 className="text-gray-600 hover:text-gray-800"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
