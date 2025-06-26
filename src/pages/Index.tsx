@@ -35,7 +35,7 @@ const Index = () => {
   }
 
   const handleGetStarted = () => {
-    navigate("/auth");
+    navigate("/templates");
   };
 
   return (
@@ -50,8 +50,8 @@ const Index = () => {
             <span className="text-rose-500 block">dos Seus Sonhos</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-            Plataforma completa para criar sites de casamento únicos, com lista de presentes real, 
-            confirmação de convidados e muito mais. Tudo em poucos cliques!
+            Escolha entre 50 templates únicos e personalize completamente seu site de casamento. 
+            Galeria de fotos, lista de presentes, confirmação de convidados e muito mais!
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
@@ -60,27 +60,27 @@ const Index = () => {
               onClick={handleGetStarted}
               className="bg-rose-500 hover:bg-rose-600 text-white px-8 py-4 text-lg flex items-center gap-2"
             >
-              Começar Gratuitamente
+              Explorar Templates
               <ArrowRight className="h-5 w-5" />
             </Button>
             <p className="text-sm text-gray-500">
-              ✨ Grátis para sempre • Sem cartão de crédito
+              ✨ 50 templates únicos • Totalmente personalizável
             </p>
           </div>
 
-          {/* Estatísticas */}
+          {/* Estatísticas Atualizadas */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-2xl mx-auto">
+            <div className="text-center">
+              <div className="text-2xl font-bold text-rose-500">50+</div>
+              <div className="text-gray-600">Templates Únicos</div>
+            </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-rose-500">1000+</div>
               <div className="text-gray-600">Sites Criados</div>
             </div>
             <div className="text-center">
-              <div className="text-2xl font-bold text-rose-500">50k+</div>
-              <div className="text-gray-600">Convidados Confirmados</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold text-rose-500">R$ 2M+</div>
-              <div className="text-gray-600">Em Presentes</div>
+              <div className="text-2xl font-bold text-rose-500">100%</div>
+              <div className="text-gray-600">Personalizável</div>
             </div>
           </div>
         </div>

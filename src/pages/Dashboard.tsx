@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -67,7 +66,7 @@ const Dashboard = () => {
   };
 
   const handleCreateSite = () => {
-    navigate('/quiz');
+    navigate('/templates');
   };
 
   const handleViewSite = (slug: string) => {
@@ -248,11 +247,11 @@ const Dashboard = () => {
                 Nenhum site criado ainda
               </h2>
               <p className="text-gray-600 mb-6">
-                Crie seu primeiro site de casamento personalizado em poucos minutos!
+                Escolha entre 50 templates únicos e crie seu site de casamento personalizado!
               </p>
               <Button onClick={handleCreateSite} size="lg" className="flex items-center gap-2 bg-rose-500 hover:bg-rose-600">
                 <Plus className="h-5 w-5" />
-                Criar Meu Primeiro Site
+                Explorar Templates
               </Button>
             </div>
           </div>

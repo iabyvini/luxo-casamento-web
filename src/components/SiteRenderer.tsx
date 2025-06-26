@@ -1,4 +1,3 @@
-
 import { PreviewData } from "@/types/quiz";
 import ModernEleganceTemplate from "./templates/ModernElegance/ModernEleganceTemplate";
 import BohoRomanceTemplate from "./templates/BohoRomance/BohoRomanceTemplate";
@@ -7,6 +6,7 @@ import ClassicRomanticTemplate from "./templates/ClassicRomantic/ClassicRomantic
 import EditorialModernTemplate from "./templates/EditorialModern/EditorialModernTemplate";
 import BohoFestivalTemplate from "./templates/BohoFestival/BohoFestivalTemplate";
 import NeonPopChicTemplate from "./templates/NeonPopChic/NeonPopChicTemplate";
+import ToscanaEleganteTemplate from "./templates/ToscanaElegante/ToscanaEleganteTemplate";
 import PreviewSite from "./PreviewSite";
 import ErrorBoundary from "./ErrorBoundary";
 
@@ -26,9 +26,13 @@ const SiteRenderer = ({ siteData, siteId = "preview" }: SiteRendererProps) => {
     templateName = "default-template";
   }
 
-  // Mapeamento de templates com fallback garantido
+  // Mapeamento de templates expandido
   const templateMap: Record<string, React.ComponentType<any>> = {
-    // Novos templates da biblioteca
+    // Novos templates da biblioteca expandida
+    'Toscana Elegante': ToscanaEleganteTemplate,
+    'toscana-elegante': ToscanaEleganteTemplate,
+    
+    // Templates da biblioteca anterior
     'Clássico Romântico': ClassicRomanticTemplate,
     'Editorial Moderno': EditorialModernTemplate,
     'Boho Festival': BohoFestivalTemplate,
