@@ -7,7 +7,7 @@ import NeonCoupleSection from "./components/NeonCoupleSection";
 import NeonTimelineSection from "./components/NeonTimelineSection";
 import NeonGallerySection from "./components/NeonGallerySection";
 import NeonEventDetailsSection from "./components/NeonEventDetailsSection";
-import NeonTriviaSe ction from "./components/NeonTriviaSection";
+import NeonTriviaSection from "./components/NeonTriviaSection";
 import NeonGiftListSection from "./components/NeonGiftListSection";
 import NeonRSVPSection from "./components/NeonRSVPSection";
 import NeonMessagesSection from "./components/NeonMessagesSection";
