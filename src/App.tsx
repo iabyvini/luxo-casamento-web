@@ -9,6 +9,7 @@ import { VisualTokensProvider } from "@/contexts/VisualTokensContext";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Quiz from "./pages/Quiz";
+import TemplateSelection from "./pages/TemplateSelection";
 import Preview from "./pages/Preview";
 import TemplatePreview from "./pages/TemplatePreview";
 import Dashboard from "./pages/Dashboard";
@@ -33,6 +34,7 @@ const App = () => {
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/quiz" element={<Quiz />} />
+                <Route path="/template-selection" element={<TemplateSelection />} />
                 <Route path="/preview" element={<Preview />} />
                 <Route path="/template-preview/:templateId" element={<TemplatePreview />} />
                 <Route path="/dashboard" element={<Dashboard />} />

@@ -26,6 +26,9 @@ export interface QuizAnswers {
   photos?: string;
   emotion?: string;
   
+  // Template selection
+  template_choice_confirmed?: boolean;
+  
   // Campos opcionais existentes
   personalidade?: string;
   convidados?: string;
