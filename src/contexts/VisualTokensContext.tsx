@@ -40,80 +40,42 @@ export const VisualTokensProvider: React.FC<{ children: React.ReactNode }> = ({ 
   }, []);
 
   const applyTokens = (quizAnswers: QuizAnswers) => {
-    // Usar o novo sistema moderno como padrão
-    const { findBestModernTemplate, generateModernVisualTokens, applyModernVisualTokensToCSS } = require('@/utils/modernTemplateProfiles');
-    const { generateModernVisualTokens: genTokens, applyModernVisualTokensToCSS: applyCSS } = require('@/utils/modernVisualTokens');
+    console.log('🎨 Aplicando tokens para:', quizAnswers);
     
-    const modernTemplate = findBestModernTemplate(quizAnswers);
-    const modernTokens = genTokens(modernTemplate);
-    
-    // Converter para o formato antigo para compatibilidade
-    const legacyTokens = {
-      colors: {
-        primary: modernTokens.colors.primary,
-        secondary: modernTokens.colors.secondary,
-        accent: modernTokens.colors.accent,
-        background: modernTokens.colors.background,
-        textureOverlay: undefined
-      },
-      typography: {
-        fontFamilies: {
-          heading: modernTokens.typography.heading.family,
-          body: modernTokens.typography.body.family,
-          accent: modernTokens.typography.script.family
-        },
-        weights: {
-          heading: modernTokens.typography.heading.weight,
-          body: modernTokens.typography.body.weight
-        }
-      },
-      layout: {
-        spacing: 'normal' as const,
-        borderRadius: 'soft' as const,
-        shadows: 'subtle' as const,
-        contentWidth: 'normal' as const
-      },
-      decorations: {
-        heroElements: [],
-        sectionDividers: [],
-        backgroundPatterns: [],
-        iconStyle: 'minimal' as const
+    try {
+      // Use the existing template system
+      const templateProfile = findBestTemplateProfile(quizAnswers);
+      const tokens = generateVisualTokens(templateProfile);
+      
+      console.log('📋 Template selecionado:', templateProfile);
+      console.log('🎨 Tokens gerados:', tokens);
+      
+      setVisualTokens(tokens);
+      setIsCustomThemeActive(true);
+      
+      // Apply CSS
+      const styleId = 'global-visual-tokens';
+      let styleElement = document.getElementById(styleId) as HTMLStyleElement;
+      
+      if (!styleElement) {
+        styleElement = document.createElement('style');
+        styleElement.id = styleId;
+        document.head.appendChild(styleElement);
       }
-    };
-    
-    setVisualTokens(legacyTokens);
-    setIsCustomThemeActive(true);
-    
-    // Aplicar CSS moderno
-    const styleId = 'global-visual-tokens';
-    let styleElement = document.getElementById(styleId) as HTMLStyleElement;
-    
-    if (!styleElement) {
-      styleElement = document.createElement('style');
-      styleElement.id = styleId;
-      document.head.appendChild(styleElement);
+      
+      const cssContent = applyVisualTokensToCSS(tokens);
+      styleElement.textContent = cssContent;
+      
+      console.log('✅ CSS aplicado');
+      
+      // Apply theme class to body
+      document.body.classList.add('custom-theme-active');
+      
+    } catch (error) {
+      console.error('❌ Erro ao aplicar tokens:', error);
+      // Fallback to basic theme
+      setIsCustomThemeActive(false);
     }
-    
-    styleElement.textContent = `
-      ${applyCSS(modernTokens)}
-      
-      /* Modern theme overrides */
-      body.custom-theme-active {
-        font-family: ${modernTokens.typography.body.family}, sans-serif;
-        color: ${modernTokens.colors.text};
-        background: ${modernTokens.colors.background};
-      }
-      
-      body.custom-theme-active .modern-active {
-        --primary-color: ${modernTokens.colors.primary};
-        --secondary-color: ${modernTokens.colors.secondary};
-        --accent-color: ${modernTokens.colors.accent};
-        --background-color: ${modernTokens.colors.background};
-        --text-color: ${modernTokens.colors.text};
-      }
-    `;
-    
-    document.body.classList.add('custom-theme-active');
   };
 
   const resetTokens = () => {
