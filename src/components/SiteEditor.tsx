@@ -13,7 +13,6 @@ import OurStoryEditor from "./OurStoryEditor";
 import EventDetailsEditor from "./EventDetailsEditor";
 import EditorTabs from "./editor/EditorTabs";
 import GeneralTab from "./editor/GeneralTab";
-import EditorHeader from "./editor/EditorHeader";
 
 interface SiteData {
   id: string;
@@ -86,12 +85,6 @@ const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorPro
 
   return (
     <div className="space-y-6">
-      <EditorHeader
-        onSave={handleSave}
-        onPreview={onPreview}
-        saving={saving}
-      />
-
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <EditorTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
@@ -100,6 +93,8 @@ const SiteEditor = ({ siteData, onUpdateSite, onPreview, saving }: SiteEditorPro
             localData={localData}
             templateName={siteData.template_name}
             onUpdateData={updateLocalData}
+            onSave={handleSave}
+            saving={saving}
           />
         </TabsContent>
 
