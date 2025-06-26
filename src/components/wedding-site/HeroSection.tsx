@@ -1,7 +1,6 @@
 
 import { Heart, Calendar, MapPin } from "lucide-react";
 import { QuizAnswers } from "@/types/quiz";
-import { useModernVisualTokens } from "@/contexts/ModernVisualTokensContext";
 
 interface HeroSectionProps {
   coupleNames: string;
@@ -12,9 +11,7 @@ interface HeroSectionProps {
 }
 
 const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, quizAnswers }: HeroSectionProps) => {
-  const { couplePhotoUrl } = useModernVisualTokens();
-
-  console.log('🖼️ HeroSection - Foto do casal:', couplePhotoUrl);
+  console.log('🖼️ HeroSection - Template clássico');
 
   const formattedDate = new Date(weddingDate).toLocaleDateString('pt-BR', {
     day: 'numeric',
@@ -34,33 +31,16 @@ const HeroSection = ({ coupleNames, weddingDate, welcomeMessage, templateName, q
       <div className="container mx-auto px-4 py-20">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-[80vh]">
           
-          {/* Left Column - Couple Photo */}
+          {/* Left Column - Placeholder for couple photo */}
           <div className="order-2 lg:order-1 flex justify-center">
-            {couplePhotoUrl ? (
-              <div className="relative">
-                <div className="w-80 h-96 md:w-96 md:h-[480px] overflow-hidden rounded-2xl shadow-2xl transition-all duration-300 border-4 border-green-200">
-                  <img 
-                    src={couplePhotoUrl} 
-                    alt="Foto do casal" 
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      console.error('❌ Erro ao carregar foto do casal:', couplePhotoUrl);
-                      // Fallback para placeholder se a imagem não carregar
-                      e.currentTarget.style.display = 'none';
-                    }}
-                  />
-                </div>
+            <div className="w-80 h-96 md:w-96 md:h-[480px] bg-gradient-to-br from-green-100 to-green-200 rounded-2xl shadow-2xl flex items-center justify-center border-4 border-green-200">
+              <div className="text-center">
+                <Heart className="h-16 w-16 mx-auto mb-4 text-green-600" />
+                <p className="text-green-700 font-medium">
+                  Foto do casal
+                </p>
               </div>
-            ) : (
-              <div className="w-80 h-96 md:w-96 md:h-[480px] bg-gradient-to-br from-green-100 to-green-200 rounded-2xl shadow-2xl flex items-center justify-center border-4 border-green-200">
-                <div className="text-center">
-                  <Heart className="h-16 w-16 mx-auto mb-4 text-green-600" />
-                  <p className="text-green-700 font-medium">
-                    Foto do casal
-                  </p>
-                </div>
-              </div>
-            )}
+            </div>
           </div>
 
           {/* Right Column - Content */}

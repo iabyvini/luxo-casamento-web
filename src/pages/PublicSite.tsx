@@ -109,7 +109,7 @@ const PublicSite = () => {
     );
   }
 
-  // Renderizar template clássico
+  // Renderizar template clássico - SEMPRE usar VisualTokensProvider
   console.log('🎨 Renderizando template clássico para:', siteData.couple_names);
   return (
     <VisualTokensProvider>
