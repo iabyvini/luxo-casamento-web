@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -31,15 +30,19 @@ const Preview = () => {
       let answers: QuizAnswers;
 
       if (selectedTemplate) {
-        // Fluxo manual dos templates
+        // Fluxo manual dos templates - create complete QuizAnswers object
         templateName = selectedTemplate;
-        answers = quizAnswers || {
+        answers = {
           estilo: 'Clássico',
-          local: 'Igreja',
-          tom: 'Elegante e formal',
           cores: 'Dourado',
+          personalidade: 'Elegante',
+          local: 'Igreja',
+          convidados: '50-100',
+          tema: 'Clássico',
+          tom: 'Elegante e formal',
           data_casamento: quizAnswers?.data_casamento || '',
-          nomes: quizAnswers?.nomes || ''
+          nomes: quizAnswers?.nomes || '',
+          ...quizAnswers // Spread any existing answers
         };
       } else {
         // Fluxo do quiz
