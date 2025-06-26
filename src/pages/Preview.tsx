@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -113,7 +114,7 @@ const Preview = () => {
   }
 
   return (
-    <ModernVisualTokensProvider>
+    <ModernVisualTokensProvider templateName={previewData.templateName}>
       <div className="min-h-screen bg-gradient-to-br from-brown-50 to-gold-50">
         <div className="container mx-auto px-4 py-6">
           {/* Header with improved navigation */}

@@ -108,7 +108,7 @@ const TemplatePreview = () => {
   }
 
   return (
-    <ModernVisualTokensProvider>
+    <ModernVisualTokensProvider templateName={previewData.templateName}>
       <div className={`min-h-screen bg-gray-100 template-${templateId}`}>
         {/* Header de Controle */}
         <div className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">

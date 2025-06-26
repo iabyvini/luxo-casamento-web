@@ -12,11 +12,17 @@ interface PreviewSiteProps {
 
 const PreviewSite = ({ data, siteId = "preview" }: PreviewSiteProps) => {
   const { applyTokens } = useVisualTokens();
-  const { applyModernTokens, setSiteId } = useModernVisualTokens();
+  const { applyModernTokens, applyTemplateTokens, setSiteId } = useModernVisualTokens();
 
   useEffect(() => {
     console.log('🔄 PreviewSite - Aplicando tokens para:', data.quizAnswers);
+    console.log('🎨 PreviewSite - Template:', data.templateName);
     console.log('🆔 PreviewSite - SiteId:', siteId);
+    
+    // FASE 1: Aplicar tokens específicos do template baseado no templateName
+    if (data.templateName) {
+      applyTemplateTokens(data.templateName);
+    }
     
     // FASE 2: Definir o site ID para gerenciar fotos específicas
     setSiteId(siteId);
@@ -28,7 +34,7 @@ const PreviewSite = ({ data, siteId = "preview" }: PreviewSiteProps) => {
       // Manter compatibilidade com sistema antigo
       applyTokens(data.quizAnswers);
     }
-  }, [data.quizAnswers, applyTokens, applyModernTokens, setSiteId, siteId]);
+  }, [data.templateName, data.quizAnswers, applyTokens, applyModernTokens, applyTemplateTokens, setSiteId, siteId]);
 
   return <SiteRenderer siteData={data} siteId={siteId} />;
 };

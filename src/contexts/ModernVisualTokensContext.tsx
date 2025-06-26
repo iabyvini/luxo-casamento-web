@@ -5,26 +5,110 @@ import { QuizAnswers } from '@/types/quiz';
 import { findBestModernTemplate } from '@/utils/modernTemplateProfiles';
 import { supabase } from '@/integrations/supabase/client';
 
+// Dinamicamente importa todos os tokens JSON
+const tokenModules = import.meta.glob('/src/tokens/*.json', { eager: true });
+
+interface TemplateTokens {
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
+  backgroundColor: string;
+  fontFamily: string;
+  headingFont: string;
+  borderRadius: string;
+}
+
 interface ModernVisualTokensContextType {
   modernTokens: ModernVisualTokens | null;
   isModernThemeActive: boolean;
   couplePhotoUrl: string | null;
   templateProfile: any | null;
+  templateTokens: TemplateTokens | null;
   applyModernTokens: (quizAnswers: QuizAnswers) => void;
+  applyTemplateTokens: (templateName: string) => void;
   resetModernTokens: () => void;
   setCouplePhotoUrl: (url: string | null) => void;
   setSiteId: (siteId: string) => void;
 }
 
+const defaultTokens: TemplateTokens = {
+  primaryColor: "#000000",
+  secondaryColor: "#FFFFFF",
+  accentColor: "#C0C0C0",
+  backgroundColor: "#F9F9F9",
+  fontFamily: "Inter",
+  headingFont: "Inter",
+  borderRadius: "4px"
+};
+
 const ModernVisualTokensContext = createContext<ModernVisualTokensContextType | undefined>(undefined);
 
-export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode; templateName?: string }> = ({ children, templateName }) => {
   const [modernTokens, setModernTokens] = useState<ModernVisualTokens | null>(null);
   const [isModernThemeActive, setIsModernThemeActive] = useState(false);
   const [couplePhotoUrl, setCouplePhotoUrlState] = useState<string | null>(null);
   const [templateProfile, setTemplateProfile] = useState<any | null>(null);
+  const [templateTokens, setTemplateTokens] = useState<TemplateTokens | null>(null);
   const [currentSiteId, setCurrentSiteId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Função para carregar tokens específicos do template
+  const loadTemplateTokens = (templateName: string): TemplateTokens => {
+    console.log('🎨 Carregando tokens para template:', templateName);
+    console.log('📁 Módulos disponíveis:', Object.keys(tokenModules));
+    
+    // Normalizar nome do template para busca
+    const normalizedName = templateName.toLowerCase().replace(/\s+/g, '-');
+    
+    // Buscar o módulo correspondente
+    const matchingModule = Object.entries(tokenModules).find(([path]) => {
+      const fileName = path.split('/').pop()?.replace('.json', '') || '';
+      return fileName === normalizedName;
+    });
+
+    if (matchingModule) {
+      const tokens = matchingModule[1] as any;
+      console.log('✅ Tokens encontrados:', tokens.default || tokens);
+      return tokens.default || tokens;
+    }
+
+    console.log('⚠️ Tokens não encontrados, usando padrão para:', templateName);
+    return defaultTokens;
+  };
+
+  // Aplicar tokens de template específico
+  const applyTemplateTokens = (templateName: string) => {
+    console.log('🔄 Aplicando tokens do template:', templateName);
+    
+    const tokens = loadTemplateTokens(templateName);
+    setTemplateTokens(tokens);
+
+    // Aplicar CSS custom properties
+    document.documentElement.style.setProperty('--template-primary', tokens.primaryColor);
+    document.documentElement.style.setProperty('--template-secondary', tokens.secondaryColor);
+    document.documentElement.style.setProperty('--template-accent', tokens.accentColor);
+    document.documentElement.style.setProperty('--template-background', tokens.backgroundColor);
+    document.documentElement.style.setProperty('--template-font-family', tokens.fontFamily);
+    document.documentElement.style.setProperty('--template-heading-font', tokens.headingFont);
+    document.documentElement.style.setProperty('--template-border-radius', tokens.borderRadius);
+
+    // Também aplicar como variáveis modernas
+    document.documentElement.style.setProperty('--modern-primary', tokens.primaryColor);
+    document.documentElement.style.setProperty('--modern-secondary', tokens.secondaryColor);
+    document.documentElement.style.setProperty('--modern-accent', tokens.accentColor);
+    document.documentElement.style.setProperty('--modern-background', tokens.backgroundColor);
+    document.documentElement.style.setProperty('--modern-body-font', tokens.fontFamily);
+    document.documentElement.style.setProperty('--modern-heading-font', tokens.headingFont);
+
+    console.log('✅ Tokens aplicados com sucesso');
+  };
+
+  // Aplicar tokens automaticamente quando templateName muda
+  useEffect(() => {
+    if (templateName) {
+      applyTemplateTokens(templateName);
+    }
+  }, [templateName]);
 
   // Função para definir siteId e carregar foto do banco
   const setSiteId = (siteId: string) => {
@@ -114,9 +198,8 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode }>
       }
     };
 
-    // Apenas executar uma vez quando o componente monta
     detectSiteId();
-  }, []); // Array vazio para executar apenas uma vez
+  }, []);
 
   // Função para atualizar foto (usada pelo componente PhotoUpload)
   const setCouplePhotoUrl = (url: string | null) => {
@@ -180,7 +263,9 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode }>
       isModernThemeActive,
       couplePhotoUrl,
       templateProfile,
+      templateTokens,
       applyModernTokens, 
+      applyTemplateTokens,
       resetModernTokens,
       setCouplePhotoUrl,
       setSiteId
