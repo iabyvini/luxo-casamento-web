@@ -1,13 +1,13 @@
 
-import { ExtendedTemplateItem } from "@/data/extendedTemplateLibrary";
+import { ExtendedTemplate } from "@/data/extendedTemplateLibrary";
 import TemplateCard from "./TemplateCard";
 import EmptyState from "./EmptyState";
 
 interface TemplateGridProps {
-  templates: ExtendedTemplateItem[];
+  templates: ExtendedTemplate[];
   favorites: string[];
-  onPreview: (template: ExtendedTemplateItem) => void;
-  onSelect: (template: ExtendedTemplateItem) => void;
+  onPreview: (template: ExtendedTemplate) => void;
+  onSelect: (template: ExtendedTemplate) => void;
   onToggleFavorite: (templateId: string) => void;
 }
 

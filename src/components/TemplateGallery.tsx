@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { EXTENDED_TEMPLATE_LIBRARY, ExtendedTemplateItem } from "@/data/extendedTemplateLibrary";
+import { EXTENDED_TEMPLATE_LIBRARY, ExtendedTemplate } from "@/data/extendedTemplateLibrary";
 import { getTemplateTokens, applyTemplateTokensToCSS } from "@/utils/templateTokens";
 import GalleryHeader from "./TemplateGallery/GalleryHeader";
 import CategoryFilters from "./TemplateGallery/CategoryFilters";
@@ -65,7 +65,7 @@ const TemplateGallery = () => {
     return matchesSearch && matchesCategory;
   });
 
-  const handleTemplateSelect = (template: ExtendedTemplateItem) => {
+  const handleTemplateSelect = (template: ExtendedTemplate) => {
     navigate('/quiz', { 
       state: { 
         selectedTemplate: template.name,
@@ -74,7 +74,7 @@ const TemplateGallery = () => {
     });
   };
 
-  const handlePreview = (template: ExtendedTemplateItem) => {
+  const handlePreview = (template: ExtendedTemplate) => {
     console.log('🔍 Navigating to preview for template:', template.id);
     navigate(`/template-preview/${template.id}`);
   };

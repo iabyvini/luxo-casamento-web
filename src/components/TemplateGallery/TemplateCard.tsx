@@ -3,14 +3,14 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Eye, Heart } from "lucide-react";
-import { ExtendedTemplateItem } from "@/data/extendedTemplateLibrary";
+import { ExtendedTemplate } from "@/data/extendedTemplateLibrary";
 import { getTemplateTokens } from "@/utils/templateTokens";
 
 interface TemplateCardProps {
-  template: ExtendedTemplateItem;
+  template: ExtendedTemplate;
   isFavorite: boolean;
-  onPreview: (template: ExtendedTemplateItem) => void;
-  onSelect: (template: ExtendedTemplateItem) => void;
+  onPreview: (template: ExtendedTemplate) => void;
+  onSelect: (template: ExtendedTemplate) => void;
   onToggleFavorite: (templateId: string) => void;
 }
 
@@ -28,7 +28,7 @@ const TemplateCard = ({
       <div 
         className={`aspect-[4/3] relative overflow-hidden template-${template.id}`}
         style={{
-          background: tokens.gradients?.hero || `linear-gradient(135deg, ${tokens.primaryColor}, ${tokens.accentColor})`
+          background: `linear-gradient(135deg, ${tokens.primaryColor}, ${tokens.accentColor})`
         }}
       >
         {/* Template Preview Content */}
