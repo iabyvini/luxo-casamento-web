@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { PreviewData } from "@/types/quiz";
 import { useVisualTokens } from "@/contexts/VisualTokensContext";
 import { useModernVisualTokens } from "@/contexts/ModernVisualTokensContext";
@@ -13,58 +13,67 @@ interface PreviewSiteProps {
 const PreviewSite = ({ data, siteId = "preview" }: PreviewSiteProps) => {
   const { applyTokens } = useVisualTokens();
   const { applyModernTokens, applyTemplateTokens, setSiteId } = useModernVisualTokens();
+  const hasAppliedTokens = useRef(false);
 
   useEffect(() => {
-    console.log('🔄 PreviewSite - Aplicando tokens para:', data.quizAnswers);
+    // Evitar aplicação duplicada
+    if (hasAppliedTokens.current) {
+      console.log('⚠️ PreviewSite - Tokens já aplicados, pulando...');
+      return;
+    }
+
+    console.log('🔄 PreviewSite - Iniciando aplicação de tokens para:', data.quizAnswers?.template_id);
     console.log('🎨 PreviewSite - Template:', data.templateName);
     console.log('🆔 PreviewSite - SiteId:', siteId);
     
-    // DEBUG: Verificar dados recebidos
-    console.log('📊 DEBUG - Dados completos:', {
-      templateName: data.templateName,
-      quizAnswers: data.quizAnswers,
-      template_id: data.quizAnswers?.template_id,
-      siteId: siteId
-    });
+    // Definir o site ID PRIMEIRO (para gerenciar fotos específicas)
+    setSiteId(siteId);
     
-    // FASE 1: Aplicar tokens específicos do template baseado no template_id (não templateName)
+    // PRIORIDADE 1: Aplicar tokens específicos do template baseado no template_id
+    let templateIdToUse = null;
+    
     if (data.quizAnswers?.template_id) {
-      console.log('✅ Usando template_id dos quizAnswers:', data.quizAnswers.template_id);
-      
-      // DEBUG: Verificar se a função será chamada
-      console.log('🎯 DEBUG - Chamando applyTemplateTokens com:', data.quizAnswers.template_id);
-      applyTemplateTokens(data.quizAnswers.template_id);
+      templateIdToUse = data.quizAnswers.template_id;
+      console.log('✅ Usando template_id dos quizAnswers:', templateIdToUse);
     } else if (siteId && siteId.startsWith('preview-')) {
       // Se estamos em um preview e não temos template_id nos quizAnswers,
       // extrair o templateId do siteId
-      const templateId = siteId.replace('preview-', '');
-      console.log('✅ Extraindo templateId do siteId:', templateId);
-      
-      // DEBUG: Verificar se a função será chamada
-      console.log('🎯 DEBUG - Chamando applyTemplateTokens com:', templateId);
-      applyTemplateTokens(templateId);
+      templateIdToUse = siteId.replace('preview-', '');
+      console.log('✅ Extraindo templateId do siteId:', templateIdToUse);
     } else {
-      console.log('⚠️ Nenhum template_id encontrado, usando fallback');
-      console.log('🔍 DEBUG - Valores disponíveis:', {
-        'data.quizAnswers': data.quizAnswers,
-        'data.quizAnswers?.template_id': data.quizAnswers?.template_id,
-        'siteId': siteId,
-        'siteId.startsWith("preview-")': siteId?.startsWith('preview-')
-      });
+      console.log('⚠️ Nenhum template_id encontrado, usando templateName como fallback');
+      templateIdToUse = data.templateName;
     }
     
-    // FASE 2: Definir o site ID para gerenciar fotos específicas
-    setSiteId(siteId);
+    if (templateIdToUse) {
+      console.log('🎯 DEBUG - Aplicando tokens para template:', templateIdToUse);
+      applyTemplateTokens(templateIdToUse);
+    }
     
+    // PRIORIDADE 2: Sistema moderno e legado para compatibilidade
     if (data.quizAnswers) {
-      console.log('🔧 DEBUG - Aplicando tokens modernos...');
-      // Aplicar os tokens modernos
+      console.log('🔧 DEBUG - Aplicando sistemas de tokens adicionais...');
+      
+      // Aplicar os tokens modernos (apenas se necessário)
       applyModernTokens(data.quizAnswers);
       
-      // Manter compatibilidade com sistema antigo
-      applyTokens(data.quizAnswers);
+      // Manter compatibilidade com sistema antigo (apenas se template_id não foi usado)
+      if (!data.quizAnswers.template_id) {
+        console.log('🔄 DEBUG - Aplicando sistema legado como fallback...');
+        applyTokens(data.quizAnswers);
+      }
     }
-  }, [data.templateName, data.quizAnswers, applyTokens, applyModernTokens, applyTemplateTokens, setSiteId, siteId]);
+    
+    // Marcar como aplicado para evitar loops
+    hasAppliedTokens.current = true;
+    
+    console.log('✅ PreviewSite - Aplicação de tokens concluída');
+    
+    // Cleanup ao desmontar o componente
+    return () => {
+      hasAppliedTokens.current = false;
+    };
+  }, [data.templateName, data.quizAnswers?.template_id, siteId]); // Dependências específicas e estáveis
 
   return <SiteRenderer siteData={data} siteId={siteId} />;
 };

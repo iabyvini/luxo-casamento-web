@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+
+import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import { ModernVisualTokens, generateModernVisualTokens, applyModernVisualTokensToCSS } from '@/utils/modernVisualTokens';
 import { QuizAnswers } from '@/types/quiz';
 import { findBestModernTemplate } from '@/utils/modernTemplateProfiles';
@@ -50,11 +51,11 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode; t
   const [templateTokens, setTemplateTokens] = useState<TemplateTokens | null>(null);
   const [currentSiteId, setCurrentSiteId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [appliedTemplateId, setAppliedTemplateId] = useState<string | null>(null);
 
   // Função para carregar tokens específicos do template
-  const loadTemplateTokens = (templateName: string): TemplateTokens => {
+  const loadTemplateTokens = useCallback((templateName: string): TemplateTokens => {
     console.log('🎨 DEBUG - loadTemplateTokens chamada com:', templateName);
-    console.log('📁 DEBUG - Módulos disponíveis:', Object.keys(tokenModules));
     
     // Normalizar nome do template para busca
     const normalizedName = templateName.toLowerCase().replace(/\s+/g, '-');
@@ -63,7 +64,6 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode; t
     // Buscar o módulo correspondente
     const matchingModule = Object.entries(tokenModules).find(([path]) => {
       const fileName = path.split('/').pop()?.replace('.json', '') || '';
-      console.log('🔍 DEBUG - Comparando:', fileName, 'com', normalizedName);
       return fileName === normalizedName;
     });
 
@@ -75,18 +75,22 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode; t
     }
 
     console.log('⚠️ DEBUG - Tokens não encontrados para:', templateName, ', usando padrão');
-    console.log('📋 DEBUG - Arquivos disponíveis:', Object.keys(tokenModules).map(path => 
-      path.split('/').pop()?.replace('.json', '')
-    ));
     return defaultTokens;
-  };
+  }, []);
 
   // Aplicar tokens de template específico
-  const applyTemplateTokens = (templateName: string) => {
+  const applyTemplateTokens = useCallback((templateName: string) => {
     console.log('🔄 DEBUG - applyTemplateTokens chamada com:', templateName);
+    
+    // Evitar aplicação duplicada
+    if (appliedTemplateId === templateName) {
+      console.log('⚠️ DEBUG - Tokens já aplicados para:', templateName, ', pulando...');
+      return;
+    }
     
     const tokens = loadTemplateTokens(templateName);
     setTemplateTokens(tokens);
+    setAppliedTemplateId(templateName);
 
     console.log('🎨 DEBUG - Aplicando CSS custom properties:', tokens);
 
@@ -107,34 +111,20 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode; t
     document.documentElement.style.setProperty('--modern-body-font', tokens.fontFamily);
     document.documentElement.style.setProperty('--modern-heading-font', tokens.headingFont);
 
-    // DEBUG: Verificar se as variáveis foram aplicadas
-    console.log('✅ DEBUG - Variáveis CSS aplicadas:');
-    console.log('  --template-primary:', document.documentElement.style.getPropertyValue('--template-primary'));
-    console.log('  --template-secondary:', document.documentElement.style.getPropertyValue('--template-secondary'));
-    console.log('  --modern-primary:', document.documentElement.style.getPropertyValue('--modern-primary'));
-
     console.log('✅ DEBUG - Tokens aplicados com sucesso para:', templateName);
-  };
-
-  // Aplicar tokens automaticamente quando templateName muda
-  useEffect(() => {
-    if (templateName) {
-      console.log('🔄 DEBUG - useEffect templateName:', templateName);
-      applyTemplateTokens(templateName);
-    }
-  }, [templateName]);
+  }, [loadTemplateTokens, appliedTemplateId]);
 
   // Função para definir siteId e carregar foto do banco
-  const setSiteId = (siteId: string) => {
+  const setSiteId = useCallback((siteId: string) => {
     if (siteId && siteId !== currentSiteId && !isLoading) {
       console.log('📝 Definindo siteId:', siteId);
       setCurrentSiteId(siteId);
       loadCouplePhotoFromDatabase(siteId);
     }
-  };
+  }, [currentSiteId, isLoading]);
 
   // Carregar foto do banco de dados
-  const loadCouplePhotoFromDatabase = async (siteId: string) => {
+  const loadCouplePhotoFromDatabase = useCallback(async (siteId: string) => {
     if (isLoading) return;
     
     console.log('🗄️ Carregando foto do banco para siteId:', siteId);
@@ -166,7 +156,64 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode; t
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [isLoading]);
+
+  // Função para atualizar foto (usada pelo componente PhotoUpload)
+  const setCouplePhotoUrl = useCallback((url: string | null) => {
+    console.log('💾 Atualizando foto no contexto:', url);
+    setCouplePhotoUrlState(url);
+  }, []);
+
+  const applyModernTokens = useCallback((quizAnswers: QuizAnswers) => {
+    console.log('🎨 DEBUG - applyModernTokens chamada para:', quizAnswers);
+    
+    const profile = findBestModernTemplate(quizAnswers);
+    const tokens = generateModernVisualTokens(profile);
+    
+    console.log('📋 DEBUG - Template selecionado:', profile.name, profile.id);
+    console.log('🎨 DEBUG - Tokens gerados:', tokens);
+    
+    setTemplateProfile(profile);
+    setModernTokens(tokens);
+    setIsModernThemeActive(true);
+    
+    // Apply CSS
+    const styleId = 'modern-visual-tokens';
+    let styleElement = document.getElementById(styleId) as HTMLStyleElement;
+    
+    if (!styleElement) {
+      styleElement = document.createElement('style');
+      styleElement.id = styleId;
+      document.head.appendChild(styleElement);
+    }
+    
+    const cssContent = applyModernVisualTokensToCSS(tokens);
+    styleElement.textContent = cssContent;
+    
+    console.log('✅ DEBUG - CSS aplicado:', cssContent.substring(0, 200) + '...');
+    
+    // Aplicar classes no body
+    document.body.classList.add('modern-theme-active');
+    document.body.classList.add(`template-${profile.id}`);
+    
+    // Definir variáveis CSS globais adicionais
+    document.documentElement.style.setProperty('--template-id', profile.id);
+    document.documentElement.style.setProperty('--template-name', profile.name);
+  }, []);
+
+  const resetModernTokens = useCallback(() => {
+    setModernTokens(null);
+    setTemplateProfile(null);
+    setIsModernThemeActive(false);
+    setAppliedTemplateId(null);
+    const styleElement = document.getElementById('modern-visual-tokens');
+    if (styleElement) {
+      styleElement.remove();
+    }
+    document.body.classList.remove('modern-theme-active');
+    // Remove todas as classes de template
+    document.body.className = document.body.className.replace(/template-[\w-]+/g, '');
+  }, []);
 
   // Detectar siteId automaticamente para URLs públicas (apenas uma vez)
   useEffect(() => {
@@ -213,63 +260,15 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode; t
     };
 
     detectSiteId();
-  }, []);
+  }, [currentSiteId, isLoading, setSiteId]);
 
-  // Função para atualizar foto (usada pelo componente PhotoUpload)
-  const setCouplePhotoUrl = (url: string | null) => {
-    console.log('💾 Atualizando foto no contexto:', url);
-    setCouplePhotoUrlState(url);
-  };
-
-  const applyModernTokens = (quizAnswers: QuizAnswers) => {
-    console.log('🎨 DEBUG - applyModernTokens chamada para:', quizAnswers);
-    
-    const profile = findBestModernTemplate(quizAnswers);
-    const tokens = generateModernVisualTokens(profile);
-    
-    console.log('📋 DEBUG - Template selecionado:', profile.name, profile.id);
-    console.log('🎨 DEBUG - Tokens gerados:', tokens);
-    
-    setTemplateProfile(profile);
-    setModernTokens(tokens);
-    setIsModernThemeActive(true);
-    
-    // Apply CSS
-    const styleId = 'modern-visual-tokens';
-    let styleElement = document.getElementById(styleId) as HTMLStyleElement;
-    
-    if (!styleElement) {
-      styleElement = document.createElement('style');
-      styleElement.id = styleId;
-      document.head.appendChild(styleElement);
+  // Aplicar tokens automaticamente quando templateName muda (APENAS UMA VEZ)
+  useEffect(() => {
+    if (templateName && templateName !== appliedTemplateId) {
+      console.log('🔄 DEBUG - useEffect templateName:', templateName);
+      applyTemplateTokens(templateName);
     }
-    
-    const cssContent = applyModernVisualTokensToCSS(tokens);
-    styleElement.textContent = cssContent;
-    
-    console.log('✅ DEBUG - CSS aplicado:', cssContent.substring(0, 200) + '...');
-    
-    // Aplicar classes no body
-    document.body.classList.add('modern-theme-active');
-    document.body.classList.add(`template-${profile.id}`);
-    
-    // Definir variáveis CSS globais adicionais
-    document.documentElement.style.setProperty('--template-id', profile.id);
-    document.documentElement.style.setProperty('--template-name', profile.name);
-  };
-
-  const resetModernTokens = () => {
-    setModernTokens(null);
-    setTemplateProfile(null);
-    setIsModernThemeActive(false);
-    const styleElement = document.getElementById('modern-visual-tokens');
-    if (styleElement) {
-      styleElement.remove();
-    }
-    document.body.classList.remove('modern-theme-active');
-    // Remove todas as classes de template
-    document.body.className = document.body.className.replace(/template-[\w-]+/g, '');
-  };
+  }, [templateName, applyTemplateTokens, appliedTemplateId]);
 
   return (
     <ModernVisualTokensContext.Provider value={{ 
