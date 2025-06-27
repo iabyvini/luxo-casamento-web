@@ -1,0 +1,10 @@
+
+{
+  "primaryColor": "#DAA520",
+  "secondaryColor": "#8B4513",
+  "accentColor": "#CD853F",
+  "backgroundColor": "#F4A460",
+  "fontFamily": "Playfair Display",
+  "headingFont": "Playfair Display",
+  "borderRadius": "8px"
+}

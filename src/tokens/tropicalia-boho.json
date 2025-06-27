@@ -1,0 +1,10 @@
+
+{
+  "primaryColor": "#388E3C",
+  "secondaryColor": "#E1BEE7",
+  "accentColor": "#A5D6A7",
+  "backgroundColor": "#FFF3E0",
+  "fontFamily": "Lobster",
+  "headingFont": "Lobster",
+  "borderRadius": "10px"
+}

@@ -1,0 +1,10 @@
+
+{
+  "primaryColor": "#4169E1",
+  "secondaryColor": "#FF7F50",
+  "accentColor": "#FFD700",
+  "backgroundColor": "#FFFFFF",
+  "fontFamily": "Montserrat",
+  "headingFont": "Montserrat",
+  "borderRadius": "8px"
+}

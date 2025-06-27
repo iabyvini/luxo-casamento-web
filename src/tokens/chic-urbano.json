@@ -1,0 +1,10 @@
+
+{
+  "primaryColor": "#2A2A2A",
+  "secondaryColor": "#FFFFFF",
+  "accentColor": "#B0B0B0",
+  "backgroundColor": "#F0F0F0",
+  "fontFamily": "Inter",
+  "headingFont": "Inter",
+  "borderRadius": "6px"
+}

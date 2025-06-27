@@ -1,0 +1,10 @@
+
+{
+  "primaryColor": "#3A3A3A",
+  "secondaryColor": "#FFFFFF",
+  "accentColor": "#9E9E9E",
+  "backgroundColor": "#E0E0E0",
+  "fontFamily": "Roboto Condensed",
+  "headingFont": "Roboto Condensed",
+  "borderRadius": "8px"
+}

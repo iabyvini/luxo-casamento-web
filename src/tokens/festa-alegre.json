@@ -1,0 +1,10 @@
+
+{
+  "primaryColor": "#FF4500",
+  "secondaryColor": "#FFD700",
+  "accentColor": "#32CD32",
+  "backgroundColor": "#FF69B4",
+  "fontFamily": "Salsa",
+  "headingFont": "Salsa",
+  "borderRadius": "8px"
+}
