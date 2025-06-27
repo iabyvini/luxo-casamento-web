@@ -3,43 +3,10 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { ModernVisualTokens, generateModernVisualTokens, applyModernVisualTokensToCSS } from '@/utils/modernVisualTokens';
 import { QuizAnswers } from '@/types/quiz';
 import { findBestModernTemplate } from '@/utils/modernTemplateProfiles';
-import { supabase } from '@/integrations/supabase/client';
-
-// Dinamicamente importa todos os tokens JSON
-const tokenModules = import.meta.glob('/src/tokens/*.json', { eager: true });
-
-interface TemplateTokens {
-  primaryColor: string;
-  secondaryColor: string;
-  accentColor: string;
-  backgroundColor: string;
-  fontFamily: string;
-  headingFont: string;
-  borderRadius: string;
-}
-
-interface ModernVisualTokensContextType {
-  modernTokens: ModernVisualTokens | null;
-  isModernThemeActive: boolean;
-  couplePhotoUrl: string | null;
-  templateProfile: any | null;
-  templateTokens: TemplateTokens | null;
-  applyModernTokens: (quizAnswers: QuizAnswers) => void;
-  applyTemplateTokens: (templateName: string) => void;
-  resetModernTokens: () => void;
-  setCouplePhotoUrl: (url: string | null) => void;
-  setSiteId: (siteId: string) => void;
-}
-
-const defaultTokens: TemplateTokens = {
-  primaryColor: "#000000",
-  secondaryColor: "#FFFFFF",
-  accentColor: "#C0C0C0",
-  backgroundColor: "#F9F9F9",
-  fontFamily: "Inter",
-  headingFont: "Inter",
-  borderRadius: "4px"
-};
+import { TemplateTokens, ModernVisualTokensContextType } from '@/types/modernVisualTokens';
+import { useTemplateTokens } from '@/hooks/useTemplateTokens';
+import { useCouplePhoto } from '@/hooks/useCouplePhoto';
+import { useSiteIdDetection } from '@/hooks/useSiteIdDetection';
 
 const ModernVisualTokensContext = createContext<ModernVisualTokensContextType | undefined>(undefined);
 
@@ -50,33 +17,11 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode; t
   const [templateProfile, setTemplateProfile] = useState<any | null>(null);
   const [templateTokens, setTemplateTokens] = useState<TemplateTokens | null>(null);
   const [currentSiteId, setCurrentSiteId] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
   const [appliedTemplateId, setAppliedTemplateId] = useState<string | null>(null);
 
-  // Função para carregar tokens específicos do template
-  const loadTemplateTokens = useCallback((templateName: string): TemplateTokens => {
-    console.log('🎨 DEBUG - loadTemplateTokens chamada com:', templateName);
-    
-    // Normalizar nome do template para busca
-    const normalizedName = templateName.toLowerCase().replace(/\s+/g, '-');
-    console.log('🔄 DEBUG - Nome normalizado:', normalizedName);
-    
-    // Buscar o módulo correspondente
-    const matchingModule = Object.entries(tokenModules).find(([path]) => {
-      const fileName = path.split('/').pop()?.replace('.json', '') || '';
-      return fileName === normalizedName;
-    });
-
-    if (matchingModule) {
-      const tokens = matchingModule[1] as any;
-      const finalTokens = tokens.default || tokens;
-      console.log('✅ DEBUG - Tokens encontrados para', templateName, ':', finalTokens);
-      return finalTokens;
-    }
-
-    console.log('⚠️ DEBUG - Tokens não encontrados para:', templateName, ', usando padrão');
-    return defaultTokens;
-  }, []);
+  const { loadTemplateTokens, applyTokensToDOM } = useTemplateTokens();
+  const { loadCouplePhotoFromDatabase, isLoading } = useCouplePhoto();
+  const { detectSiteId } = useSiteIdDetection();
 
   // Aplicar tokens de template específico
   const applyTemplateTokens = useCallback((templateName: string) => {
@@ -92,71 +37,22 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode; t
     setTemplateTokens(tokens);
     setAppliedTemplateId(templateName);
 
-    console.log('🎨 DEBUG - Aplicando CSS custom properties:', tokens);
-
-    // Aplicar CSS custom properties
-    document.documentElement.style.setProperty('--template-primary', tokens.primaryColor);
-    document.documentElement.style.setProperty('--template-secondary', tokens.secondaryColor);
-    document.documentElement.style.setProperty('--template-accent', tokens.accentColor);
-    document.documentElement.style.setProperty('--template-background', tokens.backgroundColor);
-    document.documentElement.style.setProperty('--template-font-family', tokens.fontFamily);
-    document.documentElement.style.setProperty('--template-heading-font', tokens.headingFont);
-    document.documentElement.style.setProperty('--template-border-radius', tokens.borderRadius);
-
-    // Também aplicar como variáveis modernas
-    document.documentElement.style.setProperty('--modern-primary', tokens.primaryColor);
-    document.documentElement.style.setProperty('--modern-secondary', tokens.secondaryColor);
-    document.documentElement.style.setProperty('--modern-accent', tokens.accentColor);
-    document.documentElement.style.setProperty('--modern-background', tokens.backgroundColor);
-    document.documentElement.style.setProperty('--modern-body-font', tokens.fontFamily);
-    document.documentElement.style.setProperty('--modern-heading-font', tokens.headingFont);
-
+    applyTokensToDOM(tokens);
     console.log('✅ DEBUG - Tokens aplicados com sucesso para:', templateName);
-  }, [loadTemplateTokens, appliedTemplateId]);
+  }, [loadTemplateTokens, applyTokensToDOM, appliedTemplateId]);
 
   // Função para definir siteId e carregar foto do banco
   const setSiteId = useCallback((siteId: string) => {
     if (siteId && siteId !== currentSiteId && !isLoading) {
       console.log('📝 Definindo siteId:', siteId);
       setCurrentSiteId(siteId);
-      loadCouplePhotoFromDatabase(siteId);
+      loadCouplePhotoFromDatabase(siteId).then(photoUrl => {
+        if (photoUrl) {
+          setCouplePhotoUrlState(photoUrl);
+        }
+      });
     }
-  }, [currentSiteId, isLoading]);
-
-  // Carregar foto do banco de dados
-  const loadCouplePhotoFromDatabase = useCallback(async (siteId: string) => {
-    if (isLoading) return;
-    
-    console.log('🗄️ Carregando foto do banco para siteId:', siteId);
-    setIsLoading(true);
-    
-    try {
-      const { data, error } = await supabase
-        .from('wedding_sites')
-        .select('couple_photo_url')
-        .eq('id', siteId)
-        .single();
-
-      if (error && error.code !== 'PGRST116') {
-        console.error('❌ Erro ao buscar foto do banco:', error);
-        setCouplePhotoUrlState(null);
-        return;
-      }
-
-      if (data?.couple_photo_url) {
-        console.log('✅ Foto encontrada no banco:', data.couple_photo_url);
-        setCouplePhotoUrlState(data.couple_photo_url);
-      } else {
-        console.log('ℹ️ Nenhuma foto encontrada no banco');
-        setCouplePhotoUrlState(null);
-      }
-    } catch (error) {
-      console.error('❌ Erro na consulta da foto:', error);
-      setCouplePhotoUrlState(null);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [isLoading]);
+  }, [currentSiteId, isLoading, loadCouplePhotoFromDatabase]);
 
   // Função para atualizar foto (usada pelo componente PhotoUpload)
   const setCouplePhotoUrl = useCallback((url: string | null) => {
@@ -217,50 +113,17 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode; t
 
   // Detectar siteId automaticamente para URLs públicas (apenas uma vez)
   useEffect(() => {
-    const detectSiteId = async () => {
+    const initializeSiteId = async () => {
       if (currentSiteId || isLoading) return;
       
-      const path = window.location.pathname;
-      
-      // Para rotas do editor: /editor/[siteId]
-      const editorMatch = path.match(/^\/editor\/([^\/]+)$/);
-      if (editorMatch) {
-        const realSiteId = editorMatch[1];
-        console.log('🎯 Detectado siteId do editor:', realSiteId);
-        setSiteId(realSiteId);
-        return;
-      }
-      
-      // Para sites públicos: /site/[slug] - buscar o siteId real no banco
-      const publicMatch = path.match(/^\/site\/([^\/]+)$/);
-      if (publicMatch) {
-        const slug = publicMatch[1];
-        console.log('🔍 Buscando siteId para slug público:', slug);
-        
-        try {
-          const { data, error } = await supabase
-            .from('wedding_sites')
-            .select('id')
-            .eq('slug', slug)
-            .single();
-
-          if (error) {
-            console.error('❌ Erro ao buscar site:', error);
-            return;
-          }
-
-          if (data) {
-            console.log('✅ SiteId encontrado:', data.id);
-            setSiteId(data.id);
-          }
-        } catch (error) {
-          console.error('❌ Erro na consulta:', error);
-        }
+      const detectedSiteId = await detectSiteId();
+      if (detectedSiteId) {
+        setSiteId(detectedSiteId);
       }
     };
 
-    detectSiteId();
-  }, [currentSiteId, isLoading, setSiteId]);
+    initializeSiteId();
+  }, [currentSiteId, isLoading, detectSiteId, setSiteId]);
 
   // Aplicar tokens automaticamente quando templateName muda (APENAS UMA VEZ)
   useEffect(() => {
