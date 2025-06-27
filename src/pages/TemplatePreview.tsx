@@ -110,7 +110,7 @@ const TemplatePreview = () => {
   return (
     <ModernVisualTokensProvider templateName={previewData.quizAnswers?.template_id || templateId}>
       <div className={`min-h-screen bg-gray-100 template-${templateId}`}>
-        {/* Header de Controle */}
+        {/* Header Normalizado */}
         <div className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
@@ -123,18 +123,11 @@ const TemplatePreview = () => {
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Voltar
                 </Button>
-                <div>
-                  <h1 className="text-xl font-bold text-gray-900">
-                    Preview: {previewData.templateName}
-                  </h1>
-                  <p className="text-sm text-gray-600">
-                    Template ID: {templateId} - Usando template_id: {previewData.quizAnswers?.template_id}
-                  </p>
-                </div>
+                <h1 className="text-xl font-bold text-gray-900">
+                  {previewData.templateName}
+                </h1>
               </div>
-
               <div className="flex items-center space-x-4">
-                {/* Toggle de Visualização */}
                 <div className="flex bg-gray-100 rounded-lg p-1">
                   <button
                     onClick={() => setViewMode('desktop')}
@@ -159,16 +152,6 @@ const TemplatePreview = () => {
                     Mobile
                   </button>
                 </div>
-
-                <Button
-                  onClick={handleSelectTemplate}
-                  className="bg-gradient-luxury hover:opacity-90 text-white"
-                  style={{
-                    background: `linear-gradient(135deg, ${getTemplateTokens(templateId!).primaryColor}, ${getTemplateTokens(templateId!).accentColor})`
-                  }}
-                >
-                  Usar Este Template
-                </Button>
               </div>
             </div>
           </div>
@@ -191,33 +174,6 @@ const TemplatePreview = () => {
               }`}
             >
               <PreviewSite data={previewData} siteId={`preview-${templateId}`} />
-            </div>
-          </div>
-          
-          {/* Template Info */}
-          <div className="mt-8 max-w-4xl mx-auto">
-            <div className="bg-white rounded-lg p-6 shadow-sm">
-              <h3 className="text-lg font-semibold mb-4">Informações do Template</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <span className="text-sm font-medium text-gray-500">Template ID:</span>
-                  <p className="text-sm text-gray-900 font-mono">{templateId}</p>
-                </div>
-                <div>
-                  <span className="text-sm font-medium text-gray-500">Fonte Principal:</span>
-                  <p className="text-sm text-gray-900">{getTemplateTokens(templateId!).fontFamily}</p>
-                </div>
-                <div>
-                  <span className="text-sm font-medium text-gray-500">Cor Primária:</span>
-                  <div className="flex items-center gap-2">
-                    <div 
-                      className="w-4 h-4 rounded-full border border-gray-200"
-                      style={{ backgroundColor: getTemplateTokens(templateId!).primaryColor }}
-                    ></div>
-                    <p className="text-sm text-gray-900">{getTemplateTokens(templateId!).primaryColor}</p>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
