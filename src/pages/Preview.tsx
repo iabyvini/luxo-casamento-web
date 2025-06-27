@@ -21,6 +21,7 @@ const Preview = () => {
     const generatePreview = async () => {
       const quizAnswers = location.state?.quizAnswers as QuizAnswers;
       const selectedTemplate = location.state?.selectedTemplate as string;
+      const templateId = location.state?.templateId as string;
       
       if (!quizAnswers && !selectedTemplate) {
         navigate('/');
@@ -30,9 +31,9 @@ const Preview = () => {
       let templateName: string;
       let answers: QuizAnswers;
 
-      if (selectedTemplate) {
+      if (selectedTemplate || templateId) {
         // Fluxo manual dos templates - create complete QuizAnswers object
-        templateName = selectedTemplate;
+        templateName = selectedTemplate || templateId;
         answers = {
           estilo: 'Clássico',
           cores: 'Dourado',
@@ -43,6 +44,8 @@ const Preview = () => {
           tom: 'Elegante e formal',
           data_casamento: quizAnswers?.data_casamento || '',
           nomes: quizAnswers?.nomes || '',
+          // CORREÇÃO: Garantir que o template_id seja preservado
+          template_id: templateId || selectedTemplate,
           ...quizAnswers // Spread any existing answers
         };
       } else {
@@ -133,7 +136,12 @@ const Preview = () => {
                 Preview do Seu Site
               </h1>
               <p className="text-brown-600">
-                Template: {previewData.templateName}
+                Template: {previewData.templateName} 
+                {previewData.quizAnswers?.template_id && (
+                  <span className="text-sm text-gray-500 ml-2">
+                    (ID: {previewData.quizAnswers.template_id})
+                  </span>
+                )}
               </p>
             </div>
             

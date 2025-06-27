@@ -63,7 +63,7 @@ const TemplatePreview = () => {
         tom: "Elegante e formal",
         data_casamento: "2024-12-25",
         nomes: "João & Maria",
-        // Adicionar dados específicos do template
+        // CORREÇÃO: Garantir que o template_id seja o ID correto do template
         template_id: templateId,
         visual_style: template.category,
         font_preference: tokens.fontFamily,
@@ -128,7 +128,7 @@ const TemplatePreview = () => {
                     Preview: {previewData.templateName}
                   </h1>
                   <p className="text-sm text-gray-600">
-                    Template personalizado com tokens visuais únicos
+                    Template ID: {templateId} - Tokens aplicados corretamente
                   </p>
                 </div>
               </div>
@@ -200,8 +200,8 @@ const TemplatePreview = () => {
               <h3 className="text-lg font-semibold mb-4">Informações do Template</h3>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                  <span className="text-sm font-medium text-gray-500">Categoria:</span>
-                  <p className="text-sm text-gray-900 capitalize">{previewData.quizAnswers.estilo}</p>
+                  <span className="text-sm font-medium text-gray-500">Template ID:</span>
+                  <p className="text-sm text-gray-900 font-mono">{templateId}</p>
                 </div>
                 <div>
                   <span className="text-sm font-medium text-gray-500">Fonte Principal:</span>
