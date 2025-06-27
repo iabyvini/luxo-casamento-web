@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { ModernVisualTokens, generateModernVisualTokens, applyModernVisualTokensToCSS } from '@/utils/modernVisualTokens';
 import { QuizAnswers } from '@/types/quiz';
@@ -54,34 +53,42 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode; t
 
   // Função para carregar tokens específicos do template
   const loadTemplateTokens = (templateName: string): TemplateTokens => {
-    console.log('🎨 Carregando tokens para template:', templateName);
-    console.log('📁 Módulos disponíveis:', Object.keys(tokenModules));
+    console.log('🎨 DEBUG - loadTemplateTokens chamada com:', templateName);
+    console.log('📁 DEBUG - Módulos disponíveis:', Object.keys(tokenModules));
     
     // Normalizar nome do template para busca
     const normalizedName = templateName.toLowerCase().replace(/\s+/g, '-');
+    console.log('🔄 DEBUG - Nome normalizado:', normalizedName);
     
     // Buscar o módulo correspondente
     const matchingModule = Object.entries(tokenModules).find(([path]) => {
       const fileName = path.split('/').pop()?.replace('.json', '') || '';
+      console.log('🔍 DEBUG - Comparando:', fileName, 'com', normalizedName);
       return fileName === normalizedName;
     });
 
     if (matchingModule) {
       const tokens = matchingModule[1] as any;
-      console.log('✅ Tokens encontrados:', tokens.default || tokens);
-      return tokens.default || tokens;
+      const finalTokens = tokens.default || tokens;
+      console.log('✅ DEBUG - Tokens encontrados para', templateName, ':', finalTokens);
+      return finalTokens;
     }
 
-    console.log('⚠️ Tokens não encontrados, usando padrão para:', templateName);
+    console.log('⚠️ DEBUG - Tokens não encontrados para:', templateName, ', usando padrão');
+    console.log('📋 DEBUG - Arquivos disponíveis:', Object.keys(tokenModules).map(path => 
+      path.split('/').pop()?.replace('.json', '')
+    ));
     return defaultTokens;
   };
 
   // Aplicar tokens de template específico
   const applyTemplateTokens = (templateName: string) => {
-    console.log('🔄 Aplicando tokens do template:', templateName);
+    console.log('🔄 DEBUG - applyTemplateTokens chamada com:', templateName);
     
     const tokens = loadTemplateTokens(templateName);
     setTemplateTokens(tokens);
+
+    console.log('🎨 DEBUG - Aplicando CSS custom properties:', tokens);
 
     // Aplicar CSS custom properties
     document.documentElement.style.setProperty('--template-primary', tokens.primaryColor);
@@ -100,12 +107,19 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode; t
     document.documentElement.style.setProperty('--modern-body-font', tokens.fontFamily);
     document.documentElement.style.setProperty('--modern-heading-font', tokens.headingFont);
 
-    console.log('✅ Tokens aplicados com sucesso');
+    // DEBUG: Verificar se as variáveis foram aplicadas
+    console.log('✅ DEBUG - Variáveis CSS aplicadas:');
+    console.log('  --template-primary:', document.documentElement.style.getPropertyValue('--template-primary'));
+    console.log('  --template-secondary:', document.documentElement.style.getPropertyValue('--template-secondary'));
+    console.log('  --modern-primary:', document.documentElement.style.getPropertyValue('--modern-primary'));
+
+    console.log('✅ DEBUG - Tokens aplicados com sucesso para:', templateName);
   };
 
   // Aplicar tokens automaticamente quando templateName muda
   useEffect(() => {
     if (templateName) {
+      console.log('🔄 DEBUG - useEffect templateName:', templateName);
       applyTemplateTokens(templateName);
     }
   }, [templateName]);
@@ -208,13 +222,13 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode; t
   };
 
   const applyModernTokens = (quizAnswers: QuizAnswers) => {
-    console.log('🎨 Aplicando tokens modernos para:', quizAnswers);
+    console.log('🎨 DEBUG - applyModernTokens chamada para:', quizAnswers);
     
     const profile = findBestModernTemplate(quizAnswers);
     const tokens = generateModernVisualTokens(profile);
     
-    console.log('📋 Template selecionado:', profile.name, profile.id);
-    console.log('🎨 Tokens gerados:', tokens);
+    console.log('📋 DEBUG - Template selecionado:', profile.name, profile.id);
+    console.log('🎨 DEBUG - Tokens gerados:', tokens);
     
     setTemplateProfile(profile);
     setModernTokens(tokens);
@@ -233,7 +247,7 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode; t
     const cssContent = applyModernVisualTokensToCSS(tokens);
     styleElement.textContent = cssContent;
     
-    console.log('✅ CSS aplicado:', cssContent.substring(0, 200) + '...');
+    console.log('✅ DEBUG - CSS aplicado:', cssContent.substring(0, 200) + '...');
     
     // Aplicar classes no body
     document.body.classList.add('modern-theme-active');
