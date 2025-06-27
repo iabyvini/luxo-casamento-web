@@ -17,31 +17,57 @@ const defaultTokens: TemplateTokens = {
 
 export const useTemplateTokens = () => {
   const loadTemplateTokens = useCallback((templateName: string): TemplateTokens => {
-    console.log('🎨 DEBUG - loadTemplateTokens chamada com:', templateName);
+    console.log('🎨 Carregando tokens para template:', templateName);
+    console.log('📁 Módulos disponíveis:', Object.keys(tokenModules));
     
     // Normalizar nome do template para busca
     const normalizedName = templateName.toLowerCase().replace(/\s+/g, '-');
-    console.log('🔄 DEBUG - Nome normalizado:', normalizedName);
+    console.log('🔍 Nome normalizado:', normalizedName);
     
     // Buscar o módulo correspondente
     const matchingModule = Object.entries(tokenModules).find(([path]) => {
       const fileName = path.split('/').pop()?.replace('.json', '') || '';
+      console.log('📄 Verificando arquivo:', fileName, 'vs', normalizedName);
       return fileName === normalizedName;
     });
 
     if (matchingModule) {
       const tokens = matchingModule[1] as any;
       const finalTokens = tokens.default || tokens;
-      console.log('✅ DEBUG - Tokens encontrados para', templateName, ':', finalTokens);
+      console.log('✅ Tokens encontrados para', templateName, ':', finalTokens);
       return finalTokens;
     }
 
-    console.log('⚠️ DEBUG - Tokens não encontrados para:', templateName, ', usando padrão');
+    console.log('⚠️ Tokens não encontrados para', templateName, '- usando padrão');
+    console.log('🔍 Tentando buscar por variações...');
+    
+    // Tentar variações do nome
+    const variations = [
+      templateName.toLowerCase(),
+      templateName.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+      templateName.toLowerCase().replace(/[^a-z0-9]/g, ''),
+    ];
+    
+    for (const variation of variations) {
+      const matchingVariation = Object.entries(tokenModules).find(([path]) => {
+        const fileName = path.split('/').pop()?.replace('.json', '') || '';
+        return fileName === variation;
+      });
+      
+      if (matchingVariation) {
+        const tokens = matchingVariation[1] as any;
+        const finalTokens = tokens.default || tokens;
+        console.log('✅ Tokens encontrados por variação:', variation, ':', finalTokens);
+        return finalTokens;
+      }
+    }
+    
+    console.log('❌ Nenhuma variação encontrada, usando tokens padrão');
     return defaultTokens;
   }, []);
 
   const applyTokensToDOM = useCallback((tokens: TemplateTokens) => {
-    console.log('🎨 DEBUG - Aplicando CSS custom properties:', tokens);
+    console.log('🎨 Aplicando CSS custom properties:', tokens);
 
     // Aplicar CSS custom properties
     document.documentElement.style.setProperty('--template-primary', tokens.primaryColor);
@@ -59,6 +85,8 @@ export const useTemplateTokens = () => {
     document.documentElement.style.setProperty('--modern-background', tokens.backgroundColor);
     document.documentElement.style.setProperty('--modern-body-font', tokens.fontFamily);
     document.documentElement.style.setProperty('--modern-heading-font', tokens.headingFont);
+    
+    console.log('✅ CSS custom properties aplicadas com sucesso');
   }, []);
 
   return { loadTemplateTokens, applyTokensToDOM };
