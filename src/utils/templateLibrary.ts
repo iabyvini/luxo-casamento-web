@@ -22,6 +22,8 @@ const TEMPLATE_CONFIGS: Record<string, TemplateConfig> = {
       secondaryColor: '#ffffff',
       accentColor: '#d4af37',
       backgroundColor: '#fafafa',
+      background: '#fafafa',
+      textColor: '#1a1a1a',
       fontFamily: 'Inter, sans-serif',
       headingFont: 'Playfair Display, serif',
       borderRadius: '8px'

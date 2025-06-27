@@ -24,6 +24,8 @@ export interface TemplateTokens {
   secondaryColor: string;
   accentColor: string;
   backgroundColor: string;
+  background: string; // Adicionar propriedade background
+  textColor?: string; // Adicionar propriedade textColor opcional
   fontFamily: string;
   headingFont: string;
   borderRadius: string;
@@ -40,6 +42,7 @@ export interface TemplateConfig {
   sections: string[];
   mood: string[];
   tokens: TemplateTokens;
+  components?: Record<string, any>; // Adicionar propriedade components opcional
 }
 
 export interface ExtendedTemplate extends TemplateConfig {

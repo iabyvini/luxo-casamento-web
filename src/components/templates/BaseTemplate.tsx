@@ -1,13 +1,14 @@
 
 import React from 'react';
-import { TemplateProps } from '@/types/template';
+import { TemplateProps, TemplateConfig } from '@/types/template';
 import { useTemplateSystem } from '@/hooks/useTemplateSystem';
 
 // Re-exportar tipos para compatibilidade
 export type { TemplateProps, TemplateConfig } from '@/types/template';
 
 interface BaseTemplateProps extends TemplateProps {
-  templateId: string;
+  templateId?: string;
+  templateConfig?: TemplateConfig;
   children: React.ReactNode;
 }
 
@@ -15,17 +16,21 @@ export const BaseTemplate: React.FC<BaseTemplateProps> = ({
   siteData, 
   siteId, 
   templateId,
+  templateConfig,
   children
 }) => {
   const { getTemplateTokens, applyTokensToDOM } = useTemplateSystem();
 
   React.useEffect(() => {
-    const tokens = getTemplateTokens(templateId);
-    applyTokensToDOM(tokens, templateId);
-  }, [templateId, getTemplateTokens, applyTokensToDOM]);
+    const effectiveTemplateId = templateId || templateConfig?.id || 'default';
+    const tokens = getTemplateTokens(effectiveTemplateId);
+    applyTokensToDOM(tokens, effectiveTemplateId);
+  }, [templateId, templateConfig, getTemplateTokens, applyTokensToDOM]);
+
+  const effectiveTemplateId = templateId || templateConfig?.id || 'default';
 
   return (
-    <div className={`template-${templateId}`} data-template-id={templateId}>
+    <div className={`template-${effectiveTemplateId}`} data-template-id={effectiveTemplateId}>
       {children}
     </div>
   );
