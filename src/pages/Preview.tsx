@@ -117,7 +117,7 @@ const Preview = () => {
   }
 
   return (
-    <ModernVisualTokensProvider templateName={previewData.templateName}>
+    <ModernVisualTokensProvider templateName={previewData.quizAnswers?.template_id || previewData.templateName}>
       <div className="min-h-screen bg-gradient-to-br from-brown-50 to-gold-50">
         <div className="container mx-auto px-4 py-6">
           {/* Header with improved navigation */}

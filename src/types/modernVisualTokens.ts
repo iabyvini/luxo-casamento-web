@@ -1,4 +1,7 @@
 
+import { ModernVisualTokens } from '@/utils/modernVisualTokens';
+import { QuizAnswers } from '@/types/quiz';
+
 export interface TemplateTokens {
   primaryColor: string;
   secondaryColor: string;

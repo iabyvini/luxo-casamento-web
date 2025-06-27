@@ -108,7 +108,7 @@ const TemplatePreview = () => {
   }
 
   return (
-    <ModernVisualTokensProvider templateName={previewData.templateName}>
+    <ModernVisualTokensProvider templateName={previewData.quizAnswers?.template_id || templateId}>
       <div className={`min-h-screen bg-gray-100 template-${templateId}`}>
         {/* Header de Controle */}
         <div className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
@@ -128,7 +128,7 @@ const TemplatePreview = () => {
                     Preview: {previewData.templateName}
                   </h1>
                   <p className="text-sm text-gray-600">
-                    Template ID: {templateId} - Tokens aplicados corretamente
+                    Template ID: {templateId} - Usando template_id: {previewData.quizAnswers?.template_id}
                   </p>
                 </div>
               </div>
