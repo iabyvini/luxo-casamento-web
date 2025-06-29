@@ -2,19 +2,24 @@
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { QuizAnswers } from '@/types/quiz';
 import { supabase } from "@/integrations/supabase/client";
+import { getTemplateById } from '@/data/templateLibrary';
 
 interface ModernVisualTokens {
-  primary: string;
-  secondary: string;
-  accent: string;
-  background: string;
-  surface: string;
-  text: string;
-  textSecondary: string;
-  border: string;
-  fontFamily: string;
-  headingFont: string;
-  accentFont: string;
+  colors: {
+    primary: string;
+    secondary: string;
+    accent: string;
+    background: string;
+    surface: string;
+    text: string;
+    textSecondary: string;
+    border: string;
+  };
+  typography: {
+    fontFamily: string;
+    headingFont: string;
+    accentFont: string;
+  };
   fontSize: {
     xs: string;
     sm: string;
@@ -60,17 +65,21 @@ interface ModernVisualTokensContextType {
 }
 
 const defaultTokens: ModernVisualTokens = {
-  primary: '#8B5A3C',
-  secondary: '#D4B08A',
-  accent: '#F4E5D3',
-  background: '#FDFBF7',
-  surface: '#FFFFFF',
-  text: '#2D2D2D',
-  textSecondary: '#6B7280',
-  border: '#E5E7EB',
-  fontFamily: 'Inter, sans-serif',
-  headingFont: 'Playfair Display, serif',
-  accentFont: 'Dancing Script, cursive',
+  colors: {
+    primary: '#8B5A3C',
+    secondary: '#D4B08A',
+    accent: '#F4E5D3',
+    background: '#FDFBF7',
+    surface: '#FFFFFF',
+    text: '#2D2D2D',
+    textSecondary: '#6B7280',
+    border: '#E5E7EB',
+  },
+  typography: {
+    fontFamily: 'Inter, sans-serif',
+    headingFont: 'Playfair Display, serif',
+    accentFont: 'Dancing Script, cursive',
+  },
   fontSize: {
     xs: '0.75rem',
     sm: '0.875rem',
@@ -161,7 +170,32 @@ export const ModernVisualTokensProvider = ({
   const applyModernTokens = (templateId: string, quizAnswers?: QuizAnswers) => {
     const template = getTemplateById(templateId);
     if (template) {
-      setModernTokens(template.tokens);
+      // Convert template tokens to ModernVisualTokens format
+      const modernTokensFromTemplate: ModernVisualTokens = {
+        colors: {
+          primary: template.tokens.primary,
+          secondary: template.tokens.secondary,
+          accent: template.tokens.accent,
+          background: template.tokens.background,
+          surface: template.tokens.surface,
+          text: template.tokens.text,
+          textSecondary: template.tokens.textSecondary,
+          border: template.tokens.border,
+        },
+        typography: {
+          fontFamily: template.tokens.fontFamily,
+          headingFont: template.tokens.headingFont,
+          accentFont: template.tokens.accentFont,
+        },
+        fontSize: template.tokens.fontSize,
+        spacing: template.tokens.spacing,
+        borderRadius: template.tokens.borderRadius,
+        shadows: template.tokens.shadows,
+        galleryType: template.tokens.galleryType,
+        animationType: template.tokens.animationType,
+      };
+
+      setModernTokens(modernTokensFromTemplate);
       setTemplateProfile(template);
       setIsModernThemeActive(true);
       document.body.classList.add('modern-theme-active');
@@ -197,14 +231,4 @@ export const useModernVisualTokens = () => {
     throw new Error('useModernVisualTokens must be used within a ModernVisualTokensProvider');
   }
   return context;
-};
-
-// Função temporária para buscar template por ID
-const getTemplateById = (templateId: string) => {
-  // Retorna um template padrão por enquanto
-  return {
-    id: 'vintage-floral',
-    name: 'Vintage Floral',
-    tokens: defaultTokens
-  };
 };

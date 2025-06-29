@@ -1,10 +1,10 @@
 
 import { QuizAnswers } from '@/types/quiz';
-import { TemplateProfile, TEMPLATE_LIBRARY, getTemplateById } from '@/data/templateLibrary';
+import { TEMPLATE_LIBRARY, getTemplateById } from '@/data/templateLibrary';
 
-export { TemplateProfile } from '@/data/templateLibrary';
+export type { TemplateProfile } from '@/data/templateLibrary';
 
-export const getTemplateProfile = (templateId: string): TemplateProfile => {
+export const getTemplateProfile = (templateId: string) => {
   const template = getTemplateById(templateId);
   if (!template) {
     // Retorna o primeiro template como fallback
@@ -13,12 +13,12 @@ export const getTemplateProfile = (templateId: string): TemplateProfile => {
   return template;
 };
 
-export const matchTemplateToAnswers = (answers: QuizAnswers): TemplateProfile => {
+export const matchTemplateToAnswers = (answers: QuizAnswers) => {
   // Por enquanto retorna o primeiro template
   // TODO: Implementar lógica de matching mais sofisticada
   return TEMPLATE_LIBRARY[0];
 };
 
-export const getAllTemplateProfiles = (): TemplateProfile[] => {
+export const getAllTemplateProfiles = () => {
   return TEMPLATE_LIBRARY;
 };
