@@ -1,5 +1,5 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700;800;900&family=Dancing+Script:wght@400;500;600;700&family=Caveat:wght@400;500;600;700&display=swap');
-@import './components/templates/TemplateStyles.css';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -109,7 +109,7 @@
   cursor: w-resize;
 }
 
-/* Modern Wedding Site Styles */
+/* Modern Wedding Site Styles - CSS Variables baseadas no template ativo */
 .modern-theme-active {
   font-family: var(--modern-body-font, 'Inter'), sans-serif;
   color: var(--modern-text, #2c2c2c);
@@ -130,6 +130,60 @@
   font-family: var(--modern-body-font, 'Inter'), sans-serif;
   font-weight: var(--modern-body-weight, 300);
   color: var(--modern-text, #2c2c2c);
+}
+
+/* Sistema de Galerias */
+.gallery-carousel {
+  display: flex;
+  overflow-x: auto;
+  scroll-behavior: smooth;
+  scroll-snap-type: x mandatory;
+  gap: 1rem;
+}
+
+.gallery-carousel::-webkit-scrollbar {
+  height: 8px;
+}
+
+.gallery-carousel::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.gallery-carousel::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 10px;
+}
+
+.gallery-carousel .gallery-item {
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.gallery-slideshow {
+  position: relative;
+  width: 100%;
+  height: 60vh;
+}
+
+.gallery-slideshow .gallery-item {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.gallery-slideshow .gallery-item.active {
+  opacity: 1;
 }
 
 /* Enhanced animations for modern theme */
@@ -290,4 +344,20 @@
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+}
+
+/* Acessibilidade - foco visível */
+.focus-visible:focus {
+  outline: 2px solid #4F46E5;
+  outline-offset: 2px;
+}
+
+/* Reduz animações para usuários com preferência de movimento reduzido */
+@media (prefers-reduced-motion: reduce) {
+  .modern-entrance,
+  .elegant-entrance,
+  .template-card {
+    animation: none;
+    transition: none;
+  }
 }

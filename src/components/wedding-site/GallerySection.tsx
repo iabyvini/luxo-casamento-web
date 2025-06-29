@@ -1,202 +1,181 @@
 
 import { useState, useEffect } from "react";
-import { Camera, Heart, Sparkles } from "lucide-react";
-import { QuizAnswers } from "@/types/quiz";
 import { supabase } from "@/integrations/supabase/client";
-
-interface GalleryPhoto {
-  id: string;
-  photo_url: string;
-  caption?: string;
-  category: string;
-  display_order: number;
-}
+import { useToast } from "@/hooks/use-toast";
+import AdaptiveGallery from "@/components/gallery/AdaptiveGallery";
+import { useModernVisualTokens } from "@/contexts/ModernVisualTokensContext";
 
 interface GallerySectionProps {
   siteId: string;
   templateName: string;
-  quizAnswers: QuizAnswers;
-  customContent?: {
-    enabled?: boolean;
-    title?: string;
-  };
+  quizAnswers?: any;
 }
 
-const GallerySection = ({ siteId, templateName, quizAnswers, customContent }: GallerySectionProps) => {
-  const [photos, setPhotos] = useState<GalleryPhoto[]>([]);
-  const [loading, setLoading] = useState(true);
+interface GalleryImage {
+  id: string;
+  url: string;
+  alt: string;
+  caption?: string;
+}
 
-  // Se a seção está desabilitada, não renderizar
-  if (customContent?.enabled === false) {
-    return null;
-  }
+const GallerySection = ({ siteId, templateName, quizAnswers }: GallerySectionProps) => {
+  const [images, setImages] = useState<GalleryImage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
+  const { modernTokens } = useModernVisualTokens();
 
   useEffect(() => {
-    fetchPhotos();
+    loadGalleryImages();
   }, [siteId]);
 
-  const fetchPhotos = async () => {
+  const loadGalleryImages = async () => {
+    if (!siteId || siteId === "preview") {
+      // Imagens de placeholder para preview
+      setImages([
+        {
+          id: '1',
+          url: 'https://images.unsplash.com/photo-1519741497674-611481863552?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+          alt: 'Momento romântico do casal',
+          caption: 'Um momento especial juntos'
+        },
+        {
+          id: '2', 
+          url: 'https://images.unsplash.com/photo-1511285560929-80b456fea0bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+          alt: 'Cerimônia de casamento',
+          caption: 'O momento do sim'
+        },
+        {
+          id: '3',
+          url: 'https://images.unsplash.com/photo-1465495976277-4387d4b0e4a6?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+          alt: 'Festa de casamento',
+          caption: 'Celebrando com família e amigos'
+        },
+        {
+          id: '4',
+          url: 'https://images.unsplash.com/photo-1583939003579-730e3918a45a?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+          alt: 'Detalhes do casamento',
+          caption: 'Cada detalhe pensado com carinho'
+        },
+        {
+          id: '5',
+          url: 'https://images.unsplash.com/photo-1520854221256-17451cc331bf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+          alt: 'Paisagem do local',
+          caption: 'O cenário perfeito para nosso grande dia'
+        },
+        {
+          id: '6',
+          url: 'https://images.unsplash.com/photo-1537633552985-df8429e8048b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+          alt: 'Preparativos',
+          caption: 'Os últimos preparativos antes do grande momento'
+        }
+      ]);
+      setLoading(false);
+      return;
+    }
+
     try {
+      setLoading(true);
+      
       const { data, error } = await supabase
         .from('gallery_photos')
         .select('*')
         .eq('site_id', siteId)
-        .order('display_order', { ascending: true });
+        .order('created_at', { ascending: true });
 
-      if (error) throw error;
-      setPhotos(data || []);
-    } catch (error: any) {
-      console.error('Erro ao carregar fotos:', error);
+      if (error) {
+        console.error('Erro ao carregar galeria:', error);
+        toast({
+          title: "Erro ao carregar galeria",
+          description: "Não foi possível carregar as fotos da galeria.",
+          variant: "destructive",
+        });
+        setImages([]);
+        return;
+      }
+
+      if (data && data.length > 0) {
+        const galleryImages: GalleryImage[] = data.map((photo, index) => ({
+          id: photo.id,
+          url: photo.photo_url,
+          alt: photo.alt_text || `Foto da galeria ${index + 1}`,
+          caption: photo.caption
+        }));
+        
+        setImages(galleryImages);
+      } else {
+        // Se não há fotos, usar imagens de placeholder
+        setImages([]);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar galeria:', error);
+      toast({
+        title: "Erro inesperado",
+        description: "Ocorreu um erro ao carregar a galeria.",
+        variant: "destructive",
+      });
+      setImages([]);
     } finally {
       setLoading(false);
     }
   };
 
-  // Usando placeholder images da lista disponível como fallback
-  const placeholderImages = [
-    {
-      id: "placeholder-1",
-      photo_url: "https://images.unsplash.com/photo-1472396961693-142e6e269027?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      caption: "Momento especial do casal",
-      category: "Ensaio",
-      display_order: 1
-    },
-    {
-      id: "placeholder-2", 
-      photo_url: "https://images.unsplash.com/photo-1500673922987-e212871fec22?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      caption: "Cenário romântico",
-      category: "Locação",
-      display_order: 2
-    },
-    {
-      id: "placeholder-3",
-      photo_url: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      caption: "Paisagem do ensaio",
-      category: "Natureza", 
-      display_order: 3
-    },
-    {
-      id: "placeholder-4",
-      photo_url: "https://images.unsplash.com/photo-1470813740244-df37b8c1edcb?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      caption: "Momento íntimo",
-      category: "Ensaio",
-      display_order: 4
-    },
-    {
-      id: "placeholder-5",
-      photo_url: "https://images.unsplash.com/photo-1649972904349-6e44c42644a7?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      caption: "Preparativos",
-      category: "Behind",
-      display_order: 5
-    },
-    {
-      id: "placeholder-6",
-      photo_url: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80",
-      caption: "Detalhes especiais",
-      category: "Detalhes",
-      display_order: 6
-    }
-  ];
-
-  const getGalleryTitle = (template: string) => {
-    if (customContent?.title) return customContent.title;
-    
-    switch (template) {
-      case 'Bohemian Dream':
-        return "Momentos Livres";
-      case 'Vintage Charm':
-        return "Memórias Preciosas";
-      case 'Modern Love':
-        return "Nossa Timeline";
-      case 'Minimalist':
-        return "Essência";
-      default:
-        return "Nossa Galeria";
-    }
-  };
-
-  // Use photos from database if available, otherwise use placeholders
-  const displayPhotos = photos.length > 0 ? photos : placeholderImages;
-
   if (loading) {
     return (
-      <section id="gallery" className="py-20 bg-white">
-        <div className="container mx-auto px-4 text-center">
-          <p>Carregando galeria...</p>
+      <section id="gallery" className="py-16" style={{ backgroundColor: modernTokens?.colors.background || '#fff' }}>
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 modern-heading">
+              Nossa Galeria
+            </h2>
+            <div className="w-24 h-1 mx-auto mb-6" style={{ backgroundColor: modernTokens?.colors.accent || '#d4af37' }}></div>
+          </div>
+          
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2" style={{ borderColor: modernTokens?.colors.primary || '#8B5A3C' }}></div>
+          </div>
         </div>
       </section>
     );
   }
 
   return (
-    <section id="gallery" className="py-20 bg-white">
+    <section id="gallery" className="py-16" style={{ backgroundColor: modernTokens?.colors.background || '#fff' }}>
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <div className="inline-flex items-center space-x-2 bg-brown-50 border border-brown-200 rounded-full px-6 py-3 mb-6">
-            <Camera className="h-5 w-5 text-primary" />
-            <span className="font-medium text-brown-700">Galeria</span>
-          </div>
-          
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 gradient-text">
-            {getGalleryTitle(templateName)}
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4 modern-heading">
+            Nossa Galeria
           </h2>
-          
-          <p className="text-lg text-brown-600 max-w-2xl mx-auto">
-            {photos.length > 0 
-              ? "Cada imagem conta uma parte da nossa história. Momentos capturados que guardaremos para sempre no coração."
-              : "Nossa galeria está sendo preparada com muito carinho. Em breve teremos fotos especiais para compartilhar com vocês!"
-            }
+          <div className="w-24 h-1 mx-auto mb-6" style={{ backgroundColor: modernTokens?.colors.accent || '#d4af37' }}></div>
+          <p className="text-lg modern-body opacity-80 max-w-2xl mx-auto">
+            Momentos especiais capturados para sempre. Cada foto conta uma parte da nossa história de amor.
           </p>
         </div>
 
-        {/* Gallery Grid - Padrão uniforme sem destaque especial */}
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-3 gap-6 mb-12">
-          {displayPhotos.map((photo) => (
-            <div 
-              key={photo.id} 
-              className="group relative overflow-hidden rounded-xl luxury-shadow hover:scale-105 transition-all duration-300"
-            >
-              {/* Aspect ratio fixo para manter uniformidade */}
-              <div className="aspect-square overflow-hidden">
-                <img
-                  src={photo.photo_url}
-                  alt={photo.caption || 'Foto da galeria'}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                />
+        {images.length > 0 ? (
+          <AdaptiveGallery 
+            images={images}
+            className="max-w-6xl mx-auto"
+            columns={modernTokens?.galleryType === 'grid' ? 3 : undefined}
+            autoPlay={modernTokens?.galleryType === 'slideshow'}
+            autoPlayInterval={6000}
+          />
+        ) : (
+          <div className="text-center py-12">
+            <div className="bg-gray-100 rounded-lg p-8 max-w-md mx-auto">
+              <div className="text-gray-400 mb-4">
+                <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
               </div>
-              
-              {/* Overlay */}
-              <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                <div className="text-center text-white">
-                  <Heart className="h-8 w-8 mx-auto mb-2" fill="currentColor" />
-                  <p className="text-sm font-medium">{photo.category}</p>
-                  {photo.caption && (
-                    <p className="text-xs mt-1 opacity-80">{photo.caption}</p>
-                  )}
-                </div>
-              </div>
-
-              {/* Category Badge */}
-              <div className="absolute top-3 left-3 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1">
-                <span className="text-xs font-medium text-brown-700">{photo.category}</span>
-              </div>
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                Galeria em Construção
+              </h3>
+              <p className="text-gray-500 text-sm">
+                As fotos especiais do casamento serão adicionadas em breve.
+              </p>
             </div>
-          ))}
-        </div>
-
-        {/* Gallery Footer */}
-        <div className="text-center">
-          <div className="inline-flex items-center space-x-3 bg-gradient-to-r from-brown-50 to-gold-50 rounded-full px-6 py-4 border border-brown-200">
-            <Sparkles className="h-5 w-5 text-accent" fill="currentColor" />
-            <span className="text-brown-700 font-medium">
-              {photos.length > 0 
-                ? "Mais fotos serão adicionadas em breve"
-                : "Fotos em breve - acompanhem!"
-              }
-            </span>
-            <Sparkles className="h-5 w-5 text-accent" fill="currentColor" />
           </div>
-        </div>
+        )}
       </div>
     </section>
   );
