@@ -1,8 +1,18 @@
 
 import { PreviewData } from "@/types/quiz";
-import DefaultTemplate from "./templates/DefaultTemplate/DefaultTemplate";
 import ErrorBoundary from "./ErrorBoundary";
-import { templateExists } from "@/utils/templateLibrary";
+import WeddingSiteNavigation from "./wedding-site/WeddingSiteNavigation";
+import HeroSection from "./wedding-site/HeroSection";
+import CountdownSection from "./wedding-site/CountdownSection";
+import CoupleSection from "./wedding-site/CoupleSection";
+import OurStorySection from "./wedding-site/OurStorySection";
+import GallerySection from "./wedding-site/GallerySection";
+import EventDetailsSection from "./wedding-site/EventDetailsSection";
+import BridesmaidsSection from "./wedding-site/BridesmaidsSection";
+import GiftListSection from "./wedding-site/GiftListSection";
+import RSVPSection from "./wedding-site/RSVPSection";
+import MessagesSection from "./wedding-site/MessagesSection";
+import FooterSection from "./wedding-site/FooterSection";
 
 interface SiteRendererProps {
   siteData: PreviewData;
@@ -10,26 +20,28 @@ interface SiteRendererProps {
 }
 
 const SiteRenderer = ({ siteData, siteId = "preview" }: SiteRendererProps) => {
-  console.log('🎨 SiteRenderer - Template:', siteData.templateName);
-  console.log('🆔 SiteRenderer - SiteId:', siteId);
-
-  // Verificar se o template existe
-  const templateName = siteData.templateName || 'default-template';
-  
-  if (!templateExists(templateName)) {
-    console.warn('⚠️ Template não encontrado:', templateName, '- usando template padrão');
-  }
-
-  const correctedSiteData = {
-    ...siteData,
-    templateName: "default-template"
-  };
-
-  console.log('✅ Renderizando com template:', correctedSiteData.templateName);
+  console.log('🎨 SiteRenderer renderizando site:', siteId);
 
   return (
     <ErrorBoundary>
-      <DefaultTemplate siteData={correctedSiteData} siteId={siteId} />
+      <div className="wedding-site">
+        <WeddingSiteNavigation coupleNames={siteData.coupleNames} />
+        <HeroSection 
+          coupleNames={siteData.coupleNames}
+          weddingDate={siteData.weddingDate}
+          welcomeMessage={siteData.welcomeMessage}
+        />
+        <CountdownSection />
+        <CoupleSection />
+        <OurStorySection />
+        <GallerySection />
+        <EventDetailsSection />
+        <BridesmaidsSection />
+        <GiftListSection />
+        <RSVPSection />
+        <MessagesSection />
+        <FooterSection />
+      </div>
     </ErrorBoundary>
   );
 };
