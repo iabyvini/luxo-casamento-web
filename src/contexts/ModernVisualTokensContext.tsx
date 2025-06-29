@@ -1,151 +1,104 @@
 
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
-import { ModernVisualTokens, generateModernVisualTokens, applyModernVisualTokensToCSS } from '@/utils/modernVisualTokens';
-import { QuizAnswers } from '@/types/quiz';
-import { findBestModernTemplate } from '@/utils/modernTemplateProfiles';
-import { TemplateTokens, ModernVisualTokensContextType } from '@/types/modernVisualTokens';
-import { useTemplateTokens } from '@/hooks/useTemplateTokens';
-import { useCouplePhoto } from '@/hooks/useCouplePhoto';
-import { useSiteIdDetection } from '@/hooks/useSiteIdDetection';
+import React, { createContext, useContext, ReactNode } from 'react';
 
-const ModernVisualTokensContext = createContext<ModernVisualTokensContextType | undefined>(undefined);
+interface ModernVisualTokens {
+  primary: string;
+  secondary: string;
+  accent: string;
+  background: string;
+  surface: string;
+  text: string;
+  textSecondary: string;
+  border: string;
+  fontFamily: string;
+  fontSize: {
+    xs: string;
+    sm: string;
+    base: string;
+    lg: string;
+    xl: string;
+    '2xl': string;
+    '3xl': string;
+    '4xl': string;
+  };
+  spacing: {
+    xs: string;
+    sm: string;
+    md: string;
+    lg: string;
+    xl: string;
+    '2xl': string;
+  };
+  borderRadius: {
+    sm: string;
+    md: string;
+    lg: string;
+    xl: string;
+  };
+  shadows: {
+    sm: string;
+    md: string;
+    lg: string;
+  };
+}
 
-export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode; templateName?: string }> = ({ children, templateName }) => {
-  const [modernTokens, setModernTokens] = useState<ModernVisualTokens | null>(null);
-  const [isModernThemeActive, setIsModernThemeActive] = useState(false);
-  const [couplePhotoUrl, setCouplePhotoUrlState] = useState<string | null>(null);
-  const [templateProfile, setTemplateProfile] = useState<any | null>(null);
-  const [templateTokens, setTemplateTokens] = useState<TemplateTokens | null>(null);
-  const [currentSiteId, setCurrentSiteId] = useState<string | null>(null);
-  const [appliedTemplateId, setAppliedTemplateId] = useState<string | null>(null);
+const defaultTokens: ModernVisualTokens = {
+  primary: '#8B5A3C',
+  secondary: '#D4B08A',
+  accent: '#F4E5D3',
+  background: '#FDFBF7',
+  surface: '#FFFFFF',
+  text: '#2D2D2D',
+  textSecondary: '#6B7280',
+  border: '#E5E7EB',
+  fontFamily: 'Inter, sans-serif',
+  fontSize: {
+    xs: '0.75rem',
+    sm: '0.875rem',
+    base: '1rem',
+    lg: '1.125rem',
+    xl: '1.25rem',
+    '2xl': '1.5rem',
+    '3xl': '1.875rem',
+    '4xl': '2.25rem',
+  },
+  spacing: {
+    xs: '0.5rem',
+    sm: '1rem',
+    md: '1.5rem',
+    lg: '2rem',
+    xl: '3rem',
+    '2xl': '4rem',
+  },
+  borderRadius: {
+    sm: '0.25rem',
+    md: '0.5rem',
+    lg: '0.75rem',
+    xl: '1rem',
+  },
+  shadows: {
+    sm: '0 1px 2px 0 rgba(0, 0, 0, 0.05)',
+    md: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+    lg: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+  },
+};
 
-  const { loadTemplateTokens, applyTokensToDOM } = useTemplateTokens();
-  const { loadCouplePhotoFromDatabase, isLoading } = useCouplePhoto();
-  const { detectSiteId } = useSiteIdDetection();
+const ModernVisualTokensContext = createContext<ModernVisualTokens>(defaultTokens);
 
-  // Aplicar tokens de template específico
-  const applyTemplateTokens = useCallback((templateName: string) => {
-    console.log('🔄 DEBUG - applyTemplateTokens chamada com:', templateName);
-    
-    // Evitar aplicação duplicada
-    if (appliedTemplateId === templateName) {
-      console.log('⚠️ DEBUG - Tokens já aplicados para:', templateName, ', pulando...');
-      return;
-    }
-    
-    const tokens = loadTemplateTokens(templateName);
-    setTemplateTokens(tokens);
-    setAppliedTemplateId(templateName);
+interface ModernVisualTokensProviderProps {
+  children: ReactNode;
+  templateName?: string;
+}
 
-    applyTokensToDOM(tokens);
-    console.log('✅ DEBUG - Tokens aplicados com sucesso para:', templateName);
-  }, [loadTemplateTokens, applyTokensToDOM, appliedTemplateId]);
-
-  // Função para definir siteId e carregar foto do banco
-  const setSiteId = useCallback((siteId: string) => {
-    if (siteId && siteId !== currentSiteId && !isLoading) {
-      console.log('📝 Definindo siteId:', siteId);
-      setCurrentSiteId(siteId);
-      loadCouplePhotoFromDatabase(siteId).then(photoUrl => {
-        if (photoUrl) {
-          setCouplePhotoUrlState(photoUrl);
-        }
-      });
-    }
-  }, [currentSiteId, isLoading, loadCouplePhotoFromDatabase]);
-
-  // Função para atualizar foto (usada pelo componente PhotoUpload)
-  const setCouplePhotoUrl = useCallback((url: string | null) => {
-    console.log('💾 Atualizando foto no contexto:', url);
-    setCouplePhotoUrlState(url);
-  }, []);
-
-  const applyModernTokens = useCallback((quizAnswers: QuizAnswers) => {
-    console.log('🎨 DEBUG - applyModernTokens chamada para:', quizAnswers);
-    
-    const profile = findBestModernTemplate(quizAnswers);
-    const tokens = generateModernVisualTokens(profile);
-    
-    console.log('📋 DEBUG - Template selecionado:', profile.name, profile.id);
-    console.log('🎨 DEBUG - Tokens gerados:', tokens);
-    
-    setTemplateProfile(profile);
-    setModernTokens(tokens);
-    setIsModernThemeActive(true);
-    
-    // Apply CSS
-    const styleId = 'modern-visual-tokens';
-    let styleElement = document.getElementById(styleId) as HTMLStyleElement;
-    
-    if (!styleElement) {
-      styleElement = document.createElement('style');
-      styleElement.id = styleId;
-      document.head.appendChild(styleElement);
-    }
-    
-    const cssContent = applyModernVisualTokensToCSS(tokens);
-    styleElement.textContent = cssContent;
-    
-    console.log('✅ DEBUG - CSS aplicado:', cssContent.substring(0, 200) + '...');
-    
-    // Aplicar classes no body
-    document.body.classList.add('modern-theme-active');
-    document.body.classList.add(`template-${profile.id}`);
-    
-    // Definir variáveis CSS globais adicionais
-    document.documentElement.style.setProperty('--template-id', profile.id);
-    document.documentElement.style.setProperty('--template-name', profile.name);
-  }, []);
-
-  const resetModernTokens = useCallback(() => {
-    setModernTokens(null);
-    setTemplateProfile(null);
-    setIsModernThemeActive(false);
-    setAppliedTemplateId(null);
-    const styleElement = document.getElementById('modern-visual-tokens');
-    if (styleElement) {
-      styleElement.remove();
-    }
-    document.body.classList.remove('modern-theme-active');
-    // Remove todas as classes de template
-    document.body.className = document.body.className.replace(/template-[\w-]+/g, '');
-  }, []);
-
-  // Detectar siteId automaticamente para URLs públicas (apenas uma vez)
-  useEffect(() => {
-    const initializeSiteId = async () => {
-      if (currentSiteId || isLoading) return;
-      
-      const detectedSiteId = await detectSiteId();
-      if (detectedSiteId) {
-        setSiteId(detectedSiteId);
-      }
-    };
-
-    initializeSiteId();
-  }, [currentSiteId, isLoading, detectSiteId, setSiteId]);
-
-  // Aplicar tokens automaticamente quando templateName muda (APENAS UMA VEZ)
-  useEffect(() => {
-    if (templateName && templateName !== appliedTemplateId) {
-      console.log('🔄 DEBUG - useEffect templateName:', templateName);
-      applyTemplateTokens(templateName);
-    }
-  }, [templateName, applyTemplateTokens, appliedTemplateId]);
-
+export const ModernVisualTokensProvider = ({ 
+  children, 
+  templateName 
+}: ModernVisualTokensProviderProps) => {
+  // Para agora, sempre usar os tokens padrão
+  // Quando novos templates forem adicionados, podemos customizar baseado no templateName
+  
   return (
-    <ModernVisualTokensContext.Provider value={{ 
-      modernTokens, 
-      isModernThemeActive,
-      couplePhotoUrl,
-      templateProfile,
-      templateTokens,
-      applyModernTokens, 
-      applyTemplateTokens,
-      resetModernTokens,
-      setCouplePhotoUrl,
-      setSiteId
-    }}>
+    <ModernVisualTokensContext.Provider value={defaultTokens}>
       {children}
     </ModernVisualTokensContext.Provider>
   );
@@ -153,7 +106,7 @@ export const ModernVisualTokensProvider: React.FC<{ children: React.ReactNode; t
 
 export const useModernVisualTokens = () => {
   const context = useContext(ModernVisualTokensContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useModernVisualTokens must be used within a ModernVisualTokensProvider');
   }
   return context;

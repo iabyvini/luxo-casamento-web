@@ -30,17 +30,35 @@ const SiteRenderer = ({ siteData, siteId = "preview" }: SiteRendererProps) => {
           coupleNames={siteData.coupleNames}
           weddingDate={siteData.weddingDate}
           welcomeMessage={siteData.welcomeMessage}
+          templateName={siteData.templateName}
         />
-        <CountdownSection />
-        <CoupleSection />
-        <OurStorySection />
-        <GallerySection />
-        <EventDetailsSection />
+        <CountdownSection weddingDate={siteData.weddingDate} />
+        <CoupleSection coupleNames={siteData.coupleNames} />
+        <OurStorySection 
+          coupleNames={siteData.coupleNames}
+          templateName={siteData.templateName}
+        />
+        <GallerySection 
+          siteId={siteId}
+          templateName={siteData.templateName}
+          quizAnswers={siteData.quizAnswers}
+        />
+        <EventDetailsSection 
+          weddingDate={siteData.weddingDate}
+          templateName={siteData.templateName}
+          quizAnswers={siteData.quizAnswers}
+        />
         <BridesmaidsSection />
-        <GiftListSection />
-        <RSVPSection />
+        <GiftListSection siteId={siteId} />
+        <RSVPSection 
+          weddingDate={siteData.weddingDate}
+          templateName={siteData.templateName}
+        />
         <MessagesSection />
-        <FooterSection />
+        <FooterSection 
+          coupleNames={siteData.coupleNames}
+          weddingDate={siteData.weddingDate}
+        />
       </div>
     </ErrorBoundary>
   );

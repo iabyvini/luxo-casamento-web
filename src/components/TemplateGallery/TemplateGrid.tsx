@@ -1,37 +1,37 @@
 
-import { ExtendedTemplate } from "@/data/extendedTemplateLibrary";
 import TemplateCard from "./TemplateCard";
-import EmptyState from "./EmptyState";
 
 interface TemplateGridProps {
-  templates: ExtendedTemplate[];
-  favorites: string[];
-  onPreview: (template: ExtendedTemplate) => void;
-  onSelect: (template: ExtendedTemplate) => void;
-  onToggleFavorite: (templateId: string) => void;
+  templates: Array<{
+    id: string;
+    name: string;
+    description: string;
+    image: string;
+    category: string;
+    tags: string[];
+  }>;
 }
 
-const TemplateGrid = ({ 
-  templates, 
-  favorites, 
-  onPreview, 
-  onSelect, 
-  onToggleFavorite 
-}: TemplateGridProps) => {
+const TemplateGrid = ({ templates }: TemplateGridProps) => {
   if (templates.length === 0) {
-    return <EmptyState />;
+    return (
+      <div className="text-center py-12">
+        <p className="text-gray-500">Nenhum template encontrado para os filtros selecionados.</p>
+      </div>
+    );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {templates.map((template) => (
         <TemplateCard
           key={template.id}
-          template={template}
-          isFavorite={favorites.includes(template.id)}
-          onPreview={onPreview}
-          onSelect={onSelect}
-          onToggleFavorite={onToggleFavorite}
+          id={template.id}
+          name={template.name}
+          description={template.description}
+          image={template.image}
+          category={template.category}
+          tags={template.tags}
         />
       ))}
     </div>
