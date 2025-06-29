@@ -16,6 +16,28 @@ import FooterSection from "@/components/wedding-site/FooterSection";
 const defaultTemplateConfig: TemplateConfig = {
   id: 'default-template',
   name: 'Template Padrão',
+  category: 'classic',
+  description: 'Template padrão elegante',
+  tags: ['elegante', 'clássico'],
+  colors: ['#8B4513', '#DDA0DD', '#F0E68C'],
+  fonts: {
+    heading: 'Playfair Display',
+    body: 'Inter',
+    accent: 'Dancing Script'
+  },
+  sections: ['Hero', 'Couple', 'Event Details'],
+  mood: ['elegant', 'classic'],
+  tokens: {
+    primaryColor: '#8B4513',
+    secondaryColor: '#DDA0DD',
+    accentColor: '#F0E68C',
+    backgroundColor: '#F8F9FA',
+    background: '#F8F9FA',
+    textColor: '#1a1a1a',
+    fontFamily: 'Inter, sans-serif',
+    headingFont: 'Playfair Display, serif',
+    borderRadius: '8px'
+  },
   components: {
     Navigation: DefaultNavigation,
     Hero: DefaultHero,
@@ -49,7 +71,29 @@ const defaultTemplateConfig: TemplateConfig = {
 
 const DefaultTemplate = (props: TemplateProps) => {
   console.log('🛡️ Usando template de fallback padrão');
-  return <BaseTemplate {...props} templateConfig={defaultTemplateConfig} />;
+  
+  return (
+    <BaseTemplate {...props} templateConfig={defaultTemplateConfig}>
+      <DefaultNavigation coupleNames={props.siteData.coupleNames} />
+      <DefaultHero 
+        coupleNames={props.siteData.coupleNames}
+        weddingDate={props.siteData.weddingDate}
+        welcomeMessage={props.siteData.welcomeMessage}
+        templateName={props.siteData.templateName}
+        quizAnswers={props.siteData.quizAnswers}
+      />
+      <CountdownSection siteData={props.siteData} siteId={props.siteId} />
+      <CoupleSection siteData={props.siteData} siteId={props.siteId} />
+      <OurStorySection siteData={props.siteData} siteId={props.siteId} />
+      <GallerySection siteData={props.siteData} siteId={props.siteId} />
+      <EventDetailsSection siteData={props.siteData} siteId={props.siteId} />
+      <BridesmaidsSection siteData={props.siteData} siteId={props.siteId} />
+      <GiftListSection siteData={props.siteData} siteId={props.siteId} />
+      <RSVPSection siteData={props.siteData} siteId={props.siteId} />
+      <MessagesSection siteData={props.siteData} siteId={props.siteId} />
+      <FooterSection siteData={props.siteData} siteId={props.siteId} />
+    </BaseTemplate>
+  );
 };
 
 export default DefaultTemplate;

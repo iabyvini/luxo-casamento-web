@@ -19,13 +19,25 @@ export interface TemplateFonts {
   accent: string;
 }
 
+export interface TemplateStyles {
+  colors: {
+    primary: string;
+    secondary: string;
+    accent: string;
+    background: string;
+  };
+  fonts: TemplateFonts;
+  spacing: string;
+  animations: string;
+}
+
 export interface TemplateTokens {
   primaryColor: string;
   secondaryColor: string;
   accentColor: string;
   backgroundColor: string;
-  background: string; // Adicionar propriedade background
-  textColor?: string; // Adicionar propriedade textColor opcional
+  background: string;
+  textColor?: string;
   fontFamily: string;
   headingFont: string;
   borderRadius: string;
@@ -42,7 +54,8 @@ export interface TemplateConfig {
   sections: string[];
   mood: string[];
   tokens: TemplateTokens;
-  components?: Record<string, any>; // Adicionar propriedade components opcional
+  components?: Record<string, any>;
+  styles?: TemplateStyles;
 }
 
 export interface ExtendedTemplate extends TemplateConfig {
