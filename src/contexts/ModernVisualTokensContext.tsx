@@ -1,8 +1,7 @@
-
 import React, { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { QuizAnswers } from '@/types/quiz';
 import { supabase } from "@/integrations/supabase/client";
-import { getTemplateById } from '@/data/templateLibrary';
+import { getTemplateById, AnimationType, GalleryType } from '@/data/templateLibrary';
 
 interface ModernVisualTokens {
   colors: {
@@ -49,8 +48,8 @@ interface ModernVisualTokens {
     md: string;
     lg: string;
   };
-  galleryType: 'carousel' | 'grid' | 'slideshow';
-  animationType: 'fade' | 'slide' | 'parallax' | 'bounce';
+  galleryType: GalleryType;
+  animationType: AnimationType;
 }
 
 interface ModernVisualTokensContextType {
