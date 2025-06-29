@@ -2,17 +2,20 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Search, Heart, ArrowLeft, Filter } from "lucide-react";
-import { TEMPLATE_LIBRARY, TEMPLATE_CATEGORIES, TemplateCategory, TemplateProfile } from "@/data/templateLibrary";
+import { ArrowLeft, Heart, Sparkles, Palette, Layout } from "lucide-react";
+import { TEMPLATE_LIBRARY, TemplateCategory, TemplateProfile } from "@/data/templateLibrary";
 import { searchTemplates, getTemplatesByCategory } from "@/data/templateLibrary";
+import TemplateSearchBar from "./TemplateSearchBar";
+import TemplateCategoryFilter from "./TemplateCategoryFilter";
+import TemplatePreviewCard from "./TemplatePreviewCard";
 
 const ModernTemplateGallery = () => {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<TemplateCategory | 'all'>('all');
   const [filteredTemplates, setFilteredTemplates] = useState<TemplateProfile[]>(TEMPLATE_LIBRARY);
+  const [hoveredTemplate, setHoveredTemplate] = useState<string | null>(null);
+  const [showFilters, setShowFilters] = useState(true);
 
   useEffect(() => {
     let templates = TEMPLATE_LIBRARY;
@@ -32,11 +35,6 @@ const ModernTemplateGallery = () => {
     setFilteredTemplates(templates);
   }, [searchQuery, selectedCategory]);
 
-  const handleTemplateSelect = (template: TemplateProfile) => {
-    // Por enquanto, navega para o preview com o template selecionado
-    navigate(`/template-preview/${template.id}`);
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -53,166 +51,120 @@ const ModernTemplateGallery = () => {
             </Button>
           </div>
 
+          {/* Enhanced Header */}
           <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Escolha Seu Template Perfeito
-            </h1>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Explore nossa coleção de templates únicos, cada um com seu próprio estilo e personalidade
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <Sparkles className="h-8 w-8 text-blue-600" />
+              <h1 className="text-4xl font-bold text-gray-900">
+                Galeria de Templates
+              </h1>
+            </div>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto mb-4">
+              Explore nossa coleção completa de <span className="font-semibold text-blue-600">{TEMPLATE_LIBRARY.length} templates únicos</span>, 
+              cada um cuidadosamente desenvolvido com seu próprio estilo, paleta de cores e personalidade
             </p>
-          </div>
-
-          {/* Search */}
-          <div className="flex flex-col md:flex-row gap-4 mb-6">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
-              <Input
-                placeholder="Buscar templates..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
-              />
+            <div className="flex items-center justify-center gap-6 text-sm text-gray-500">
+              <div className="flex items-center gap-1">
+                <Palette className="h-4 w-4" />
+                <span>Paletas únicas</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Layout className="h-4 w-4" />
+                <span>Totalmente responsivos</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Heart className="h-4 w-4" />
+                <span>Feito com amor</span>
+              </div>
             </div>
           </div>
+
+          {/* Search Bar */}
+          <TemplateSearchBar
+            searchQuery={searchQuery}
+            onSearchChange={setSearchQuery}
+            totalResults={filteredTemplates.length}
+            showFilters={showFilters}
+            onToggleFilters={() => setShowFilters(!showFilters)}
+          />
         </div>
       </div>
 
       {/* Category Filters */}
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant={selectedCategory === 'all' ? "default" : "outline"}
-              size="sm"
-              onClick={() => setSelectedCategory('all')}
-              className="flex items-center gap-2"
-            >
-              <Filter className="h-3 w-3" />
-              Todos
-              <Badge variant="secondary" className="ml-1">
-                {TEMPLATE_LIBRARY.length}
-              </Badge>
-            </Button>
-            
-            {Object.entries(TEMPLATE_CATEGORIES).map(([key, category]) => (
-              <Button
-                key={key}
-                variant={selectedCategory === key ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedCategory(key as TemplateCategory)}
-                className="flex items-center gap-2"
-              >
-                <Filter className="h-3 w-3" />
-                {category.name}
-                <Badge variant="secondary" className="ml-1">
-                  {getTemplatesByCategory(key as TemplateCategory).length}
-                </Badge>
-              </Button>
-            ))}
-          </div>
-        </div>
-      </div>
+      {showFilters && (
+        <TemplateCategoryFilter
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+          totalTemplates={TEMPLATE_LIBRARY.length}
+        />
+      )}
 
       {/* Templates Grid */}
       <div className="container mx-auto px-4 py-8">
         {filteredTemplates.length === 0 ? (
-          <div className="text-center py-12">
-            <Heart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">
-              Nenhum template encontrado
-            </h3>
-            <p className="text-gray-500">
-              Tente ajustar seus filtros ou termo de busca
-            </p>
+          <div className="text-center py-16">
+            <div className="max-w-md mx-auto">
+              <Heart className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-700 mb-2">
+                Nenhum template encontrado
+              </h3>
+              <p className="text-gray-500 mb-4">
+                Não encontramos templates que correspondam aos seus critérios de busca.
+              </p>
+              <div className="space-y-2 text-sm text-gray-600">
+                <p>Tente:</p>
+                <ul className="list-disc list-inside space-y-1">
+                  <li>Verificar a ortografia das palavras</li>
+                  <li>Usar termos mais gerais</li>
+                  <li>Remover alguns filtros</li>
+                  <li>Explorar diferentes categorias</li>
+                </ul>
+              </div>
+              <Button
+                onClick={() => {
+                  setSearchQuery("");
+                  setSelectedCategory('all');
+                }}
+                className="mt-4"
+              >
+                Limpar filtros
+              </Button>
+            </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredTemplates.map((template) => (
-              <div
-                key={template.id}
-                className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => handleTemplateSelect(template)}
-              >
-                {/* Template Preview */}
-                <div className="aspect-video bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden">
-                  <div 
-                    className="absolute inset-0 opacity-20"
-                    style={{ 
-                      background: `linear-gradient(135deg, ${template.palette.primary} 0%, ${template.palette.secondary} 50%, ${template.palette.accent} 100%)` 
-                    }}
-                  />
-                  
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <div 
-                        className="text-2xl font-bold mb-2"
-                        style={{ 
-                          fontFamily: template.typography.heading,
-                          color: template.palette.primary 
-                        }}
-                      >
-                        {template.name}
-                      </div>
-                      <div 
-                        className="text-sm opacity-75"
-                        style={{ 
-                          fontFamily: template.typography.body,
-                          color: template.tokens.text 
-                        }}
-                      >
-                        Preview
-                      </div>
-                    </div>
-                  </div>
+          <>
+            {/* Results Info */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="text-sm text-gray-600">
+                Mostrando <span className="font-medium">{filteredTemplates.length}</span> template{filteredTemplates.length !== 1 ? 's' : ''}
+                {selectedCategory !== 'all' && (
+                  <span> na categoria <span className="font-medium">{selectedCategory}</span></span>
+                )}
+              </div>
+            </div>
 
-                  <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                    <Button
-                      size="sm"
-                      className="bg-white text-gray-900 hover:bg-gray-100"
-                    >
-                      Visualizar
-                    </Button>
-                  </div>
-                </div>
-                
-                {/* Template Info */}
-                <div className="p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold text-lg text-gray-900">{template.name}</h3>
-                  </div>
-                  
-                  <p className="text-gray-600 text-sm mb-3 line-clamp-2">{template.description}</p>
-                  
-                  {/* Categories */}
-                  <div className="flex flex-wrap gap-1 mb-3">
-                    {template.categories.map((category) => (
-                      <span 
-                        key={category}
-                        className="text-xs bg-blue-50 text-blue-600 px-2 py-1 rounded"
-                      >
-                        {TEMPLATE_CATEGORIES[category]?.name || category}
-                      </span>
-                    ))}
-                  </div>
+            {/* Templates Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredTemplates.map((template) => (
+                <TemplatePreviewCard
+                  key={template.id}
+                  template={template}
+                  isHovered={hoveredTemplate === template.id}
+                  onHover={() => setHoveredTemplate(template.id)}
+                  onLeave={() => setHoveredTemplate(null)}
+                />
+              ))}
+            </div>
 
-                  {/* Color Palette */}
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-gray-500">Cores:</span>
-                    <div className="flex gap-1">
-                      {Object.values(template.palette).map((color, index) => (
-                        <div
-                          key={index}
-                          className="w-4 h-4 rounded-full border border-gray-200"
-                          style={{ backgroundColor: color }}
-                          title={color}
-                        />
-                      ))}
-                    </div>
-                  </div>
+            {/* Load More or Pagination could go here */}
+            {filteredTemplates.length > 0 && (
+              <div className="text-center mt-12 pt-8 border-t">
+                <div className="text-sm text-gray-500">
+                  ✨ Todos os {filteredTemplates.length} templates foram carregados
                 </div>
               </div>
-            ))}
-          </div>
+            )}
+          </>
         )}
       </div>
     </div>

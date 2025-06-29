@@ -45,7 +45,10 @@ const calculateTemplateScore = (template: TemplateProfile, answers: QuizAnswers)
     'Boho': ['boho', 'campestre'],
     'Clássico': ['classico', 'florais'],
     'Vintage': ['florais', 'classico'],
-    'Moderno': ['moderno', 'minimalista']
+    'Moderno': ['moderno', 'minimalista'],
+    'Rústico': ['rustico', 'campestre'],
+    'Tropical': ['tropical', 'praia'],
+    'Cinematográfico': ['cinematografico']
   };
 
   const matchingCategories = styleMapping[answers.estilo] || [];
@@ -55,14 +58,17 @@ const calculateTemplateScore = (template: TemplateProfile, answers: QuizAnswers)
   
   score += categoryMatches * 25;
 
-  // Analisar local
+  // Analisar local do casamento
   const locationMapping: Record<string, TemplateCategory[]> = {
     'Praia': ['praia', 'tropical'],
     'Fazenda': ['rustico', 'boho', 'campestre'],
     'Igreja': ['classico', 'florais'],
-    'Salão de Festas': ['moderno', 'minimalista'],
-    'Jardim': ['florais', 'boho'],
-    'Ao ar livre': ['campestre', 'rustico']
+    'Salão de Festas': ['moderno', 'minimalista', 'classico'],
+    'Jardim': ['florais', 'boho', 'campestre'],
+    'Ao ar livre': ['campestre', 'rustico', 'boho'],
+    'Destination': ['tropical', 'praia'],
+    'Casa': ['minimalista', 'moderno'],
+    'Hotel': ['classico', 'moderno']
   };
 
   const locationCategories = locationMapping[answers.local] || [];
@@ -72,11 +78,14 @@ const calculateTemplateScore = (template: TemplateProfile, answers: QuizAnswers)
   
   score += locationMatches * 20;
 
-  // Analisar tom
+  // Analisar tom do evento
   const toneMapping: Record<string, TemplateCategory[]> = {
-    'Elegante e formal': ['classico', 'minimalista'],
-    'Divertido e descontraído': ['boho', 'tropical'],
-    'Emotivo e romântico': ['florais', 'classico']
+    'Elegante e formal': ['classico', 'minimalista', 'cinematografico'],
+    'Divertido e descontraído': ['boho', 'tropical', 'praia'],
+    'Emotivo e romântico': ['florais', 'classico'],
+    'Íntimo e familiar': ['campestre', 'rustico'],
+    'Luxuoso': ['classico', 'cinematografico'],
+    'Moderno e sofisticado': ['moderno', 'minimalista']
   };
 
   const toneCategories = toneMapping[answers.tom] || [];
@@ -85,6 +94,47 @@ const calculateTemplateScore = (template: TemplateProfile, answers: QuizAnswers)
   ).length;
   
   score += toneMatches * 15;
+
+  // Analisar cores preferidas (se houver)
+  if (answers.cores) {
+    const colorPreferences = answers.cores;
+    let colorScore = 0;
+    
+    // Mapear cores para templates
+    if (colorPreferences.includes('Rosa') && 
+        (template.palette.primary.includes('pink') || 
+         template.palette.secondary.includes('pink') ||
+         template.name.toLowerCase().includes('rose'))) {
+      colorScore += 10;
+    }
+    
+    if (colorPreferences.includes('Azul') && 
+        (template.palette.primary.includes('blue') || 
+         template.categories.includes('praia') ||
+         template.categories.includes('tropical'))) {
+      colorScore += 10;
+    }
+    
+    if (colorPreferences.includes('Verde') && 
+        (template.palette.primary.includes('green') || 
+         template.categories.includes('florais') ||
+         template.categories.includes('campestre'))) {
+      colorScore += 10;
+    }
+    
+    score += colorScore;
+  }
+
+  // Bonus por features específicas
+  if (answers.galeria === 'Slideshow' && template.galleryType === 'slideshow') {
+    score += 10;
+  }
+  
+  if (answers.animacoes === 'Suaves' && template.animationType === 'fade') {
+    score += 5;
+  } else if (answers.animacoes === 'Dramáticas' && template.animationType === 'parallax') {
+    score += 5;
+  }
 
   // Score base
   score += 10;
@@ -95,40 +145,107 @@ const calculateTemplateScore = (template: TemplateProfile, answers: QuizAnswers)
 const generateMatchReasons = (template: TemplateProfile, answers: QuizAnswers): string[] => {
   const reasons: string[] = [];
   
+  // Razões baseadas no estilo
   if (template.categories.includes('florais') && answers.estilo === 'Romântico') {
-    reasons.push('Combina com seu estilo romântico');
+    reasons.push('Perfeitamente romântico com elementos florais');
   }
   
   if (template.categories.includes('classico') && answers.local === 'Igreja') {
-    reasons.push('Perfeito para cerimônias em igreja');
+    reasons.push('Ideal para cerimônias tradicionais em igreja');
   }
   
   if (template.categories.includes('praia') && answers.local === 'Praia') {
-    reasons.push('Ideal para casamentos na praia');
+    reasons.push('Captura a essência de casamentos na praia');
   }
   
-  if (template.galleryType === 'grid' && answers.tema !== 'Minimalista') {
-    reasons.push('Galeria organizada para suas fotos');
+  if (template.categories.includes('rustico') && answers.local === 'Fazenda') {
+    reasons.push('Combina com o charme rústico da fazenda');
+  }
+  
+  if (template.categories.includes('moderno') && answers.estilo === 'Minimalista') {
+    reasons.push('Design limpo e contemporâneo');
+  }
+  
+  if (template.categories.includes('boho') && answers.estilo === 'Boho') {
+    reasons.push('Estilo boêmio autêntico');
+  }
+
+  // Razões baseadas em características técnicas
+  if (template.galleryType === 'grid' && answers.tom !== 'Minimalista') {
+    reasons.push('Galeria organizada para destacar suas fotos');
   }
   
   if (template.animationType === 'fade' && answers.tom === 'Elegante e formal') {
     reasons.push('Animações suaves e elegantes');
   }
-
-  if (reasons.length === 0) {
-    reasons.push('Template versátil que se adapta ao seu casamento');
+  
+  if (template.animationType === 'parallax' && answers.tom === 'Divertido e descontraído') {
+    reasons.push('Efeitos visuais dinâmicos e modernos');
   }
   
-  return reasons;
+  // Razões baseadas na paleta de cores
+  if (template.palette.primary.includes('#FF') || template.palette.secondary.includes('#FF')) {
+    reasons.push('Paleta de cores calorosa e acolhedora');
+  }
+  
+  if (template.palette.primary.includes('#00') || template.palette.primary.includes('#4') || template.palette.primary.includes('#B')) {
+    reasons.push('Tons suaves e serenos');
+  }
+
+  // Razões genéricas se não houver matches específicos
+  if (reasons.length === 0) {
+    reasons.push('Template versátil que se adapta ao seu estilo');
+    reasons.push('Design profissional e bem estruturado');
+  }
+  
+  // Limitar a 3 razões principais
+  return reasons.slice(0, 3);
 };
 
 export const getPopularTemplates = (): TemplateProfile[] => {
-  // Por enquanto retorna todos os templates disponíveis
-  return TEMPLATE_LIBRARY;
+  // Retorna templates mais populares baseado em características comuns
+  return TEMPLATE_LIBRARY.filter(template => 
+    template.categories.includes('classico') || 
+    template.categories.includes('florais') ||
+    template.categories.includes('moderno')
+  ).slice(0, 6);
 };
 
 export const getTemplatesByCategory = (category: TemplateCategory): TemplateProfile[] => {
   return TEMPLATE_LIBRARY.filter(template => 
     template.categories.includes(category)
   );
+};
+
+// Função auxiliar para recomendações baseadas em templates similares
+export const getSimilarTemplates = (templateId: string, limit: number = 3): TemplateProfile[] => {
+  const currentTemplate = TEMPLATE_LIBRARY.find(t => t.id === templateId);
+  if (!currentTemplate) return [];
+  
+  // Encontrar templates com categorias similares
+  const similarTemplates = TEMPLATE_LIBRARY
+    .filter(template => 
+      template.id !== templateId &&
+      template.categories.some(cat => currentTemplate.categories.includes(cat))
+    )
+    .sort((a, b) => {
+      // Ordenar por número de categorias em comum
+      const aCommon = a.categories.filter(cat => currentTemplate.categories.includes(cat)).length;
+      const bCommon = b.categories.filter(cat => currentTemplate.categories.includes(cat)).length;
+      return bCommon - aCommon;
+    })
+    .slice(0, limit);
+    
+  return similarTemplates;
+};
+
+// Função para análise de tendências
+export const getTrendingTemplates = (): TemplateProfile[] => {
+  // Simular templates em alta baseado em características modernas
+  return TEMPLATE_LIBRARY.filter(template => 
+    template.animationType === 'parallax' ||
+    template.galleryType === 'slideshow' ||
+    template.categories.includes('cinematografico') ||
+    template.categories.includes('moderno')
+  ).slice(0, 4);
 };
