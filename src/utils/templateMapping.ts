@@ -1,3 +1,4 @@
+
 export interface TemplateStyle {
   name: string;
   colors: string[];
@@ -71,12 +72,11 @@ export const getDynamicTemplate = (estilo: string, local: string, cores: string)
   const primaryColors = colorPalettes[cores] || colorPalettes['Dourado'];
   const locationTones = locationColors[local] || locationColors['Outro'];
 
-  // Combina cores escolhidas com tons do local
   const combinedColors = [
-    primaryColors[0], // Cor principal
-    locationTones[0],  // Tom do local
-    primaryColors[1], // Cor secundária
-    locationTones[2] || '#FFFFFF' // Cor de fundo
+    primaryColors[0],
+    locationTones[0],
+    primaryColors[1],
+    locationTones[2] || '#FFFFFF'
   ];
 
   return {
@@ -115,5 +115,5 @@ export const getTemplateColors = (template: string): string[] => {
   return colorMap[template] || colorMap['Elegance'];
 };
 
-export { findBestTemplateProfile } from './templateProfiles';
+export { getTemplateProfile as findBestTemplateProfile } from './templateProfiles';
 export { generateVisualTokens, applyVisualTokensToCSS } from './visualTokens';

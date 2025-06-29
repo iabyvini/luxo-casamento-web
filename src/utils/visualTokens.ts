@@ -1,5 +1,5 @@
 
-import { TemplateProfile } from './templateProfiles';
+import { TemplateProfile } from '@/data/templateLibrary';
 
 export interface VisualTokens {
   colors: {
@@ -37,25 +37,34 @@ export interface VisualTokens {
 export const generateVisualTokens = (templateProfile: TemplateProfile): VisualTokens => {
   return {
     colors: {
-      primary: templateProfile.visual.primaryColor,
-      secondary: templateProfile.visual.secondaryColor,
-      accent: templateProfile.visual.accentColor,
-      background: templateProfile.visual.backgroundGradient,
-      textureOverlay: templateProfile.visual.textureOverlay
+      primary: templateProfile.palette.primary,
+      secondary: templateProfile.palette.secondary,
+      accent: templateProfile.palette.accent,
+      background: templateProfile.tokens.background,
     },
     typography: {
       fontFamilies: {
-        heading: templateProfile.typography.headingFont,
-        body: templateProfile.typography.bodyFont,
-        accent: templateProfile.typography.accentFont
+        heading: templateProfile.typography.heading,
+        body: templateProfile.typography.body,
+        accent: templateProfile.typography.accent
       },
       weights: {
-        heading: templateProfile.typography.headingWeight,
-        body: templateProfile.typography.bodyWeight
+        heading: 400,
+        body: 300
       }
     },
-    layout: templateProfile.layout,
-    decorations: templateProfile.decorations
+    layout: {
+      spacing: 'normal',
+      borderRadius: 'soft',
+      shadows: 'subtle',
+      contentWidth: 'normal'
+    },
+    decorations: {
+      heroElements: ['floral-background'],
+      sectionDividers: ['decorative-line'],
+      backgroundPatterns: ['watercolor-texture'],
+      iconStyle: 'decorative'
+    }
   };
 };
 
@@ -66,7 +75,6 @@ export const applyVisualTokensToCSS = (visualTokens: VisualTokens): string => {
       --secondary-color: ${visualTokens.colors.secondary};
       --accent-color: ${visualTokens.colors.accent};
       --background-gradient: ${visualTokens.colors.background};
-      --texture-overlay: ${visualTokens.colors.textureOverlay || 'none'};
       --font-heading: ${visualTokens.typography.fontFamilies.heading};
       --font-body: ${visualTokens.typography.fontFamilies.body};
       --font-accent: ${visualTokens.typography.fontFamilies.accent || visualTokens.typography.fontFamilies.heading};
@@ -76,7 +84,6 @@ export const applyVisualTokensToCSS = (visualTokens: VisualTokens): string => {
 
     .hero-dynamic-bg {
       background: var(--background-gradient);
-      background-image: var(--texture-overlay);
     }
 
     .dynamic-heading {

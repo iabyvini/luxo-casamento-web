@@ -1,38 +1,24 @@
 
 import { QuizAnswers } from '@/types/quiz';
+import { TemplateProfile, TEMPLATE_LIBRARY, getTemplateById } from '@/data/templateLibrary';
 
-export interface TemplateProfile {
-  id: string;
-  name: string;
-  description: string;
-  style: string;
-  colors: string[];
-  mood: string;
-  target_audience: string;
-}
-
-const defaultProfile: TemplateProfile = {
-  id: 'default',
-  name: 'Template Padrão',
-  description: 'Template versátil que se adapta a qualquer estilo de casamento',
-  style: 'Clássico',
-  colors: ['#8B5A3C', '#D4B08A', '#F4E5D3'],
-  mood: 'Elegante e atemporal',
-  target_audience: 'Todos os casais'
-};
+export { TemplateProfile } from '@/data/templateLibrary';
 
 export const getTemplateProfile = (templateId: string): TemplateProfile => {
-  // Por enquanto, sempre retornar o perfil padrão
-  // Quando novos templates forem adicionados, implementar busca real
-  return defaultProfile;
+  const template = getTemplateById(templateId);
+  if (!template) {
+    // Retorna o primeiro template como fallback
+    return TEMPLATE_LIBRARY[0];
+  }
+  return template;
 };
 
 export const matchTemplateToAnswers = (answers: QuizAnswers): TemplateProfile => {
-  // Por enquanto, sempre retornar o perfil padrão
-  // Quando novos templates forem adicionados, implementar matching baseado nas respostas
-  return defaultProfile;
+  // Por enquanto retorna o primeiro template
+  // TODO: Implementar lógica de matching mais sofisticada
+  return TEMPLATE_LIBRARY[0];
 };
 
 export const getAllTemplateProfiles = (): TemplateProfile[] => {
-  return [defaultProfile];
+  return TEMPLATE_LIBRARY;
 };
