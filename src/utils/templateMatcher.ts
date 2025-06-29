@@ -40,7 +40,7 @@ const calculateTemplateScore = (template: TemplateProfile, answers: QuizAnswers)
   
   // Analisar estilo
   const styleMapping: Record<string, TemplateCategory[]> = {
-    'Romântico': ['florais', 'classico'],
+    'Romântico': ['florais', 'classico', 'romantico'],
     'Minimalista': ['minimalista', 'moderno'],
     'Boho': ['boho', 'campestre'],
     'Clássico': ['classico', 'florais'],
@@ -82,7 +82,7 @@ const calculateTemplateScore = (template: TemplateProfile, answers: QuizAnswers)
   const toneMapping: Record<string, TemplateCategory[]> = {
     'Elegante e formal': ['classico', 'minimalista', 'cinematografico'],
     'Divertido e descontraído': ['boho', 'tropical', 'praia'],
-    'Emotivo e romântico': ['florais', 'classico'],
+    'Emotivo e romântico': ['florais', 'classico', 'romantico'],
     'Íntimo e familiar': ['campestre', 'rustico'],
     'Luxuoso': ['classico', 'cinematografico'],
     'Moderno e sofisticado': ['moderno', 'minimalista']
@@ -126,13 +126,13 @@ const calculateTemplateScore = (template: TemplateProfile, answers: QuizAnswers)
   }
 
   // Bonus por features específicas
-  if (answers.galeria === 'Slideshow' && template.galleryType === 'slideshow') {
+  if (answers.photos === 'Slideshow' && template.galleryType === 'slideshow') {
     score += 10;
   }
   
-  if (answers.animacoes === 'Suaves' && template.animationType === 'fade') {
+  if (answers.animations === 'Suaves' && template.animationType === 'fade') {
     score += 5;
-  } else if (answers.animacoes === 'Dramáticas' && template.animationType === 'parallax') {
+  } else if (answers.animations === 'Dramáticas' && template.animationType === 'parallax') {
     score += 5;
   }
 
