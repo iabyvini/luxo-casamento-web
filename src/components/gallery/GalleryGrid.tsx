@@ -53,8 +53,7 @@ const GalleryGrid = ({ images, columns = 3, className = '' }: GalleryGridProps) 
       <div 
         className="gallery-grid"
         style={{ 
-          gridTemplateColumns: `repeat(${columns}, 1fr)`,
-          '--columns': columns 
+          gridTemplateColumns: `repeat(${columns}, 1fr)`
         }}
       >
         {images.map((image, index) => (

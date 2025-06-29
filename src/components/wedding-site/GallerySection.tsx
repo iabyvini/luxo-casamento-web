@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -97,7 +96,7 @@ const GallerySection = ({ siteId, templateName, quizAnswers }: GallerySectionPro
         const galleryImages: GalleryImage[] = data.map((photo, index) => ({
           id: photo.id,
           url: photo.photo_url,
-          alt: photo.alt_text || `Foto da galeria ${index + 1}`,
+          alt: photo.caption || `Foto da galeria ${index + 1}`,
           caption: photo.caption
         }));
         
