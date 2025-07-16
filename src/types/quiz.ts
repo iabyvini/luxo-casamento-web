@@ -37,4 +37,46 @@ export interface PreviewData {
   templateName: string;
   welcomeMessage: string;
   quizAnswers: QuizAnswers;
+  customContent?: {
+    ourStory?: string;
+    giftList?: Array<{
+      id: string;
+      name: string;
+      description: string;
+      price: number;
+      image_url: string;
+      category: string;
+      is_purchased: boolean;
+    }>;
+    bridesmaids?: Array<{
+      name: string;
+      role: string;
+      photo: string;
+      description: string;
+    }>;
+    groomsmen?: Array<{
+      name: string;
+      role: string;
+      photo: string;
+      description: string;
+    }>;
+    galleryPhotos?: Array<{
+      id: string;
+      photo_url: string;
+      caption: string;
+      category: string;
+    }>;
+    eventDetails?: {
+      ceremony: {
+        time: string;
+        location: string;
+        address: string;
+      };
+      reception: {
+        time: string;
+        location: string;
+        address: string;
+      };
+    };
+  };
 }

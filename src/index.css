@@ -1,5 +1,5 @@
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700;800;900&family=Dancing+Script:wght@400;500;600;700&family=Caveat:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Lora:wght@400;500;600&family=Dancing+Script:wght@400;500;600;700&family=Merriweather:wght@400;700&family=Open+Sans:wght@400;600&family=Caveat:wght@400;600&family=Montserrat:wght@400;500;600;700&family=Nunito:wght@400;600&family=Kaushan+Script&family=Cormorant+Garamond:wght@400;500;600;700&family=Crimson+Text:wght@400;600&family=Great+Vibes&family=Poppins:wght@400;500;600;700&family=Inter:wght@400;500;600&family=Quicksand:wght@400;500;600&family=Sacramento&family=Source+Serif+Pro:wght@400;600&family=Crimson+Pro:wght@400;600&family=Amatic+SC:wght@400;700&family=Indie+Flower&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -350,6 +350,249 @@
 .focus-visible:focus {
   outline: 2px solid #4F46E5;
   outline-offset: 2px;
+}
+
+/* Template-specific styles that can be overridden */
+.template-renderer {
+  min-height: 100vh;
+  font-family: var(--template-font-family, 'Inter', sans-serif);
+}
+
+/* Apply template colors to semantic elements */
+.template-renderer h1,
+.template-renderer h2,
+.template-renderer h3,
+.template-renderer h4,
+.template-renderer h5,
+.template-renderer h6 {
+  font-family: var(--template-heading-font, 'Playfair Display', serif);
+  color: var(--template-primary, inherit);
+}
+
+.template-renderer .accent-text {
+  font-family: var(--template-accent-font, 'Dancing Script', cursive);
+  color: var(--template-accent, inherit);
+}
+
+.template-renderer .primary-bg {
+  background-color: var(--template-primary, inherit);
+}
+
+.template-renderer .secondary-bg {
+  background-color: var(--template-secondary, inherit);
+}
+
+.template-renderer .accent-bg {
+  background-color: var(--template-accent, inherit);
+}
+
+.template-renderer .primary-text {
+  color: var(--template-primary, inherit);
+}
+
+.template-renderer .secondary-text {
+  color: var(--template-secondary, inherit);
+}
+
+.template-renderer .accent-text {
+  color: var(--template-accent, inherit);
+}
+
+/* Gallery layout styles */
+.template-renderer[data-gallery-type="grid"] .gallery-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.template-renderer[data-gallery-type="slideshow"] .gallery-container {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+}
+
+.template-renderer[data-gallery-type="carousel"] .gallery-container {
+  display: flex;
+  overflow: hidden;
+}
+
+/* Animation styles */
+.template-renderer[data-animation-type="fade"] .animate-in {
+  animation: fadeIn 0.6s ease-in-out;
+}
+
+.template-renderer[data-animation-type="slide"] .animate-in {
+  animation: slideIn 0.8s ease-out;
+}
+
+.template-renderer[data-animation-type="parallax"] {
+  overflow-x: hidden;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Template-specific overrides for eternal-love */
+.template-eternal-love {
+  background: linear-gradient(135deg, #F8BBD9 0%, #E4A5C7 100%);
+}
+
+.template-eternal-love h1,
+.template-eternal-love h2 {
+  color: #2C3E50;
+  font-family: 'Playfair Display', serif;
+}
+
+.template-eternal-love .accent-text {
+  color: #D4AF37;
+  font-family: 'Dancing Script', cursive;
+}
+
+/* Template-specific overrides for rustic-charm */
+.template-rustic-charm {
+  background: linear-gradient(135deg, #F5F5DC 0%, #E8D5C4 100%);
+}
+
+.template-rustic-charm h1,
+.template-rustic-charm h2 {
+  color: #8B4513;
+  font-family: 'Merriweather', serif;
+}
+
+.template-rustic-charm .accent-text {
+  color: #228B22;
+  font-family: 'Caveat', cursive;
+}
+
+/* Template-specific overrides for ocean-breeze */
+.template-ocean-breeze {
+  background: linear-gradient(135deg, #F0F8FF 0%, #E6F3FF 100%);
+}
+
+.template-ocean-breeze h1,
+.template-ocean-breeze h2 {
+  color: #4682B4;
+  font-family: 'Montserrat', sans-serif;
+}
+
+.template-ocean-breeze .accent-text {
+  color: #FFD700;
+  font-family: 'Kaushan Script', cursive;
+}
+
+/* Template-specific overrides for elegant-classic */
+.template-elegant-classic {
+  background: #FFFFFF;
+}
+
+.template-elegant-classic h1,
+.template-elegant-classic h2 {
+  color: #2F4F4F;
+  font-family: 'Cormorant Garamond', serif;
+}
+
+.template-elegant-classic .accent-text {
+  color: #DAA520;
+  font-family: 'Great Vibes', cursive;
+}
+
+/* Template-specific overrides for modern-minimalist */
+.template-modern-minimalist {
+  background: #ECF0F1;
+}
+
+.template-modern-minimalist h1,
+.template-modern-minimalist h2 {
+  color: #2C3E50;
+  font-family: 'Poppins', sans-serif;
+}
+
+.template-modern-minimalist .accent-text {
+  color: #E74C3C;
+  font-family: 'Quicksand', sans-serif;
+}
+
+/* Template-specific overrides for vintage-floral */
+.template-vintage-floral {
+  background: linear-gradient(135deg, #F0E6D2 0%, #E8D5C4 100%);
+}
+
+.template-vintage-floral h1,
+.template-vintage-floral h2 {
+  color: #8B4513;
+  font-family: 'Great Vibes', cursive;
+}
+
+.template-vintage-floral .accent-text {
+  color: #FAB7B7;
+  font-family: 'Dancing Script', cursive;
+}
+
+/* Template-specific overrides for floral-elegance */
+.template-floral-elegance {
+  background: linear-gradient(135deg, #F8F8FF 0%, #E6E6FA 100%);
+}
+
+.template-floral-elegance h1,
+.template-floral-elegance h2 {
+  color: #4B0082;
+  font-family: 'Crimson Pro', serif;
+}
+
+.template-floral-elegance .accent-text {
+  color: #DA70D6;
+  font-family: 'Sacramento', cursive;
+}
+
+/* Template-specific overrides for romantico-floral-escuro */
+.template-romantico-floral-escuro {
+  background: linear-gradient(135deg, #000000 0%, #2D2D2D 100%);
+}
+
+.template-romantico-floral-escuro h1,
+.template-romantico-floral-escuro h2 {
+  color: #DDA0DD;
+  font-family: 'Cormorant Garamond', serif;
+}
+
+.template-romantico-floral-escuro .accent-text {
+  color: #8B4B8B;
+  font-family: 'Dancing Script', cursive;
+}
+
+/* Template-specific overrides for floral-romantico-claro */
+.template-floral-romantico-claro {
+  background: linear-gradient(135deg, #FFB6C1 0%, #E6E6FA 100%);
+}
+
+.template-floral-romantico-claro h1,
+.template-floral-romantico-claro h2 {
+  color: #2C3E50;
+  font-family: 'Cormorant Garamond', serif;
+}
+
+.template-floral-romantico-claro .accent-text {
+  color: #F0E68C;
+  font-family: 'Dancing Script', cursive;
 }
 
 /* Reduz animações para usuários com preferência de movimento reduzido */

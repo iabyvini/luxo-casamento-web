@@ -1,7 +1,6 @@
 
 import React, { useEffect } from 'react';
 import { TemplateProfile } from '@/data/templateLibrary';
-import { useModernVisualTokens } from '@/contexts/ModernVisualTokensContext';
 
 interface TemplateRendererProps {
   template: TemplateProfile;
@@ -9,12 +8,7 @@ interface TemplateRendererProps {
 }
 
 const TemplateRenderer = ({ template, children }: TemplateRendererProps) => {
-  const { applyModernTokens } = useModernVisualTokens();
-
   useEffect(() => {
-    // Aplicar tokens visuais do template
-    applyModernTokens(template.id);
-    
     // Aplicar CSS custom properties baseadas no template
     const root = document.documentElement;
     
@@ -52,11 +46,11 @@ const TemplateRenderer = ({ template, children }: TemplateRendererProps) => {
     Object.entries(template.tokens.fontSize).forEach(([key, value]) => {
       root.style.setProperty(`--template-text-${key}`, value);
     });
-  }, [template, applyModernTokens]);
+  }, [template]);
 
   return (
     <div 
-      className={`template-renderer template-${template.id}`}
+      className={`template-renderer template-${template.id.replace(/-/g, '-')}`}
       data-template={template.id}
       data-gallery-type={template.galleryType}
       data-animation-type={template.animationType}
