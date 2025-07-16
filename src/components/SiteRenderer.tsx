@@ -2,7 +2,7 @@
 import { PreviewData } from "@/types/quiz";
 import ErrorBoundary from "./ErrorBoundary";
 import WeddingSiteNavigation from "./wedding-site/WeddingSiteNavigation";
-import HeroSection from "./wedding-site/HeroSection";
+import { getHeroComponent } from "@/utils/templateComponentFactory";
 import CountdownSection from "./wedding-site/CountdownSection";
 import CoupleSection from "./wedding-site/CoupleSection";
 import OurStorySection from "./wedding-site/OurStorySection";
@@ -22,15 +22,19 @@ interface SiteRendererProps {
 const SiteRenderer = ({ siteData, siteId = "preview" }: SiteRendererProps) => {
   console.log('🎨 SiteRenderer renderizando site:', siteId);
 
+  // Obter o componente Hero específico do template
+  const HeroComponent = getHeroComponent(siteData.templateName);
+
   return (
     <ErrorBoundary>
       <div className="wedding-site">
         <WeddingSiteNavigation coupleNames={siteData.coupleNames} />
-        <HeroSection 
+        <HeroComponent 
           coupleNames={siteData.coupleNames}
           weddingDate={siteData.weddingDate}
           welcomeMessage={siteData.welcomeMessage}
           templateName={siteData.templateName}
+          quizAnswers={siteData.quizAnswers}
         />
         <CountdownSection weddingDate={siteData.weddingDate} />
         <CoupleSection coupleNames={siteData.coupleNames} />
