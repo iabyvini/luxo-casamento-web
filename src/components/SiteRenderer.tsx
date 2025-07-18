@@ -2,7 +2,14 @@
 import { PreviewData } from "@/types/quiz";
 import ErrorBoundary from "./ErrorBoundary";
 import WeddingSiteNavigation from "./wedding-site/WeddingSiteNavigation";
-import { getHeroComponent } from "@/utils/templateComponentFactory";
+import { 
+  getHeroComponent,
+  getNavigationComponent,
+  getGalleryComponent,
+  getStoryComponent,
+  getRSVPComponent,
+  getFooterComponent
+} from "@/utils/templateComponentFactory";
 import CountdownSection from "./wedding-site/CountdownSection";
 import CoupleSection from "./wedding-site/CoupleSection";
 import OurStorySection from "./wedding-site/OurStorySection";
@@ -22,13 +29,28 @@ interface SiteRendererProps {
 const SiteRenderer = ({ siteData, siteId = "preview" }: SiteRendererProps) => {
   console.log('🎨 SiteRenderer renderizando site:', siteId);
 
-  // Obter o componente Hero específico do template
+  // Get template-specific components
   const HeroComponent = getHeroComponent(siteData.templateName);
+  const NavigationComponent = getNavigationComponent(siteData.templateName);
+  const GalleryComponent = getGalleryComponent(siteData.templateName);
+  const StoryComponent = getStoryComponent(siteData.templateName);
+  const RSVPComponent = getRSVPComponent(siteData.templateName);
+  const FooterComponent = getFooterComponent(siteData.templateName);
+
+  // Define sections that should be rendered based on template
+  const sections = ['hero', 'story', 'gallery', 'event-details', 'rsvp', 'gifts'];
 
   return (
     <ErrorBoundary>
       <div className="wedding-site">
-        <WeddingSiteNavigation coupleNames={siteData.coupleNames} />
+        {/* Navigation - Use template-specific or default */}
+        {NavigationComponent ? (
+          <NavigationComponent sections={sections} />
+        ) : (
+          <WeddingSiteNavigation coupleNames={siteData.coupleNames} />
+        )}
+        
+        {/* Hero Section - Always use template-specific */}
         <HeroComponent 
           coupleNames={siteData.coupleNames}
           weddingDate={siteData.weddingDate}
@@ -36,17 +58,46 @@ const SiteRenderer = ({ siteData, siteId = "preview" }: SiteRendererProps) => {
           templateName={siteData.templateName}
           quizAnswers={siteData.quizAnswers}
         />
+        
         <CountdownSection weddingDate={siteData.weddingDate} />
         <CoupleSection coupleNames={siteData.coupleNames} />
-        <OurStorySection 
-          coupleNames={siteData.coupleNames}
-          templateName={siteData.templateName}
-        />
-        <GallerySection 
-          siteId={siteId}
-          templateName={siteData.templateName}
-          quizAnswers={siteData.quizAnswers}
-        />
+        
+        {/* Our Story Section - Use template-specific or default */}
+        {siteData.customContent?.ourStory ? (
+          StoryComponent ? (
+            <StoryComponent ourStory={siteData.customContent.ourStory} />
+          ) : (
+            <OurStorySection 
+              coupleNames={siteData.coupleNames}
+              templateName={siteData.templateName}
+            />
+          )
+        ) : (
+          <OurStorySection 
+            coupleNames={siteData.coupleNames}
+            templateName={siteData.templateName}
+          />
+        )}
+        
+        {/* Gallery Section - Use template-specific or default */}
+        {siteData.customContent?.galleryPhotos && siteData.customContent.galleryPhotos.length > 0 ? (
+          GalleryComponent ? (
+            <GalleryComponent photos={siteData.customContent.galleryPhotos} />
+          ) : (
+            <GallerySection 
+              siteId={siteId}
+              templateName={siteData.templateName}
+              quizAnswers={siteData.quizAnswers}
+            />
+          )
+        ) : (
+          <GallerySection 
+            siteId={siteId}
+            templateName={siteData.templateName}
+            quizAnswers={siteData.quizAnswers}
+          />
+        )}
+        
         <EventDetailsSection 
           weddingDate={siteData.weddingDate}
           templateName={siteData.templateName}
@@ -54,15 +105,32 @@ const SiteRenderer = ({ siteData, siteId = "preview" }: SiteRendererProps) => {
         />
         <BridesmaidsSection />
         <GiftListSection siteId={siteId} />
-        <RSVPSection 
-          weddingDate={siteData.weddingDate}
-          templateName={siteData.templateName}
-        />
+        
+        {/* RSVP Section - Use template-specific or default */}
+        {RSVPComponent ? (
+          <RSVPComponent siteId={siteId} />
+        ) : (
+          <RSVPSection 
+            weddingDate={siteData.weddingDate}
+            templateName={siteData.templateName}
+          />
+        )}
+        
         <MessagesSection />
-        <FooterSection 
-          coupleNames={siteData.coupleNames}
-          weddingDate={siteData.weddingDate}
-        />
+        
+        {/* Footer Section - Use template-specific or default */}
+        {FooterComponent ? (
+          <FooterComponent 
+            coupleNames={siteData.coupleNames}
+            weddingDate={siteData.weddingDate}
+            eventDetails={siteData.customContent?.eventDetails}
+          />
+        ) : (
+          <FooterSection 
+            coupleNames={siteData.coupleNames}
+            weddingDate={siteData.weddingDate}
+          />
+        )}
       </div>
     </ErrorBoundary>
   );
