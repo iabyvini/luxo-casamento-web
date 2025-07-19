@@ -451,20 +451,106 @@
   }
 }
 
-/* Template-specific overrides for eternal-love */
+/* Eternal Love Template - Design System Coeso e Profissional */
 .template-eternal-love {
-  background: linear-gradient(135deg, #F8BBD9 0%, #E4A5C7 100%);
+  --el-primary: #8B4B5C;        /* Burgundy elegante */
+  --el-secondary: #D4AF8C;      /* Gold matte sofisticado */
+  --el-accent: #E8D5C4;         /* Nude warm */
+  --el-neutral-light: #F8F6F4;  /* Off-white cremoso */
+  --el-neutral-dark: #2C2C2C;   /* Charcoal refinado */
+  --el-text-primary: #2C2C2C;
+  --el-text-secondary: #6B6B6B;
+  --el-text-light: #FFFFFF;
+  
+  /* Tipografia hierárquica */
+  --el-font-heading: 'Crimson Text', serif;
+  --el-font-body: 'Libre Baskerville', serif;
+  --el-font-accent: 'Amatic SC', cursive;
+  
+  background: linear-gradient(135deg, var(--el-neutral-light) 0%, #F5F2EF 100%);
+  font-family: var(--el-font-body);
+  color: var(--el-text-primary);
 }
 
 .template-eternal-love h1,
-.template-eternal-love h2 {
-  color: #2C3E50;
-  font-family: 'Playfair Display', serif;
+.template-eternal-love h2,
+.template-eternal-love h3 {
+  font-family: var(--el-font-heading);
+  color: var(--el-primary);
+  font-weight: 600;
 }
 
 .template-eternal-love .accent-text {
-  color: #D4AF37;
-  font-family: 'Dancing Script', cursive;
+  color: var(--el-secondary);
+  font-family: var(--el-font-accent);
+  font-weight: 700;
+}
+
+/* Eternal Love Components Styling */
+.eternal-love-hero {
+  background: linear-gradient(135deg, var(--el-neutral-light) 0%, #F5F2EF 50%, var(--el-accent) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.eternal-love-nav {
+  background: rgba(248, 246, 244, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(139, 75, 92, 0.1);
+}
+
+.eternal-love-section {
+  background: var(--el-neutral-light);
+}
+
+.eternal-love-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(139, 75, 92, 0.1);
+  box-shadow: 0 8px 32px rgba(139, 75, 92, 0.1);
+}
+
+.eternal-love-button {
+  background: linear-gradient(135deg, var(--el-primary) 0%, #7A4250 100%);
+  color: var(--el-text-light);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.eternal-love-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(139, 75, 92, 0.3);
+}
+
+.eternal-love-ornament {
+  color: var(--el-secondary);
+  opacity: 0.6;
+}
+
+/* Animações sutis e elegantes */
+.eternal-love-fade-in {
+  animation: eternalLoveFadeIn 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+@keyframes eternalLoveFadeIn {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.eternal-love-scale-in {
+  animation: eternalLoveScaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+@keyframes eternalLoveScaleIn {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 /* Template-specific overrides for rustic-charm */

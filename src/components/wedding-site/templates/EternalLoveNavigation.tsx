@@ -1,15 +1,18 @@
-import React from 'react';
-import { Heart } from 'lucide-react';
+import React, { useState } from 'react';
+import { Heart, Menu, X } from 'lucide-react';
 
 interface EternalLoveNavigationProps {
   sections: string[];
 }
 
 const EternalLoveNavigation = ({ sections }: EternalLoveNavigationProps) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
+      setIsMenuOpen(false);
     }
   };
 
@@ -23,44 +26,65 @@ const EternalLoveNavigation = ({ sections }: EternalLoveNavigationProps) => {
   };
 
   return (
-    <nav className="eternal-love-nav fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-pink-100 shadow-sm">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+    <nav className="eternal-love-nav fixed top-0 left-0 right-0 z-50 shadow-sm">
+      <div className="container mx-auto px-6">
+        <div className="flex items-center justify-between h-20">
+          
           {/* Logo/Brand */}
-          <div className="flex items-center space-x-2 text-pink-600">
-            <Heart className="w-6 h-6 fill-current" />
-            <span className="font-playfair text-xl font-semibold">Eternal Love</span>
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-[#8B4B5C] to-[#7A4250] rounded-full flex items-center justify-center">
+              <Heart className="w-5 h-5 text-white fill-current" />
+            </div>
+            <div className="hidden sm:block">
+              <span className="font-['Crimson_Text'] text-xl font-semibold text-[#8B4B5C]">
+                Eternal Love
+              </span>
+            </div>
           </div>
 
-          {/* Navigation Links */}
-          <div className="hidden md:flex items-center space-x-8">
+          {/* Navigation Links - Desktop */}
+          <div className="hidden lg:flex items-center space-x-10">
             {sections.map((section) => (
               <button
                 key={section}
                 onClick={() => scrollToSection(section)}
-                className="text-gray-700 hover:text-pink-600 transition-colors duration-300 font-lora text-sm tracking-wide relative group"
+                className="relative group font-['Libre_Baskerville'] text-[#2C2C2C] hover:text-[#8B4B5C] transition-colors duration-300 text-sm font-medium"
               >
                 {sectionLabels[section] || section}
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-pink-400 to-pink-600 group-hover:w-full transition-all duration-300"></span>
+                <span className="absolute -bottom-2 left-0 w-0 h-0.5 bg-gradient-to-r from-[#8B4B5C] to-[#D4AF8C] group-hover:w-full transition-all duration-300 ease-out"></span>
               </button>
             ))}
           </div>
 
           {/* Mobile Menu Button */}
-          <button className="md:hidden p-2 text-pink-600">
-            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
+          <button 
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="lg:hidden p-2 text-[#8B4B5C] hover:bg-[#8B4B5C]/10 rounded-lg transition-colors duration-200"
+          >
+            {isMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
           </button>
         </div>
-      </div>
 
-      {/* Decorative floral elements */}
-      <div className="absolute top-0 left-4 w-8 h-8 opacity-20">
-        <div className="w-full h-full bg-gradient-to-br from-pink-300 to-pink-500 rounded-full"></div>
-      </div>
-      <div className="absolute top-2 right-8 w-4 h-4 opacity-15">
-        <div className="w-full h-full bg-gradient-to-br from-pink-400 to-pink-600 rounded-full"></div>
+        {/* Mobile Menu */}
+        {isMenuOpen && (
+          <div className="lg:hidden absolute top-full left-0 right-0 bg-white/95 backdrop-blur-sm border-t border-[#8B4B5C]/10 shadow-lg">
+            <div className="py-4 space-y-2">
+              {sections.map((section) => (
+                <button
+                  key={section}
+                  onClick={() => scrollToSection(section)}
+                  className="block w-full text-left px-6 py-3 font-['Libre_Baskerville'] text-[#2C2C2C] hover:text-[#8B4B5C] hover:bg-[#8B4B5C]/5 transition-colors duration-200"
+                >
+                  {sectionLabels[section] || section}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   );

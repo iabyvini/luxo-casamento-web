@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heart, Calendar, MapPin, Mail, Phone } from 'lucide-react';
+import { Heart, Calendar, MapPin, Mail, Phone, Clock } from 'lucide-react';
 
 interface EternalLoveFooterProps {
   coupleNames: string;
@@ -26,81 +26,90 @@ const EternalLoveFooter = ({ coupleNames, weddingDate, eventDetails }: EternalLo
   });
 
   return (
-    <footer className="bg-gradient-to-br from-pink-600 to-pink-700 text-white relative overflow-hidden">
+    <footer className="bg-gradient-to-br from-[#8B4B5C] via-[#7A4250] to-[#6B3A45] text-white relative overflow-hidden">
+      
       {/* Background decorative elements */}
       <div className="absolute inset-0 opacity-10">
-        <div className="absolute top-10 left-10 w-24 h-24 bg-white rounded-full"></div>
-        <div className="absolute top-1/3 right-20 w-16 h-16 bg-white rounded-full"></div>
-        <div className="absolute bottom-20 left-1/4 w-20 h-20 bg-white rounded-full"></div>
-        <div className="absolute bottom-40 right-10 w-12 h-12 bg-white rounded-full"></div>
-        
-        {/* Floral pattern */}
-        <svg className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 text-white" viewBox="0 0 200 200">
-          <path d="M100 20 Q150 60 100 100 Q50 60 100 20 Q140 140 100 180 Q60 140 100 100" fill="currentColor" />
-          <circle cx="100" cy="60" r="8" fill="currentColor" />
-          <circle cx="100" cy="140" r="8" fill="currentColor" />
-          <circle cx="60" cy="100" r="6" fill="currentColor" />
-          <circle cx="140" cy="100" r="6" fill="currentColor" />
-        </svg>
+        <div className="absolute top-10 left-10 w-32 h-32 bg-white rounded-full blur-3xl"></div>
+        <div className="absolute bottom-10 right-10 w-40 h-40 bg-[#D4AF8C] rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/3 w-24 h-24 bg-white rounded-full blur-2xl"></div>
       </div>
 
-      <div className="container mx-auto px-4 py-16 relative z-10">
+      <div className="container mx-auto px-4 py-20 relative z-10">
+        
         {/* Main Footer Content */}
-        <div className="text-center mb-12">
-          {/* Couple Names */}
-          <div className="mb-8">
-            <div className="flex items-center justify-center mb-4">
-              <div className="h-px bg-white/30 w-16"></div>
+        <div className="text-center mb-16">
+          
+          {/* Couple Names and Date */}
+          <div className="mb-12 eternal-love-fade-in">
+            <div className="flex items-center justify-center mb-6">
+              <div className="h-px bg-white/30 w-20"></div>
               <Heart className="mx-4 w-8 h-8 fill-current animate-pulse" />
-              <div className="h-px bg-white/30 w-16"></div>
+              <div className="h-px bg-white/30 w-20"></div>
             </div>
             
-            <h2 className="font-playfair text-4xl md:text-5xl mb-4">
+            <h2 className="font-['Crimson_Text'] text-4xl md:text-5xl mb-6 font-semibold">
               {coupleNames}
             </h2>
             
-            <div className="flex items-center justify-center text-pink-100 mb-6">
+            <div className="flex items-center justify-center text-white/90 mb-8">
               <Calendar className="w-5 h-5 mr-3" />
-              <span className="font-lora text-lg">{formattedDate}</span>
+              <span className="font-['Libre_Baskerville'] text-xl">{formattedDate}</span>
             </div>
           </div>
 
           {/* Event Details */}
           {eventDetails && (
-            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-12">
+            <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto mb-16 eternal-love-scale-in">
               {eventDetails.ceremony && (
-                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6">
-                  <h3 className="font-playfair text-2xl mb-4 text-pink-100">Cerimônia</h3>
-                  <div className="space-y-3 text-left">
+                <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 border border-white/20">
+                  <h3 className="font-['Crimson_Text'] text-2xl mb-6 text-[#E8D5C4] font-semibold">
+                    Cerimônia
+                  </h3>
+                  <div className="space-y-4 text-left">
                     <div className="flex items-start">
-                      <MapPin className="w-5 h-5 mr-3 mt-1 text-pink-200 flex-shrink-0" />
+                      <MapPin className="w-5 h-5 mr-3 mt-1 text-[#D4AF8C] flex-shrink-0" />
                       <div>
-                        <p className="font-lora font-medium">{eventDetails.ceremony.location}</p>
-                        <p className="font-lora text-sm text-pink-100">{eventDetails.ceremony.address}</p>
+                        <p className="font-['Libre_Baskerville'] font-medium text-white">
+                          {eventDetails.ceremony.location}
+                        </p>
+                        <p className="font-['Libre_Baskerville'] text-sm text-white/80 mt-1">
+                          {eventDetails.ceremony.address}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center">
-                      <Calendar className="w-5 h-5 mr-3 text-pink-200" />
-                      <span className="font-lora">{eventDetails.ceremony.time}</span>
+                      <Clock className="w-5 h-5 mr-3 text-[#D4AF8C]" />
+                      <span className="font-['Libre_Baskerville'] text-white/90">
+                        {eventDetails.ceremony.time}
+                      </span>
                     </div>
                   </div>
                 </div>
               )}
 
               {eventDetails.reception && (
-                <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6">
-                  <h3 className="font-playfair text-2xl mb-4 text-pink-100">Recepção</h3>
-                  <div className="space-y-3 text-left">
+                <div className="bg-white/10 backdrop-blur-sm rounded-3xl p-8 border border-white/20">
+                  <h3 className="font-['Crimson_Text'] text-2xl mb-6 text-[#E8D5C4] font-semibold">
+                    Recepção
+                  </h3>
+                  <div className="space-y-4 text-left">
                     <div className="flex items-start">
-                      <MapPin className="w-5 h-5 mr-3 mt-1 text-pink-200 flex-shrink-0" />
+                      <MapPin className="w-5 h-5 mr-3 mt-1 text-[#D4AF8C] flex-shrink-0" />
                       <div>
-                        <p className="font-lora font-medium">{eventDetails.reception.location}</p>
-                        <p className="font-lora text-sm text-pink-100">{eventDetails.reception.address}</p>
+                        <p className="font-['Libre_Baskerville'] font-medium text-white">
+                          {eventDetails.reception.location}
+                        </p>
+                        <p className="font-['Libre_Baskerville'] text-sm text-white/80 mt-1">
+                          {eventDetails.reception.address}
+                        </p>
                       </div>
                     </div>
                     <div className="flex items-center">
-                      <Calendar className="w-5 h-5 mr-3 text-pink-200" />
-                      <span className="font-lora">{eventDetails.reception.time}</span>
+                      <Clock className="w-5 h-5 mr-3 text-[#D4AF8C]" />
+                      <span className="font-['Libre_Baskerville'] text-white/90">
+                        {eventDetails.reception.time}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -109,43 +118,47 @@ const EternalLoveFooter = ({ coupleNames, weddingDate, eventDetails }: EternalLo
           )}
 
           {/* Contact Information */}
-          <div className="mb-12">
-            <h3 className="font-playfair text-2xl mb-6 text-pink-100">Entre em Contato</h3>
-            <div className="flex flex-col md:flex-row items-center justify-center space-y-4 md:space-y-0 md:space-x-8">
+          <div className="mb-16 eternal-love-fade-in">
+            <h3 className="font-['Crimson_Text'] text-2xl mb-8 text-[#E8D5C4] font-semibold">
+              Entre em Contato
+            </h3>
+            <div className="flex flex-col md:flex-row items-center justify-center space-y-6 md:space-y-0 md:space-x-12">
               <a 
                 href="mailto:contato@casamento.com" 
-                className="flex items-center text-pink-100 hover:text-white transition-colors duration-300"
+                className="flex items-center text-white/90 hover:text-white transition-colors duration-300 group"
               >
-                <Mail className="w-5 h-5 mr-3" />
-                <span className="font-lora">contato@casamento.com</span>
+                <Mail className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" />
+                <span className="font-['Libre_Baskerville']">contato@casamento.com</span>
               </a>
               <a 
                 href="tel:+5511999999999" 
-                className="flex items-center text-pink-100 hover:text-white transition-colors duration-300"
+                className="flex items-center text-white/90 hover:text-white transition-colors duration-300 group"
               >
-                <Phone className="w-5 h-5 mr-3" />
-                <span className="font-lora">(11) 99999-9999</span>
+                <Phone className="w-5 h-5 mr-3 group-hover:scale-110 transition-transform" />
+                <span className="font-['Libre_Baskerville']">(11) 99999-9999</span>
               </a>
             </div>
           </div>
 
           {/* Thank You Message */}
-          <div className="max-w-2xl mx-auto mb-8">
-            <p className="font-dancing text-2xl md:text-3xl text-pink-100 leading-relaxed">
-              "Obrigado por fazer parte da nossa história de amor. 
-              Sua presença torna este momento ainda mais especial."
-            </p>
+          <div className="max-w-3xl mx-auto mb-12 eternal-love-fade-in">
+            <div className="bg-white/5 backdrop-blur-sm rounded-3xl p-8 border border-white/10">
+              <p className="font-['Amatic_SC'] text-2xl md:text-3xl text-[#E8D5C4] leading-relaxed font-bold">
+                "Obrigado por fazer parte da nossa história de amor.<br />
+                Sua presença torna este momento ainda mais especial."
+              </p>
+            </div>
           </div>
 
-          {/* Hearts decoration */}
-          <div className="flex justify-center space-x-3 mb-8">
+          {/* Decorative hearts */}
+          <div className="flex justify-center space-x-4 mb-12">
             {[...Array(7)].map((_, i) => (
               <Heart 
                 key={i}
-                className="w-4 h-4 text-pink-200 fill-current animate-pulse"
+                className="w-4 h-4 text-[#D4AF8C] fill-current animate-pulse"
                 style={{ 
-                  animationDelay: `${i * 0.3}s`,
-                  opacity: 0.6 + (i % 3) * 0.2
+                  animationDelay: `${i * 0.2}s`,
+                  opacity: 0.5 + (i % 3) * 0.2
                 }}
               />
             ))}
@@ -153,16 +166,16 @@ const EternalLoveFooter = ({ coupleNames, weddingDate, eventDetails }: EternalLo
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-white/20 pt-8 text-center">
+        <div className="border-t border-white/20 pt-8">
           <div className="flex flex-col md:flex-row items-center justify-between">
-            <p className="font-lora text-pink-100 text-sm mb-4 md:mb-0">
+            <p className="font-['Libre_Baskerville'] text-white/80 text-sm mb-4 md:mb-0">
               © 2024 {coupleNames} - Todos os direitos reservados
             </p>
             
-            <div className="flex items-center text-pink-100 text-sm">
-              <span className="font-lora mr-2">Feito com</span>
-              <Heart className="w-4 h-4 fill-current mx-1 animate-pulse" />
-              <span className="font-lora ml-2">para nosso amor eterno</span>
+            <div className="flex items-center text-white/80 text-sm">
+              <span className="font-['Libre_Baskerville'] mr-2">Feito com</span>
+              <Heart className="w-4 h-4 fill-current mx-1 animate-pulse text-[#D4AF8C]" />
+              <span className="font-['Libre_Baskerville'] ml-2">para nosso amor eterno</span>
             </div>
           </div>
         </div>
